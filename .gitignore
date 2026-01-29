@@ -1,0 +1,141 @@
+# ==============================================
+# Python
+# ==============================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+.eggs/
+*.manifest
+*.spec
+
+# Virtual Environments
+venv/
+venv312/
+.venv/
+ENV/
+
+# ==============================================
+# IDE and Editor Configurations
+# ==============================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# AI/Code Assistant Configurations (various tools)
+.agent/
+.agents/
+.claude/
+.cline/
+.codebuddy/
+.codex/
+.commandcode/
+.continue/
+.crush/
+.cursor/
+.factory/
+.gemini/
+.goose/
+.kilocode/
+.kiro/
+.mcpjam/
+.mux/
+.neovate/
+.opencode/
+.openhands/
+.pi/
+.qoder/
+.qwen/
+.roo/
+.trae/
+.windsurf/
+.zencoder/
+
+# ==============================================
+# Node.js
+# ==============================================
+node_modules/
+package-lock.json
+
+# ==============================================
+# Environment and Secrets
+# ==============================================
+.env
+.env.local
+.env.*.local
+
+# ==============================================
+# Data and Generated Files
+# ==============================================
+data/raw/
+data/knowledge_base/
+data/embeddings/
+data/processed/
+data/cache/
+models/
+outputs/
+images/
+
+# ==============================================
+# Presentation Generation (one-off scripts)
+# ==============================================
+presentation_html/
+create_healthcare_ppt.py
+create_presentation.py
+convert_to_pptx.js
+generate_assets.py
+generate_hq_assets.js
+generate_html_reference_style.py
+generate_html_slides.py
+generate_ppt_skill.js
+validate_presentation.py
+project_presentation.md
+reference_content.md
+review2_template.md
+Review2_Document.md
+skills/
+
+# ==============================================
+# Large Binary Files
+# ==============================================
+medical_adapter.zip
+*.zip
+*.tar.gz
+*.tar
+*.rar
+
+# ==============================================
+# Build and Cache
+# ==============================================
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+htmlcov/
+.coverage
+.coverage.*
+*.log
+wandb/
+
+# ==============================================
+# Documentation (keep only README)
+# ==============================================
+docs/
+
+# ==============================================
+# GitHub (optional, remove if you want workflows)
+# ==============================================
+.github/
+
+# ==============================================
+# Misc
+# ==============================================
+=0.4.0
+*.bak
+*.tmp
