@@ -74,8 +74,6 @@ class HealthcareQAPipeline:
         self.llm = llm
         self.prompt_manager = prompt_manager
         self.confidence_scorer = confidence_scorer
-        self.prompt_manager = prompt_manager
-        self.confidence_scorer = confidence_scorer
         self.source_attributor = source_attributor
         self.rationale_generator = rationale_generator
         

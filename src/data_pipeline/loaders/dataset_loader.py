@@ -1,10 +1,13 @@
 """
 Dataset loading utilities for medical QA.
+Supports: MedQuAD, PubMedQA, MedMCQA, HealthCareMagic, MedQA USMLE,
+ChatDoctor, Medical Meadow, and additional consolidated datasets.
 """
 import pandas as pd
 from pathlib import Path
 from typing import List, Dict, Optional, Generator
 from tqdm import tqdm
+
 
 class MedicalDatasetLoader:
     """Load and iterate over medical datasets."""
@@ -12,32 +15,102 @@ class MedicalDatasetLoader:
     def __init__(self, data_dir: str = "data/raw"):
         self.data_dir = Path(data_dir)
     
+    def _safe_load_parquet(self, path: Path) -> Optional[pd.DataFrame]:
+        """Safely load a parquet file."""
+        if path.exists():
+            return pd.read_parquet(path)
+        return None
+    
+    # ==================== Core Datasets ====================
+    
     def load_medquad(self) -> pd.DataFrame:
         """Load MedQuAD dataset."""
         path = self.data_dir / "mediqa" / "medquad.parquet"
-        if path.exists():
-            return pd.read_parquet(path)
+        df = self._safe_load_parquet(path)
+        if df is not None:
+            return df
         raise FileNotFoundError(f"MedQuAD not found at {path}")
     
     def load_pubmedqa(self) -> pd.DataFrame:
         """Load PubMedQA dataset."""
         path = self.data_dir / "pubmed" / "pubmedqa_labeled.parquet"
-        if path.exists():
-            return pd.read_parquet(path)
+        df = self._safe_load_parquet(path)
+        if df is not None:
+            return df
         raise FileNotFoundError(f"PubMedQA not found at {path}")
 
     def load_medmcqa(self) -> pd.DataFrame:
         """Load MedMCQA dataset."""
         path = self.data_dir / "mediqa" / "medmcqa_train.parquet"
-        if path.exists():
-            return pd.read_parquet(path)
+        df = self._safe_load_parquet(path)
+        if df is not None:
+            return df
         raise FileNotFoundError(f"MedMCQA not found at {path}")
+    
+    def load_healthcare_magic(self) -> pd.DataFrame:
+        """Load HealthCareMagic dataset."""
+        path = self.data_dir / "mediqa" / "healthcare_magic.parquet"
+        df = self._safe_load_parquet(path)
+        if df is not None:
+            return df
+        raise FileNotFoundError(f"HealthCareMagic not found at {path}")
+    
+    # ==================== New Standard Datasets ====================
+    
+    def load_medqa_usmle(self) -> pd.DataFrame:
+        """Load MedQA USMLE dataset."""
+        # Try train first, then test
+        for filename in ["medqa_usmle_train.parquet", "medqa_usmle_test.parquet"]:
+            path = self.data_dir / "medqa" / filename
+            df = self._safe_load_parquet(path)
+            if df is not None:
+                return df
+        raise FileNotFoundError("MedQA USMLE not found")
+    
+    def load_chatdoctor(self) -> pd.DataFrame:
+        """Load ChatDoctor datasets."""
+        dfs = []
+        for filename in ["chatdoctor_icliniq.parquet", "chatdoctor_healthcaremagic.parquet"]:
+            path = self.data_dir / "chatdoctor" / filename
+            df = self._safe_load_parquet(path)
+            if df is not None:
+                dfs.append(df)
+        
+        if dfs:
+            return pd.concat(dfs, ignore_index=True)
+        raise FileNotFoundError("ChatDoctor datasets not found")
+    
+    def load_medical_meadow(self) -> pd.DataFrame:
+        """Load all Medical Meadow datasets."""
+        dfs = []
+        meadow_dir = self.data_dir / "medical_meadow"
+        
+        if meadow_dir.exists():
+            for parquet_file in meadow_dir.glob("*.parquet"):
+                df = self._safe_load_parquet(parquet_file)
+                if df is not None:
+                    df["meadow_source"] = parquet_file.stem
+                    dfs.append(df)
+        
+        if dfs:
+            return pd.concat(dfs, ignore_index=True)
+        raise FileNotFoundError("Medical Meadow datasets not found")
+    
+    def load_additional_qa(self) -> pd.DataFrame:
+        """Load additional consolidated QA datasets."""
+        path = self.data_dir / "additional" / "lavita_medical_qa.parquet"
+        df = self._safe_load_parquet(path)
+        if df is not None:
+            return df
+        raise FileNotFoundError("Additional QA datasets not found")
+    
+    # ==================== Unified Loading ====================
     
     def load_all_qa_pairs(self) -> List[Dict]:
         """Load all QA pairs from all datasets."""
         qa_pairs = []
         
-        # Load MedQuAD
+        # 1. Load MedQuAD
         try:
             df = self.load_medquad()
             for _, row in df.iterrows():
@@ -46,10 +119,11 @@ class MedicalDatasetLoader:
                     "answer": row.get("Answer", row.get("answer", "")),
                     "source": "MedQuAD"
                 })
+            print(f"  Loaded MedQuAD: {len(df):,} entries")
         except Exception as e:
-            print(f"⚠️ Could not load MedQuAD: {e}")
+            print(f"  [SKIP] MedQuAD: {e}")
         
-        # Load PubMedQA
+        # 2. Load PubMedQA
         try:
             df = self.load_pubmedqa()
             for _, row in df.iterrows():
@@ -57,53 +131,154 @@ class MedicalDatasetLoader:
                 if isinstance(context, dict):
                     context_text = " ".join(context.get("contexts", []))
                 else:
-                    context_text = str(context)
+                    context_text = str(context) if context else ""
                 qa_pairs.append({
                     "question": row.get("question", ""),
                     "answer": row.get("long_answer", ""),
                     "context": context_text,
                     "source": "PubMedQA"
                 })
+            print(f"  Loaded PubMedQA: {len(df):,} entries")
         except Exception as e:
-            print(f"⚠️ Could not load PubMedQA: {e}")
+            print(f"  [SKIP] PubMedQA: {e}")
         
-        # Load MedMCQA
+        # 3. Load MedMCQA
         try:
             df = self.load_medmcqa()
-            # MedMCQA structure: question, exp (explanation), cop (choice of correct option), opa/opb/opc/opd
-            # We will construct a simple QA pair.
-            # Ideally we would map the 'cop' (correct option) to the text of that option,
-            # but for now let's check the columns or just use the explanation as the answer if available,
-            # or try to reconstruct the answer.
-            # Let's inspect columns first or assume a standard approach.
-            # For simplicity in this blind edit without seeing columns:
-            # We'll try to find 'answer' or construct it.
-            # Looking at common MedMCQA parquet schemas, it usually has 'question', 'cop' (index), 'opa', 'opb', etc.
-            # and 'exp' (explanation).
-            
-            # Using a simplified approach: specific implementation depends on column names.
-            # Assuming 'exp' (explanation) provides a good detailed answer.
+            count = 0
             for _, row in df.iterrows():
-                # Construct answer from explanation or just use explanation
+                # Use explanation as the answer
                 answer = row.get("exp")
                 if not answer or pd.isna(answer):
-                    # Fallback: try to find the correct option text
-                    cop = row.get("cop") # 1-based or 0-based index? usually 1-based in original dataset but let's be careful.
-                    # If we can't easily determine the short answer, we skip or use what we have.
                     continue
+                
+                # Construct full answer with correct option
+                cop = row.get("cop")  # 1-based index
+                options = {1: "opa", 2: "opb", 3: "opc", 4: "opd"}
+                correct_opt = ""
+                if cop in options:
+                    correct_opt = row.get(options[cop], "")
+                
+                full_answer = f"Correct answer: {correct_opt}\n\nExplanation: {answer}"
                 
                 qa_pairs.append({
                     "question": row.get("question", ""),
-                    "answer": str(answer),
-                    "source": "MedMCQA"
+                    "answer": full_answer,
+                    "source": f"MedMCQA/{row.get('subject_name', 'General')}"
                 })
+                count += 1
+            print(f"  Loaded MedMCQA: {count:,} entries")
         except Exception as e:
-            print(f"⚠️ Could not load MedMCQA: {e}")
+            print(f"  [SKIP] MedMCQA: {e}")
         
+        # 4. Load HealthCareMagic
+        try:
+            df = self.load_healthcare_magic()
+            for _, row in df.iterrows():
+                # Has instruction (question context), input (actual question), output (answer)
+                question = row.get("input", row.get("instruction", ""))
+                instruction = row.get("instruction", "")
+                if instruction and question and instruction != question:
+                    question = f"{instruction}\n\n{question}"
+                
+                qa_pairs.append({
+                    "question": question,
+                    "answer": row.get("output", ""),
+                    "source": "HealthCareMagic"
+                })
+            print(f"  Loaded HealthCareMagic: {len(df):,} entries")
+        except Exception as e:
+            print(f"  [SKIP] HealthCareMagic: {e}")
+        
+        # 5. Load MedQA USMLE
+        try:
+            df = self.load_medqa_usmle()
+            for _, row in df.iterrows():
+                question = row.get("question", row.get("sent1", ""))
+                answer = row.get("answer", row.get("ending0", ""))
+                
+                # Some formats have options array
+                options = row.get("options", [])
+                answer_idx = row.get("answer_idx", row.get("label", -1))
+                
+                if options and isinstance(answer_idx, int) and 0 <= answer_idx < len(options):
+                    answer = options[answer_idx]
+                
+                if question and answer:
+                    qa_pairs.append({
+                        "question": question,
+                        "answer": str(answer),
+                        "source": "MedQA-USMLE"
+                    })
+            print(f"  Loaded MedQA USMLE: {len(df):,} entries")
+        except Exception as e:
+            print(f"  [SKIP] MedQA USMLE: {e}")
+        
+        # 6. Load ChatDoctor
+        try:
+            df = self.load_chatdoctor()
+            for _, row in df.iterrows():
+                # ChatDoctor format: instruction/input/output or question/answer
+                question = row.get("input", row.get("instruction", row.get("question", "")))
+                answer = row.get("output", row.get("answer", ""))
+                
+                if question and answer:
+                    qa_pairs.append({
+                        "question": question,
+                        "answer": answer,
+                        "source": "ChatDoctor"
+                    })
+            print(f"  Loaded ChatDoctor: {len(df):,} entries")
+        except Exception as e:
+            print(f"  [SKIP] ChatDoctor: {e}")
+        
+        # 7. Load Medical Meadow
+        try:
+            df = self.load_medical_meadow()
+            for _, row in df.iterrows():
+                # Medical Meadow format: instruction/input/output
+                instruction = row.get("instruction", "")
+                input_text = row.get("input", "")
+                output_text = row.get("output", "")
+                source = row.get("meadow_source", "MedicalMeadow")
+                
+                question = instruction
+                if input_text:
+                    question = f"{instruction}\n\n{input_text}" if instruction else input_text
+                
+                if question and output_text:
+                    qa_pairs.append({
+                        "question": question,
+                        "answer": output_text,
+                        "source": f"MedicalMeadow/{source}"
+                    })
+            print(f"  Loaded Medical Meadow: {len(df):,} entries")
+        except Exception as e:
+            print(f"  [SKIP] Medical Meadow: {e}")
+        
+        # 8. Load Additional QA
+        try:
+            df = self.load_additional_qa()
+            for _, row in df.iterrows():
+                question = row.get("question", row.get("input", ""))
+                answer = row.get("answer", row.get("output", ""))
+                
+                if question and answer:
+                    qa_pairs.append({
+                        "question": question,
+                        "answer": answer,
+                        "source": "LavitaMedicalQA"
+                    })
+            print(f"  Loaded Additional QA: {len(df):,} entries")
+        except Exception as e:
+            print(f"  [SKIP] Additional QA: {e}")
+        
+        print(f"\nTotal QA pairs loaded: {len(qa_pairs):,}")
         return qa_pairs
     
     def get_documents_for_knowledge_base(self) -> Generator[Dict, None, None]:
         """Yield documents for building knowledge base."""
+        print("Loading all QA pairs for knowledge base...")
         qa_pairs = self.load_all_qa_pairs()
         
         for qa in qa_pairs:
@@ -117,3 +292,30 @@ class MedicalDatasetLoader:
                 "source": qa["source"],
                 "metadata": {"type": "qa_pair"}
             }
+    
+    def get_stats(self) -> Dict:
+        """Get statistics about available datasets."""
+        stats = {}
+        
+        datasets = [
+            ("MedQuAD", self.load_medquad),
+            ("PubMedQA", self.load_pubmedqa),
+            ("MedMCQA", self.load_medmcqa),
+            ("HealthCareMagic", self.load_healthcare_magic),
+            ("MedQA-USMLE", self.load_medqa_usmle),
+            ("ChatDoctor", self.load_chatdoctor),
+            ("MedicalMeadow", self.load_medical_meadow),
+            ("AdditionalQA", self.load_additional_qa),
+        ]
+        
+        total = 0
+        for name, loader in datasets:
+            try:
+                df = loader()
+                stats[name] = len(df)
+                total += len(df)
+            except:
+                stats[name] = 0
+        
+        stats["total"] = total
+        return stats

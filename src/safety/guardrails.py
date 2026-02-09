@@ -280,3 +280,261 @@ class EmergencyDetector:
         }
         
         return responses.get(category, "🚨 Please seek immediate medical attention. Call 911 or your local emergency services.")
+
+
+class DrugInteractionChecker:
+    """
+    Check for potential drug interaction mentions.
+    
+    Identifies when text mentions drug combinations that may have
+    dangerous interactions, prompting a pharmacist consultation.
+    """
+    
+    # Common high-risk drug interactions (drug_set_1, drug_set_2, severity, message)
+    HIGH_RISK_INTERACTIONS = [
+        (
+            {"warfarin", "coumadin", "blood thinner"},
+            {"aspirin", "ibuprofen", "nsaid", "advil", "motrin", "naproxen"},
+            "severe",
+            "Blood thinners + NSAIDs can increase bleeding risk significantly"
+        ),
+        (
+            {"metformin", "glucophage"},
+            {"alcohol", "contrast dye", "iodine contrast"},
+            "moderate",
+            "Metformin + alcohol/contrast can cause lactic acidosis"
+        ),
+        (
+            {"ssri", "antidepressant", "prozac", "zoloft", "lexapro", "paxil", "celexa"},
+            {"maoi", "tramadol", "fentanyl", "meperidine"},
+            "severe",
+            "SSRIs + MAOIs/opioids can cause serotonin syndrome"
+        ),
+        (
+            {"ace inhibitor", "lisinopril", "enalapril", "ramipril"},
+            {"potassium", "spironolactone", "salt substitute"},
+            "moderate",
+            "ACE inhibitors + potassium can cause dangerous hyperkalemia"
+        ),
+        (
+            {"statin", "lipitor", "crestor", "simvastatin"},
+            {"grapefruit", "erythromycin", "clarithromycin"},
+            "moderate",
+            "Statins + grapefruit/macrolides can increase muscle damage risk"
+        ),
+        (
+            {"digoxin", "lanoxin"},
+            {"amiodarone", "verapamil", "quinidine"},
+            "severe",
+            "Digoxin + antiarrhythmics can cause dangerous heart rhythm changes"
+        ),
+        (
+            {"lithium"},
+            {"nsaid", "ibuprofen", "diuretic", "ace inhibitor"},
+            "severe",
+            "Lithium levels can become toxic with NSAIDs/diuretics"
+        ),
+        (
+            {"methotrexate"},
+            {"nsaid", "ibuprofen", "bactrim", "trimethoprim"},
+            "severe",
+            "Methotrexate toxicity increases with NSAIDs/sulfas"
+        ),
+    ]
+    
+    def check_interaction_risk(self, text: str) -> List[Dict]:
+        """
+        Check if text mentions potentially dangerous drug combinations.
+        
+        Args:
+            text: Text to analyze
+            
+        Returns:
+            List of warning dictionaries
+        """
+        text_lower = text.lower()
+        warnings = []
+        
+        for drug_set_1, drug_set_2, severity, description in self.HIGH_RISK_INTERACTIONS:
+            found_1 = [drug for drug in drug_set_1 if drug in text_lower]
+            found_2 = [drug for drug in drug_set_2 if drug in text_lower]
+            
+            if found_1 and found_2:
+                warnings.append({
+                    "type": "drug_interaction",
+                    "severity": severity,
+                    "drug_1": found_1[0] if found_1 else "unknown",
+                    "drug_2": found_2[0] if found_2 else "unknown",
+                    "description": description,
+                    "message": f"⚠️ POTENTIAL DRUG INTERACTION: {description}. Please consult a pharmacist before combining these medications."
+                })
+        
+        return warnings
+    
+    def get_interaction_warning(self, warnings: List[Dict]) -> Optional[str]:
+        """Format warnings as a single message."""
+        if not warnings:
+            return None
+        
+        # Sort by severity
+        severity_order = {"severe": 0, "moderate": 1, "mild": 2}
+        warnings.sort(key=lambda w: severity_order.get(w.get("severity", "mild"), 3))
+        
+        messages = []
+        for w in warnings:
+            emoji = "🚨" if w["severity"] == "severe" else "⚠️"
+            messages.append(f"{emoji} {w['message']}")
+        
+        return "\n\n".join(messages)
+
+
+class PediatricSafetyChecker:
+    """
+    Check for pediatric-specific safety concerns.
+    
+    Identifies when text discusses children and mentions medications
+    or substances that have different safety profiles for pediatric patients.
+    """
+    
+    # Keywords indicating pediatric context
+    PEDIATRIC_INDICATORS = [
+        "child", "children", "kid", "infant", "baby", "toddler",
+        "pediatric", "newborn", "neonate", "adolescent", "teen",
+        "year old", "years old", "month old", "months old"
+    ]
+    
+    # Substances with pediatric warnings
+    PEDIATRIC_WARNINGS = {
+        "aspirin": "Aspirin should NOT be given to children due to risk of Reye's syndrome",
+        "honey": "Honey should NOT be given to infants under 12 months due to botulism risk",
+        "codeine": "Codeine is contraindicated in children under 12 (FDA black box warning)",
+        "tramadol": "Tramadol is contraindicated in children under 12",
+        "diphenhydramine": "Use caution with diphenhydramine (Benadryl) in children under 2",
+        "cough suppressant": "Cough/cold medicines may be dangerous for children under 4",
+        "loperamide": "Loperamide (Imodium) should not be used in children under 2",
+        "bismuth": "Bismuth (Pepto-Bismol) contains salicylates - avoid in children",
+        "melatonin": "Melatonin safety not established in children - consult pediatrician",
+        "antihistamine": "Many antihistamines not recommended for children under 2",
+    }
+    
+    def __init__(self):
+        self.pediatric_pattern = re.compile(
+            r'\b(' + '|'.join(self.PEDIATRIC_INDICATORS) + r')\b',
+            re.IGNORECASE
+        )
+    
+    def check_pediatric_safety(self, text: str) -> List[Dict]:
+        """
+        Check for pediatric-sensitive content.
+        
+        Args:
+            text: Text to analyze
+            
+        Returns:
+            List of warning dictionaries
+        """
+        text_lower = text.lower()
+        warnings = []
+        
+        # Check if pediatric context is mentioned
+        if not self.pediatric_pattern.search(text):
+            return []
+        
+        # Check for substances with pediatric warnings
+        for substance, warning in self.PEDIATRIC_WARNINGS.items():
+            if substance in text_lower:
+                warnings.append({
+                    "type": "pediatric_safety",
+                    "substance": substance,
+                    "warning": warning,
+                    "message": f"👶 PEDIATRIC WARNING: {warning}. Always consult a pediatrician before giving any medication to children."
+                })
+        
+        return warnings
+    
+    def get_pediatric_warning(self, warnings: List[Dict]) -> Optional[str]:
+        """Format warnings as a single message."""
+        if not warnings:
+            return None
+        
+        messages = [w["message"] for w in warnings]
+        return "\n\n".join(messages)
+
+
+class ComprehensiveSafetyChecker:
+    """
+    Combined safety checker running all safety modules.
+    """
+    
+    def __init__(self):
+        self.guardrails = MedicalGuardrails()
+        self.content_filter = ContentFilter()
+        self.emergency_detector = EmergencyDetector()
+        self.drug_checker = DrugInteractionChecker()
+        self.pediatric_checker = PediatricSafetyChecker()
+    
+    def check_all(self, text: str, is_output: bool = False) -> Dict:
+        """
+        Run all safety checks on text.
+        
+        Args:
+            text: Text to check
+            is_output: Whether this is model output (vs user input)
+            
+        Returns:
+            Comprehensive safety report
+        """
+        results = {
+            "passed": True,
+            "level": SafetyLevel.SAFE,
+            "warnings": [],
+            "blocked": False,
+            "emergency": False
+        }
+        
+        # Content filter
+        blocked, block_reason = self.content_filter.is_blocked(text)
+        if blocked:
+            results["passed"] = False
+            results["blocked"] = True
+            results["block_reason"] = block_reason
+            results["level"] = SafetyLevel.BLOCKED
+            return results
+        
+        # Emergency detection
+        is_emergency, category = self.emergency_detector.detect(text)
+        if is_emergency:
+            results["emergency"] = True
+            results["level"] = SafetyLevel.EMERGENCY
+            results["emergency_category"] = category
+            results["emergency_message"] = self.emergency_detector.get_emergency_response(category)
+            if not is_output:
+                results["passed"] = False
+        
+        # Guardrails
+        if is_output:
+            guardrail_result = self.guardrails.check_output(text)
+        else:
+            guardrail_result = self.guardrails.check_input(text)
+        
+        if not guardrail_result.passed:
+            results["passed"] = False
+            results["level"] = guardrail_result.level
+        results["guardrail_flags"] = guardrail_result.flags
+        
+        # Drug interactions
+        drug_warnings = self.drug_checker.check_interaction_risk(text)
+        if drug_warnings:
+            results["warnings"].extend(drug_warnings)
+            if results["level"] == SafetyLevel.SAFE:
+                results["level"] = SafetyLevel.CAUTION
+        
+        # Pediatric safety
+        pediatric_warnings = self.pediatric_checker.check_pediatric_safety(text)
+        if pediatric_warnings:
+            results["warnings"].extend(pediatric_warnings)
+            if results["level"] == SafetyLevel.SAFE:
+                results["level"] = SafetyLevel.CAUTION
+        
+        return results
+

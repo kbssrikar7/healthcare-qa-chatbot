@@ -24,21 +24,27 @@ class VectorStore:
         
         # Version-agnostic chromadb client initialization
         try:
-            # Try new API (chromadb >= 0.4)
+            # Try new API (chromadb >= 1.0)
             self.client = chromadb.PersistentClient(
-                path=str(self.persist_directory),
-                settings=Settings(
-                    anonymized_telemetry=False,
-                    allow_reset=True
-                )
+                path=str(self.persist_directory)
             )
-        except AttributeError:
-            # Fall back to old API (chromadb < 0.4)
-            self.client = chromadb.Client(Settings(
-                chroma_db_impl="duckdb+parquet",
-                persist_directory=str(self.persist_directory),
-                anonymized_telemetry=False
-            ))
+        except (AttributeError, TypeError):
+            try:
+                # Try 0.4+ API with Settings
+                self.client = chromadb.PersistentClient(
+                    path=str(self.persist_directory),
+                    settings=Settings(
+                        anonymized_telemetry=False,
+                        allow_reset=True
+                    )
+                )
+            except AttributeError:
+                # Fall back to old API (chromadb < 0.4)
+                self.client = chromadb.Client(Settings(
+                    chroma_db_impl="duckdb+parquet",
+                    persist_directory=str(self.persist_directory),
+                    anonymized_telemetry=False
+                ))
         
         self.collection_name = collection_name
         self.embedding_function = embedding_function
