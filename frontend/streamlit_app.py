@@ -3,10 +3,13 @@ Streamlit frontend for Healthcare QA Chatbot.
 Professional, modern UI design without emoji clutter.
 """
 import os
+import json
 import streamlit as st
 import requests
 import time
 from typing import Optional
+from pathlib import Path
+from datetime import datetime
 
 # Configuration - Load from environment with fallback
 API_URL = os.getenv("API_URL", "http://localhost:8000")
@@ -19,10 +22,187 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS - Premium Design System
-st.markdown("""
-<style>
-    /* ========== CSS Variables & Theme ========== */
+# Initialize dark mode state
+if "dark_mode" not in st.session_state:
+    st.session_state.dark_mode = False
+
+def get_theme_css():
+    """Generate CSS variables based on current theme."""
+    if st.session_state.dark_mode:
+        return """
+    :root {
+        --primary: #818cf8;
+        --primary-dark: #6366f1;
+        --primary-light: #a5b4fc;
+        --secondary: #38bdf8;
+        --success: #34d399;
+        --warning: #fbbf24;
+        --danger: #f87171;
+        --surface: #1e1e2e;
+        --surface-elevated: #262637;
+        --text-primary: #e2e8f0;
+        --text-secondary: #94a3b8;
+        --text-muted: #64748b;
+        --border: #334155;
+        --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+        --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.4), 0 2px 4px -2px rgba(0,0,0,0.3);
+        --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.5), 0 4px 6px -4px rgba(0,0,0,0.4);
+        --radius-sm: 6px;
+        --radius-md: 10px;
+        --radius-lg: 16px;
+        --user-card-bg: linear-gradient(135deg, #1e293b 0%, #1e2738 100%);
+        --user-card-border: #334155;
+        --user-card-label: #60a5fa;
+        --disclaimer-bg: linear-gradient(135deg, #2d2305 0%, #3d3010 100%);
+        --disclaimer-border: #a16207;
+        --disclaimer-title: #fbbf24;
+        --disclaimer-text: #fde68a;
+        --disclaimer-meta: #d97706;
+        --reasoning-bg: linear-gradient(135deg, #052e16 0%, #064e3b 100%);
+        --reasoning-text: #6ee7b7;
+        --attr-bg: #1e293b;
+        --source-badge-bg: #312e81;
+        --source-badge-text: #a5b4fc;
+        --info-bg: #0c2d48;
+        --info-border: #1e5f8a;
+        --info-text: #38bdf8;
+    }
+
+    /* ===== Dark Mode: Override ALL Streamlit elements ===== */
+    .stApp, [data-testid="stAppViewContainer"] {
+        background-color: #1e1e2e !important;
+        color: #e2e8f0 !important;
+    }
+    
+    [data-testid="stMain"], [data-testid="stMainBlockContainer"],
+    .main .block-container {
+        background-color: #1e1e2e !important;
+        color: #e2e8f0 !important;
+    }
+    
+    [data-testid="stSidebar"], [data-testid="stSidebar"] > div {
+        background: linear-gradient(180deg, #262637 0%, #1e1e2e 100%) !important;
+        color: #e2e8f0 !important;
+    }
+
+    [data-testid="stHeader"] {
+        background-color: #1e1e2e !important;
+    }
+    
+    /* Text & headings */
+    .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp p,
+    .stApp span, .stApp label, .stApp div,
+    .stMarkdown, .stMarkdown p, .stMarkdown span,
+    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3, [data-testid="stSidebar"] p,
+    [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {
+        color: #e2e8f0 !important;
+    }
+    
+    /* Widgets, sliders, toggles */
+    [data-testid="stSlider"] label, [data-testid="stSlider"] div,
+    .stSlider p, .stToggle label span {
+        color: #94a3b8 !important;
+    }
+    
+    /* Expanders */
+    .streamlit-expanderHeader, [data-testid="stExpander"] summary,
+    [data-testid="stExpander"] summary span {
+        color: #e2e8f0 !important;
+        background-color: #262637 !important;
+    }
+    [data-testid="stExpander"] > div {
+        background-color: #262637 !important;
+        border-color: #334155 !important;
+    }
+    
+    /* Chat input */
+    [data-testid="stChatInput"], [data-testid="stChatInput"] textarea {
+        background-color: #262637 !important;
+        color: #e2e8f0 !important;
+        border-color: #334155 !important;
+    }
+    
+    /* Buttons */
+    .stButton > button {
+        background: #262637 !important;
+        border: 1px solid #334155 !important;
+        color: #e2e8f0 !important;
+    }
+    .stButton > button:hover {
+        border-color: #818cf8 !important;
+        color: #818cf8 !important;
+    }
+    
+    /* Status widget */
+    [data-testid="stStatusWidget"], [data-testid="stStatus"] {
+        background-color: #262637 !important;
+        border-color: #334155 !important;
+        color: #e2e8f0 !important;
+    }
+    
+    /* Horizontal rule */
+    .stApp hr {
+        border-color: #334155 !important;
+    }
+    
+    /* ===== Bottom chat input bar ===== */
+    [data-testid="stBottom"],
+    [data-testid="stBottom"] > div,
+    [data-testid="stBottomBlockContainer"],
+    .stChatInput, .stChatInputContainer,
+    [data-testid="stChatInput"] > div,
+    [data-testid="stChatInputContainer"] {
+        background-color: #1e1e2e !important;
+        border-color: #334155 !important;
+    }
+    
+    /* Chat input textarea specifically */
+    [data-testid="stChatInput"] textarea,
+    [data-testid="stChatInput"] input,
+    .stChatInput textarea {
+        background-color: #262637 !important;
+        color: #e2e8f0 !important;
+        border-color: #334155 !important;
+        caret-color: #818cf8 !important;
+    }
+    
+    /* Chat input placeholder */
+    [data-testid="stChatInput"] textarea::placeholder,
+    .stChatInput textarea::placeholder {
+        color: #64748b !important;
+    }
+    
+    /* Chat input submit button */
+    [data-testid="stChatInput"] button,
+    .stChatInput button {
+        background-color: #262637 !important;
+        color: #818cf8 !important;
+        border-color: #334155 !important;
+    }
+    
+    /* Bottom content container (fixed position area) */
+    .stBottom, div[data-testid="stBottom"],
+    div[data-testid="stBottom"] > div:first-child {
+        background-color: #1e1e2e !important;
+        border-top: 1px solid #334155 !important;
+    }
+    
+    /* Any remaining white containers */
+    .element-container, .stMarkdown,
+    [data-testid="stVerticalBlock"],
+    [data-testid="stHorizontalBlock"] {
+        background-color: transparent !important;
+    }
+    
+    /* Tooltip and popover */
+    [data-testid="stTooltipContent"] {
+        background-color: #262637 !important;
+        color: #e2e8f0 !important;
+        border-color: #334155 !important;
+    }"""
+    else:
+        return """
     :root {
         --primary: #4f46e5;
         --primary-dark: #3730a3;
@@ -43,7 +223,26 @@ st.markdown("""
         --radius-sm: 6px;
         --radius-md: 10px;
         --radius-lg: 16px;
-    }
+        --user-card-bg: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+        --user-card-border: #bfdbfe;
+        --user-card-label: #2563eb;
+        --disclaimer-bg: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        --disclaimer-border: var(--warning);
+        --disclaimer-title: #b45309;
+        --disclaimer-text: #78350f;
+        --disclaimer-meta: #a16207;
+        --reasoning-bg: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        --reasoning-text: #166534;
+        --attr-bg: #f1f5f9;
+        --source-badge-bg: #eef2ff;
+        --source-badge-text: var(--primary);
+        --info-bg: #f0f9ff;
+        --info-border: #bae6fd;
+        --info-text: #0369a1;
+    }"""  
+
+# Custom CSS - Premium Design System
+st.markdown("<style>\n    /* ========== CSS Variables & Theme ========== */\n    " + get_theme_css() + """
 
     /* ========== Typography ========== */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
@@ -105,8 +304,8 @@ st.markdown("""
     }
     
     .user-card {
-        background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
-        border: 1px solid #bfdbfe;
+        background: var(--user-card-bg);
+        border: 1px solid var(--user-card-border);
         margin-left: 48px;
     }
     
@@ -181,7 +380,7 @@ st.markdown("""
     }
     
     .user-card .card-label {
-        color: #2563eb;
+        color: var(--user-card-label);
     }
     
     .bot-card .card-label {
@@ -287,8 +486,8 @@ st.markdown("""
         display: inline-block;
         font-size: 0.7rem;
         font-weight: 700;
-        color: var(--primary);
-        background: #eef2ff;
+        color: var(--source-badge-text);
+        background: var(--source-badge-bg);
         padding: 4px 10px;
         border-radius: 12px;
         text-transform: uppercase;
@@ -315,8 +514,8 @@ st.markdown("""
 
     /* ========== Disclaimer Box ========== */
     .disclaimer-box {
-        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-        border-left: 4px solid var(--warning);
+        background: var(--disclaimer-bg);
+        border-left: 4px solid var(--disclaimer-border);
         border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
         padding: 1rem 1.25rem;
         margin-top: 1.5rem;
@@ -325,7 +524,7 @@ st.markdown("""
     .disclaimer-title {
         font-size: 0.75rem;
         font-weight: 700;
-        color: #b45309;
+        color: var(--disclaimer-title);
         text-transform: uppercase;
         letter-spacing: 0.05em;
         margin-bottom: 0.5rem;
@@ -333,19 +532,19 @@ st.markdown("""
     
     .disclaimer-text {
         font-size: 0.85rem;
-        color: #78350f;
+        color: var(--disclaimer-text);
         line-height: 1.6;
     }
     
     .disclaimer-meta {
         font-size: 0.75rem;
-        color: #a16207;
+        color: var(--disclaimer-meta);
         margin-top: 0.5rem;
     }
 
     /* ========== Attribution Cards ========== */
     .attribution-card {
-        background: #f1f5f9;
+        background: var(--attr-bg);
         border-left: 3px solid var(--primary);
         padding: 0.875rem 1rem;
         margin-bottom: 0.5rem;
@@ -366,11 +565,11 @@ st.markdown("""
 
     /* ========== Reasoning Box ========== */
     .reasoning-box {
-        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        background: var(--reasoning-bg);
         border-left: 4px solid var(--success);
         border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
         padding: 1rem 1.25rem;
-        color: #166534;
+        color: var(--reasoning-text);
         line-height: 1.7;
     }
 
@@ -431,7 +630,7 @@ st.markdown("""
 
     /* ========== Sidebar Styles ========== */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+        background: linear-gradient(180deg, var(--surface-elevated) 0%, var(--surface) 100%);
     }
     
     [data-testid="stSidebar"] .stMarkdown h1,
@@ -470,11 +669,11 @@ st.markdown("""
 
     /* ========== Info Box ========== */
     .info-box {
-        background: #f0f9ff;
-        border: 1px solid #bae6fd;
+        background: var(--info-bg);
+        border: 1px solid var(--info-border);
         border-radius: var(--radius-md);
         padding: 1rem;
-        color: #0369a1;
+        color: var(--info-text);
         font-size: 0.9rem;
     }
 
@@ -517,6 +716,15 @@ def ask_question(question: str, num_sources: int = 5) -> Optional[dict]:
     except Exception as e:
         st.error(f"Error: {str(e)}")
         return None
+
+
+def clear_backend_cache():
+    """Clear the backend response cache."""
+    try:
+        response = requests.post(f"{API_URL}/clear-cache", timeout=10)
+        return response.status_code == 200
+    except Exception:
+        return False
 
 
 def display_confidence(confidence: dict):
@@ -655,6 +863,48 @@ def render_answer(result):
     """, unsafe_allow_html=True)
 
 
+# ========== Question History Persistence ==========
+HISTORY_FILE = Path("data/question_history.json")
+
+def load_question_history():
+    """Load question history from disk."""
+    if HISTORY_FILE.exists():
+        try:
+            with open(HISTORY_FILE, 'r') as f:
+                return json.load(f)
+        except Exception:
+            return []
+    return []
+
+def save_question_history(history):
+    """Save question history to disk."""
+    HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        with open(HISTORY_FILE, 'w') as f:
+            json.dump(history, f, indent=2)
+    except Exception:
+        pass
+
+def add_to_history(question):
+    """Add a question to persistent history (no duplicates)."""
+    history = load_question_history()
+    # Remove duplicate if exists
+    history = [h for h in history if h['question'] != question]
+    # Add to front
+    history.insert(0, {
+        'question': question,
+        'timestamp': datetime.now().strftime('%b %d, %I:%M %p')
+    })
+    # Keep last 20 questions
+    history = history[:20]
+    save_question_history(history)
+    return history
+
+def clear_question_history():
+    """Clear all question history."""
+    save_question_history([])
+
+
 def processing_chain(question, num_sources):
     """Process a question and add to history."""
     st.session_state.messages.append({"role": "user", "content": question})
@@ -679,6 +929,8 @@ def processing_chain(question, num_sources):
             status.update(label="Response ready", state="complete", expanded=False)
             
             st.session_state.messages.append({"role": "assistant", "content": result})
+            # Save question to persistent history
+            add_to_history(question)
             st.rerun()
         else:
             status.update(label="Error generating response", state="error")
@@ -698,6 +950,11 @@ def main():
         
         st.markdown("---")
         
+        # New Chat button
+        if st.button("🔄 New Chat", use_container_width=True, type="primary"):
+            st.session_state.messages = []
+            st.rerun()
+        
         st.markdown('<div class="sidebar-section">Analysis Settings</div>', unsafe_allow_html=True)
         num_sources = st.slider(
             "Number of References", 
@@ -706,6 +963,43 @@ def main():
             value=3, 
             help="More sources = slower but more thorough analysis"
         )
+        
+        st.markdown('---')
+        st.markdown('<div class="sidebar-section">Appearance</div>', unsafe_allow_html=True)
+        st.toggle(
+            "Dark Mode",
+            key="dark_mode"
+        )
+        
+        st.markdown('---')
+        st.markdown('<div class="sidebar-section">Question History</div>', unsafe_allow_html=True)
+        
+        history = load_question_history()
+        if history:
+            for i, item in enumerate(history[:10]):
+                q_display = item['question'][:50] + ('...' if len(item['question']) > 50 else '')
+                if st.button(
+                    f"📋 {q_display}",
+                    key=f"hist_{i}",
+                    use_container_width=True,
+                    help=f"{item['question']}\n\n{item['timestamp']}"
+                ):
+                    st.session_state.messages = []
+                    processing_chain(item['question'], num_sources)
+            
+            if st.button("🗑️ Clear History", use_container_width=True):
+                clear_question_history()
+                st.rerun()
+        else:
+            st.caption("No questions asked yet.")
+        
+        st.markdown('---')
+        st.markdown('<div class="sidebar-section">Cache</div>', unsafe_allow_html=True)
+        if st.button("🗑️ Clear Response Cache", use_container_width=True):
+            if clear_backend_cache():
+                st.success("Cache cleared!")
+            else:
+                st.warning("Could not clear cache (API may not support this endpoint).")
         
     # Main Layout - Header
     st.markdown("""

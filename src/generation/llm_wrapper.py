@@ -1,6 +1,7 @@
 """
 LLM wrapper for medical question answering.
 """
+import re
 import torch
 from typing import List, Optional, Dict, Any
 from dataclasses import dataclass
@@ -45,6 +46,54 @@ class MedicalLLM:
         "tinyllama": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
         "mistral": "mistralai/Mistral-7B-Instruct-v0.2",
     }
+    
+    # Patterns that indicate the model has leaked training data
+    # and is generating beyond the intended answer
+    STOP_PATTERNS = [
+        # New Q&A pair starting (ChatDoctor / HealthCareMagic training data leak)
+        r'\nQuestion:',
+        r'\nQ:',
+        r'\nAnswer:',
+        # Sign-offs and letter-style endings
+        r'Best regards',
+        r'Kind regards',
+        r'Sincerely',
+        r'Yours truly',
+        r'Warm regards',
+        r'With best wishes',
+        r'\[Your Name\]',
+        r'\[Doctor\'?s? Name\]',
+        # ChatDoctor / HealthCareMagic specific leaks
+        r'Chat Doctor',
+        r'ChatDoctor',
+        r'HealthCareMagic',
+        r'Thank you for choosing',
+        r'Thank you for using',
+        r'Thank you for reaching out',
+        r'Thank you for contacting',
+        r'If you have any further questions',
+        r'please do not hesitate',
+        r'don\'t hesitate to ask',
+        r'I hope this (?:helps|information|answers)',
+        r'Wishing you (?:good|the best)',
+        r'Take care',
+        # Greetings that indicate a new response is starting
+        r'\nHi,?\s',
+        r'\nHello,?\s',
+        r'\nDear ',
+        r'\nHi doctor',
+        r'\nHello doctor',
+        r'\nHi,\s*\n',
+        # Source reference markers leaking from context
+        r'\[\d+\]\s*Source:',
+        # System-level markers
+        r'\n---',
+        r'<\|',
+        r'\[/INST\]',
+        r'</s>',
+        r'<\|im_end\|>',
+        r'<\|endoftext\|>',
+    ]
     
     def __init__(
         self,
@@ -191,6 +240,9 @@ class MedicalLLM:
                 probs.append(prob.max().item())
             probabilities = probs
         
+        # Post-process: truncate leaked training data
+        response = self._clean_response(response)
+        
         return GenerationResult(
             response=response.strip(),
             input_tokens=input_length,
@@ -215,6 +267,52 @@ Question: {question}
 Answer:"""
         
         return self.generate(prompt, max_new_tokens=max_new_tokens)
+    
+    def _clean_response(self, response: str) -> str:
+        """
+        Clean the LLM response by removing leaked training data.
+        
+        The fine-tuned model (trained on ChatDoctor/HealthCareMagic data)
+        sometimes generates beyond the answer boundary, producing sign-offs,
+        new Q&A pairs, or other training artifacts. This method detects and
+        truncates the response at the earliest such pattern.
+        """
+        if not response:
+            return response
+        
+        # Find the earliest occurrence of any stop pattern
+        earliest_pos = len(response)
+        for pattern in self.STOP_PATTERNS:
+            match = re.search(pattern, response, re.IGNORECASE)
+            if match and match.start() < earliest_pos:
+                earliest_pos = match.start()
+        
+        # Truncate at the earliest stop pattern
+        if earliest_pos < len(response):
+            response = response[:earliest_pos]
+        
+        # Remove inline source reference markers like "[1]", "[2]", "[3]" etc
+        # that leak from the RAG context into the answer
+        response = re.sub(r'\[\d+\]', '', response)
+        
+        # Remove trailing incomplete sentences (if response was truncated mid-sentence)
+        # Only do this if the response doesn't end with proper punctuation
+        response = response.rstrip()
+        if response and response[-1] not in '.!?:)"':
+            # Find the last complete sentence
+            last_period = max(
+                response.rfind('.'),
+                response.rfind('!'),
+                response.rfind('?')
+            )
+            if last_period > len(response) * 0.3:  # Only trim if we keep at least 30%
+                response = response[:last_period + 1]
+        
+        # Clean up extra whitespace left from removals
+        response = re.sub(r'  +', ' ', response)
+        response = re.sub(r'\n\n\n+', '\n\n', response)
+        
+        return response.strip()
     
     def cleanup(self):
         """Free GPU memory."""

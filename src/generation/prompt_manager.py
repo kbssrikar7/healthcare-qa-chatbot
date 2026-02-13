@@ -14,50 +14,56 @@ class PromptTemplate:
 class MedicalPromptManager:
     """Manage prompts for medical QA."""
     
-    # Default medical QA prompt
-    MEDICAL_QA_PROMPT = """You are a knowledgeable medical assistant. Your role is to provide accurate, helpful health information based on the context provided. Always be clear about limitations and recommend consulting healthcare professionals for medical decisions.
+    MEDICAL_QA_PROMPT = "\n".join([
+        "You are a medical information assistant. Your job is to extract",
+        "medical facts from the reference material and present them clearly.",
+        "",
+        "STRICT RULES you MUST follow:",
+        "- DO NOT copy names, greetings, salutations, or letter formats from references",
+        "- DO NOT address the user as Dear anyone or sign off as a doctor",
+        "- DO NOT roleplay as a doctor giving a personal consultation",
+        "- DO NOT mention medications or treatments NOT relevant to the question",
+        "- ONLY extract medical facts that DIRECTLY answer the question asked",
+        "- Present information as clear bullet points or short paragraphs",
+        "- Use simple, patient-friendly language",
+        "- If the references lack relevant information, say so honestly",
+        "",
+        "Reference Material:",
+        "{context}",
+        "",
+        "Question: {question}",
+        "",
+        "Factual Answer:",
+    ])
 
-### Context:
-{context}
+    EXPLAINABLE_QA_PROMPT = "\n".join([
+        "You are a medical information assistant providing transparent, evidence-based answers.",
+        "",
+        "STRICT RULES:",
+        "- DO NOT copy names, greetings, or conversational patterns from the references",
+        "- DO NOT roleplay as a doctor or sign letters",
+        "- Extract ONLY relevant medical facts from the reference material",
+        "- Cite which reference supports each point",
+        "- Note any limitations or uncertainties",
+        "",
+        "Reference Material:",
+        "{context}",
+        "",
+        "Question: {question}",
+        "",
+        "Evidence-Based Answer:",
+    ])
 
-### Question:
-{question}
-
-### Instructions:
-1. Answer based ONLY on the provided context
-2. If the context doesn't contain enough information, say so
-3. Use clear, patient-friendly language
-4. Include relevant medical terms with explanations
-5. NEVER provide diagnoses or prescriptions
-
-### Answer:"""
-
-    # Prompt with explanation request
-    EXPLAINABLE_QA_PROMPT = """You are a knowledgeable medical assistant focused on providing transparent, explainable answers.
-
-### Context:
-{context}
-
-### Question:
-{question}
-
-### Instructions:
-1. Answer the question based on the provided context
-2. Cite which parts of the context support your answer
-3. Indicate your confidence level (High/Medium/Low)
-4. Note any limitations or uncertainties
-5. Use clear, patient-friendly language
-
-### Answer:"""
-
-    # Simple prompt for fast responses
-    SIMPLE_QA_PROMPT = """Context: {context}
-
-Question: {question}
-
-Provide a helpful, accurate answer based on the context above. Be concise but thorough.
-
-Answer:"""
+    SIMPLE_QA_PROMPT = "\n".join([
+        "Extract medical facts from the references to answer the question.",
+        "Do NOT copy names or greetings from references. Be concise and factual.",
+        "",
+        "References: {context}",
+        "",
+        "Question: {question}",
+        "",
+        "Answer:",
+    ])
 
     def __init__(self, default_prompt: str = "medical_qa"):
         self.templates = {
@@ -125,9 +131,14 @@ Answer:"""
     
     def get_medical_disclaimer(self) -> str:
         """Get the standard medical disclaimer."""
-        return """
-⚠️ MEDICAL DISCLAIMER: This information is for educational purposes only and is NOT a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition. Never disregard professional medical advice or delay in seeking it because of something you have read here.
-"""
+        return (
+            "MEDICAL DISCLAIMER: This information is for educational purposes only "
+            "and is NOT a substitute for professional medical advice, diagnosis, or "
+            "treatment. Always seek the advice of your physician or other qualified "
+            "health provider with any questions you may have regarding a medical "
+            "condition. Never disregard professional medical advice or delay in "
+            "seeking it because of something you have read here."
+        )
     
     def add_template(self, name: str, template: str, description: str = ""):
         """Add a custom prompt template."""

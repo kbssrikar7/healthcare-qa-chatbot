@@ -324,6 +324,26 @@ async def ask_simple(question: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/clear-cache")
+async def clear_cache():
+    """Clear cached Q&A responses so fresh answers are generated."""
+    cleared = False
+    # Clear pipeline cache if available
+    if pipeline and hasattr(pipeline, 'cache_manager') and pipeline.cache_manager:
+        pipeline.cache_manager.invalidate_cache()
+        cleared = True
+    # Also clear cache files directly as fallback
+    import glob
+    cache_dir = Path("data/cache")
+    if cache_dir.exists():
+        for f in cache_dir.glob("qa_*.json"):
+            try:
+                f.unlink()
+                cleared = True
+            except Exception:
+                pass
+    return {"status": "ok", "cleared": cleared}
+
 if __name__ == "__main__":
     # Pre-load pipeline
     get_pipeline()

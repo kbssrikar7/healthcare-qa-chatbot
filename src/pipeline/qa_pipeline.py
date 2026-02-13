@@ -5,6 +5,7 @@ Enhanced with grounding gate (answerability check) based on RAG skill patterns.
 Includes response caching for performance optimization.
 """
 import sys
+import re
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
@@ -180,6 +181,9 @@ class HealthcareQAPipeline:
         
         answer = generation_result.response
         
+        # 4a. Clean answer - remove any training data artifacts
+        answer = self._clean_answer(answer)
+        
         # 4. Calculate confidence
         if self.confidence_scorer and include_explanation:
             retrieval_scores = [doc.score for doc in documents]
@@ -233,7 +237,7 @@ class HealthcareQAPipeline:
         sources = [
             {
                 "source": doc.source,
-                "content": doc.content[:200] + "..." if len(doc.content) > 200 else doc.content,
+                "content": doc.content,
                 "score": doc.score,
                 "url": doc.metadata.get("url", "")
             }
@@ -300,6 +304,63 @@ class HealthcareQAPipeline:
             return False
         
         return True
+    
+    def _clean_answer(self, answer: str) -> str:
+        """
+        Pipeline-level answer cleaning to strip training data artifacts.
+        
+        This is a safety net in addition to MedicalLLM._clean_response().
+        Catches patterns that may appear in cached or externally-generated responses.
+        """
+        if not answer:
+            return answer
+        
+        # Patterns to truncate at (everything after the first match is removed)
+        truncate_patterns = [
+            r'Best regards',
+            r'Kind regards',
+            r'Sincerely',
+            r'\[Your Name\]',
+            r'Chat Doctor',
+            r'ChatDoctor',
+            r'HealthCareMagic',
+            r'Thank you for choosing',
+            r'Thank you for using',
+            r'If you have any further questions',
+            r'please do not hesitate',
+            r"don't hesitate to ask",
+            r'I hope this helps',
+            r'I hope this information',
+            r'\nQuestion:',
+            r'\nQ:',
+            r'\nAnswer:',
+            r'\[\d+\]\s*Source:',
+        ]
+        
+        earliest_pos = len(answer)
+        for pattern in truncate_patterns:
+            match = re.search(pattern, answer, re.IGNORECASE)
+            if match and match.start() < earliest_pos:
+                earliest_pos = match.start()
+        
+        if earliest_pos < len(answer):
+            answer = answer[:earliest_pos]
+        
+        # Remove inline source refs like [1], [2], [3]
+        answer = re.sub(r'\[\d+\]', '', answer)
+        
+        # Clean trailing incomplete sentence
+        answer = answer.rstrip()
+        if answer and answer[-1] not in '.!?:)"':
+            last_period = max(answer.rfind('.'), answer.rfind('!'), answer.rfind('?'))
+            if last_period > len(answer) * 0.3:
+                answer = answer[:last_period + 1]
+        
+        # Clean extra whitespace
+        answer = re.sub(r'  +', ' ', answer)
+        answer = re.sub(r'\n\n\n+', '\n\n', answer)
+        
+        return answer.strip()
     
     def batch_answer(
         self,
