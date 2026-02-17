@@ -175,7 +175,7 @@ class HealthcareQAPipeline:
         # 4. Generate answer
         generation_result = self.llm.generate(
             prompt,
-            max_new_tokens=512,
+            max_new_tokens=256,
             return_probabilities=include_explanation
         )
         
@@ -315,6 +315,15 @@ class HealthcareQAPipeline:
         if not answer:
             return answer
         
+        # Strip leading answer prefixes the model may generate
+        answer = answer.strip()
+        for prefix in ['Answer:', 'Factual Answer:', 'Evidence-Based Answer:',
+                       'Based on the reference text above, the answer is:',
+                       'Based on the reference text above, the evidence-based answer is:',
+                       'Based on the reference text,']:
+            if answer.startswith(prefix):
+                answer = answer[len(prefix):].strip()
+        
         # Patterns to truncate at (everything after the first match is removed)
         truncate_patterns = [
             r'Best regards',
@@ -337,10 +346,13 @@ class HealthcareQAPipeline:
             r'\[\d+\]\s*Source:',
         ]
         
+        # Only match patterns AFTER first 50 chars to avoid truncating
+        # legitimate content at the start of the answer
+        min_match_pos = min(50, len(answer))
         earliest_pos = len(answer)
         for pattern in truncate_patterns:
             match = re.search(pattern, answer, re.IGNORECASE)
-            if match and match.start() < earliest_pos:
+            if match and match.start() >= min_match_pos and match.start() < earliest_pos:
                 earliest_pos = match.start()
         
         if earliest_pos < len(answer):

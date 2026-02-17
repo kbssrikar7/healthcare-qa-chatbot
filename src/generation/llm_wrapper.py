@@ -195,9 +195,9 @@ class MedicalLLM:
     def generate(
         self,
         prompt: str,
-        max_new_tokens: int = 512,
-        temperature: float = 0.7,
-        top_p: float = 0.9,
+        max_new_tokens: int = 256,
+        temperature: float = 0.3,
+        top_p: float = 0.85,
         do_sample: bool = True,
         return_probabilities: bool = False
     ) -> GenerationResult:
@@ -254,18 +254,27 @@ class MedicalLLM:
         self,
         question: str,
         context: str,
-        max_new_tokens: int = 512
+        max_new_tokens: int = 256
     ) -> GenerationResult:
-        """Generate response with context (for RAG)."""
-        prompt = f"""You are a helpful medical assistant. Use the following context to answer the question. If you're unsure, say so.
+        """Generate response with context (for RAG) using TinyLlama chat format."""
+        # TinyLlama chat template tokens
+        SYS = "<|system|>"
+        USR = "<|user|>"
+        AST = "<|assistant|>"
+        END = "</s>"
 
-Context:
-{context}
+        prompt = (
+            f"{SYS}\n"
+            "Answer the question using ONLY the reference text. "
+            "Do NOT add your own knowledge.\n"
+            f"{END}\n"
+            f"{USR}\n"
+            f"REFERENCE TEXT: {context}\n\n"
+            f"QUESTION: {question}\n"
+            f"{END}\n"
+            f"{AST}\n"
+        )
 
-Question: {question}
-
-Answer:"""
-        
         return self.generate(prompt, max_new_tokens=max_new_tokens)
     
     def _clean_response(self, response: str) -> str:
@@ -280,11 +289,24 @@ Answer:"""
         if not response:
             return response
         
+        # Strip leading whitespace and common answer prefixes that the model
+        # may generate (these are legitimate starts, not leaks)
+        response = response.strip()
+        for prefix in ['Answer:', 'Factual Answer:', 'Evidence-Based Answer:',
+                       'Based on the reference text above, the answer is:',
+                       'Based on the reference text above, the evidence-based answer is:',
+                       'Based on the reference text,']:
+            if response.startswith(prefix):
+                response = response[len(prefix):].strip()
+        
         # Find the earliest occurrence of any stop pattern
+        # Only consider matches AFTER the first 50 chars to avoid
+        # truncating legitimate answer content at the start
+        min_match_pos = min(50, len(response))
         earliest_pos = len(response)
         for pattern in self.STOP_PATTERNS:
             match = re.search(pattern, response, re.IGNORECASE)
-            if match and match.start() < earliest_pos:
+            if match and match.start() >= min_match_pos and match.start() < earliest_pos:
                 earliest_pos = match.start()
         
         # Truncate at the earliest stop pattern

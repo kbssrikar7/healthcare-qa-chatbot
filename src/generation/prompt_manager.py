@@ -1,5 +1,7 @@
 """
 Prompt management for medical question answering.
+
+Uses TinyLlama chat template format for proper instruction following.
 """
 from typing import List, Dict, Optional
 from dataclasses import dataclass
@@ -14,73 +16,73 @@ class PromptTemplate:
 class MedicalPromptManager:
     """Manage prompts for medical QA."""
     
-    MEDICAL_QA_PROMPT = "\n".join([
-        "You are a medical information assistant. Your job is to extract",
-        "medical facts from the reference material and present them clearly.",
-        "",
-        "STRICT RULES you MUST follow:",
-        "- DO NOT copy names, greetings, salutations, or letter formats from references",
-        "- DO NOT address the user as Dear anyone or sign off as a doctor",
-        "- DO NOT roleplay as a doctor giving a personal consultation",
-        "- DO NOT mention medications or treatments NOT relevant to the question",
-        "- ONLY extract medical facts that DIRECTLY answer the question asked",
-        "- Present information as clear bullet points or short paragraphs",
-        "- Use simple, patient-friendly language",
-        "- If the references lack relevant information, say so honestly",
-        "",
-        "Reference Material:",
-        "{context}",
-        "",
-        "Question: {question}",
-        "",
-        "Factual Answer:",
-    ])
+    MEDICAL_QA_PROMPT = (
+        "<|system|>\n"
+        "You are a medical fact extractor. Read the REFERENCE TEXT and answer the question.\n"
+        "RULES:\n"
+        "1. ONLY use facts from the REFERENCE TEXT below.\n"
+        "2. Do NOT add any information from your own knowledge.\n"
+        "3. Do NOT guess or make up information.\n"
+        "4. Do NOT copy greetings, names, or sign-offs from the text.\n"
+        "5. If the reference text does not answer the question, say: "
+        "I do not have enough information in my references to answer this.\n"
+        "6. Keep your answer short and factual.\n"
+        "</s>\n"
+        "<|user|>\n"
+        "REFERENCE TEXT:\n"
+        "{context}\n\n"
+        "QUESTION: {question}\n"
+        "</s>\n"
+        "<|assistant|>\n"
+    )
 
-    EXPLAINABLE_QA_PROMPT = "\n".join([
-        "You are a medical information assistant providing transparent, evidence-based answers.",
-        "",
-        "STRICT RULES:",
-        "- DO NOT copy names, greetings, or conversational patterns from the references",
-        "- DO NOT roleplay as a doctor or sign letters",
-        "- Extract ONLY relevant medical facts from the reference material",
-        "- Cite which reference supports each point",
-        "- Note any limitations or uncertainties",
-        "",
-        "Reference Material:",
-        "{context}",
-        "",
-        "Question: {question}",
-        "",
-        "Evidence-Based Answer:",
-    ])
+    EXPLAINABLE_QA_PROMPT = (
+        "<|system|>\n"
+        "You are a medical fact extractor. Read the REFERENCE TEXT and answer the question.\n"
+        "Cite which part of the reference text supports your answer.\n"
+        "RULES:\n"
+        "1. ONLY use facts from the REFERENCE TEXT below.\n"
+        "2. Do NOT add any information from your own knowledge.\n"
+        "3. Do NOT guess or make up information.\n"
+        "4. Do NOT copy greetings, names, or sign-offs from the text.\n"
+        "5. If the reference text does not answer the question, say: "
+        "I do not have enough information in my references to answer this.\n"
+        "</s>\n"
+        "<|user|>\n"
+        "REFERENCE TEXT:\n"
+        "{context}\n\n"
+        "QUESTION: {question}\n"
+        "</s>\n"
+        "<|assistant|>\n"
+    )
 
-    SIMPLE_QA_PROMPT = "\n".join([
-        "Extract medical facts from the references to answer the question.",
-        "Do NOT copy names or greetings from references. Be concise and factual.",
-        "",
-        "References: {context}",
-        "",
-        "Question: {question}",
-        "",
-        "Answer:",
-    ])
+    SIMPLE_QA_PROMPT = (
+        "<|system|>\n"
+        "Answer the question using ONLY the reference text. Do NOT add your own knowledge.\n"
+        "</s>\n"
+        "<|user|>\n"
+        "REFERENCE TEXT: {context}\n\n"
+        "QUESTION: {question}\n"
+        "</s>\n"
+        "<|assistant|>\n"
+    )
 
     def __init__(self, default_prompt: str = "medical_qa"):
         self.templates = {
             "medical_qa": PromptTemplate(
                 template=self.MEDICAL_QA_PROMPT,
                 name="Medical QA",
-                description="Standard medical question answering prompt"
+                description="Strict context-grounded medical QA prompt"
             ),
             "explainable": PromptTemplate(
                 template=self.EXPLAINABLE_QA_PROMPT,
                 name="Explainable QA",
-                description="Prompt that requests confidence and citations"
+                description="Context-grounded prompt with citation requests"
             ),
             "simple": PromptTemplate(
                 template=self.SIMPLE_QA_PROMPT,
                 name="Simple QA",
-                description="Minimal prompt for fast responses"
+                description="Minimal strict-grounding prompt for fast responses"
             )
         }
         self.default_prompt = default_prompt

@@ -728,18 +728,24 @@ def clear_backend_cache():
 
 
 def display_confidence(confidence: dict):
-    """Display animated confidence meter."""
+    """Display animated confidence meter with badge."""
     level = confidence.get("level", "medium")
     score = confidence.get("score", 0)
     explanation = confidence.get("explanation", "")
     
     width_percent = int(score * 100)
     
+    # Color-coded badge based on confidence level (from improving-streamlit-design skill)
+    badge_colors = {"high": "#34d399", "medium": "#fbbf24", "low": "#f87171"}
+    badge_labels = {"high": "High confidence", "medium": "Medium confidence", "low": "Low confidence"}
+    badge_color = badge_colors.get(level, "#fbbf24")
+    badge_label = badge_labels.get(level, "Medium confidence")
+    
     st.markdown(f"""
     <div class="confidence-container">
         <div class="confidence-header">
-            <span class="confidence-label">AI Confidence Score</span>
-            <span class="confidence-value {level}">{width_percent}%</span>
+            <span class="confidence-label">AI confidence score</span>
+            <span class="confidence-badge" style="background: {badge_color}; color: #1e1e2e; padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">{badge_label} &middot; {width_percent}%</span>
         </div>
         <div class="confidence-track">
             <div class="confidence-fill {level}" style="width: {width_percent}%"></div>
@@ -950,14 +956,14 @@ def main():
         
         st.markdown("---")
         
-        # New Chat button
-        if st.button("🔄 New Chat", use_container_width=True, type="primary"):
+        # New chat button (clean labels, no emojis — improving-streamlit-design skill)
+        if st.button("New chat", use_container_width=True, type="primary"):
             st.session_state.messages = []
             st.rerun()
         
-        st.markdown('<div class="sidebar-section">Analysis Settings</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sidebar-section">Analysis settings</div>', unsafe_allow_html=True)
         num_sources = st.slider(
-            "Number of References", 
+            "Number of references", 
             min_value=2, 
             max_value=10, 
             value=3, 
@@ -967,19 +973,19 @@ def main():
         st.markdown('---')
         st.markdown('<div class="sidebar-section">Appearance</div>', unsafe_allow_html=True)
         st.toggle(
-            "Dark Mode",
+            "Dark mode",
             key="dark_mode"
         )
         
         st.markdown('---')
-        st.markdown('<div class="sidebar-section">Question History</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sidebar-section">Question history</div>', unsafe_allow_html=True)
         
         history = load_question_history()
         if history:
             for i, item in enumerate(history[:10]):
                 q_display = item['question'][:50] + ('...' if len(item['question']) > 50 else '')
                 if st.button(
-                    f"📋 {q_display}",
+                    q_display,
                     key=f"hist_{i}",
                     use_container_width=True,
                     help=f"{item['question']}\n\n{item['timestamp']}"
@@ -987,7 +993,7 @@ def main():
                     st.session_state.messages = []
                     processing_chain(item['question'], num_sources)
             
-            if st.button("🗑️ Clear History", use_container_width=True):
+            if st.button("Clear history", use_container_width=True):
                 clear_question_history()
                 st.rerun()
         else:
@@ -995,7 +1001,7 @@ def main():
         
         st.markdown('---')
         st.markdown('<div class="sidebar-section">Cache</div>', unsafe_allow_html=True)
-        if st.button("🗑️ Clear Response Cache", use_container_width=True):
+        if st.button("Clear response cache", use_container_width=True):
             if clear_backend_cache():
                 st.success("Cache cleared!")
             else:
@@ -1034,19 +1040,19 @@ def main():
     if question := st.chat_input("Ask a medical question..."):
         processing_chain(question, num_sources)
 
-    # Example Questions
+    # Suggestion chips (from building-streamlit-chat-ui skill)
     if not st.session_state.messages:
-        st.markdown("### Try asking:")
+        SUGGESTIONS = {
+            "Symptoms of Type 2 Diabetes": "Symptoms of Type 2 Diabetes",
+            "Treatment for Hypertension": "Treatment for Hypertension",
+            "Side effects of Dolo 650": "What are the side effects of Dolo 650",
+            "Causes of acute migraine": "Causes of acute migraine",
+        }
+        st.caption("Try one of these questions to get started:")
         cols = st.columns(4)
-        examples = [
-            "Symptoms of Type 2 Diabetes", 
-            "Treatment for Hypertension",
-            "Side effects of lisinopril",
-            "Causes of acute migraine"
-        ]
-        for i, ex in enumerate(examples):
-            if cols[i].button(ex, type="secondary", use_container_width=True):
-                processing_chain(ex, num_sources)
+        for i, (label, question) in enumerate(SUGGESTIONS.items()):
+            if cols[i].button(label, type="secondary", use_container_width=True):
+                processing_chain(question, num_sources)
 
 
 if __name__ == "__main__":
