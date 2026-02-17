@@ -1,0 +1,322 @@
+{
+    "version": "1.0",
+    "description": "Golden evaluation test set for Healthcare QA RAG system",
+    "created": "2026-01-28",
+    "source": "Based on repo-rag and rag-architect skill patterns",
+    "test_cases": [
+        {
+            "id": "med_001",
+            "query": "What are the symptoms of diabetes?",
+            "relevant_ids": [
+                "diabetes_symptoms_001",
+                "diabetes_overview_001"
+            ],
+            "expected_keywords": [
+                "thirst",
+                "urination",
+                "fatigue",
+                "hunger",
+                "glucose"
+            ],
+            "category": "symptoms"
+        },
+        {
+            "id": "med_002",
+            "query": "How is hypertension diagnosed?",
+            "relevant_ids": [
+                "hypertension_diagnosis_001",
+                "bp_measurement_001"
+            ],
+            "expected_keywords": [
+                "blood pressure",
+                "measurement",
+                "mmHg",
+                "systolic",
+                "diastolic"
+            ],
+            "category": "diagnosis"
+        },
+        {
+            "id": "med_003",
+            "query": "What causes heart disease?",
+            "relevant_ids": [
+                "cardiovascular_causes_001",
+                "heart_disease_overview_001"
+            ],
+            "expected_keywords": [
+                "cholesterol",
+                "smoking",
+                "obesity",
+                "genetics",
+                "lifestyle"
+            ],
+            "category": "etiology"
+        },
+        {
+            "id": "med_004",
+            "query": "How to manage Type 2 diabetes?",
+            "relevant_ids": [
+                "diabetes_management_001",
+                "diabetes_treatment_001"
+            ],
+            "expected_keywords": [
+                "diet",
+                "exercise",
+                "medication",
+                "glucose",
+                "monitoring"
+            ],
+            "category": "treatment"
+        },
+        {
+            "id": "med_005",
+            "query": "What are the side effects of aspirin?",
+            "relevant_ids": [
+                "aspirin_effects_001",
+                "nsaid_info_001"
+            ],
+            "expected_keywords": [
+                "bleeding",
+                "stomach",
+                "ulcer",
+                "gastrointestinal"
+            ],
+            "category": "medication"
+        },
+        {
+            "id": "med_006",
+            "query": "Symptoms of heart attack",
+            "relevant_ids": [
+                "mi_symptoms_001",
+                "cardiac_emergency_001"
+            ],
+            "expected_keywords": [
+                "chest",
+                "pain",
+                "arm",
+                "shortness",
+                "breath",
+                "sweating"
+            ],
+            "category": "emergency"
+        },
+        {
+            "id": "med_007",
+            "query": "What is the difference between Type 1 and Type 2 diabetes?",
+            "relevant_ids": [
+                "diabetes_types_001",
+                "diabetes_overview_001"
+            ],
+            "expected_keywords": [
+                "insulin",
+                "autoimmune",
+                "resistance",
+                "pancreas"
+            ],
+            "category": "comparison"
+        },
+        {
+            "id": "med_008",
+            "query": "How to lower cholesterol naturally?",
+            "relevant_ids": [
+                "cholesterol_management_001",
+                "lifestyle_heart_001"
+            ],
+            "expected_keywords": [
+                "diet",
+                "exercise",
+                "fiber",
+                "omega",
+                "fats"
+            ],
+            "category": "prevention"
+        },
+        {
+            "id": "med_009",
+            "query": "What causes high blood pressure?",
+            "relevant_ids": [
+                "hypertension_causes_001",
+                "bp_factors_001"
+            ],
+            "expected_keywords": [
+                "salt",
+                "weight",
+                "stress",
+                "genetics",
+                "kidney"
+            ],
+            "category": "etiology"
+        },
+        {
+            "id": "med_010",
+            "query": "Treatment options for depression",
+            "relevant_ids": [
+                "depression_treatment_001",
+                "mental_health_001"
+            ],
+            "expected_keywords": [
+                "therapy",
+                "medication",
+                "antidepressant",
+                "counseling"
+            ],
+            "category": "treatment"
+        },
+        {
+            "id": "med_011",
+            "query": "What is BMI and how is it calculated?",
+            "relevant_ids": [
+                "bmi_info_001",
+                "weight_assessment_001"
+            ],
+            "expected_keywords": [
+                "body mass index",
+                "weight",
+                "height",
+                "kg",
+                "m2"
+            ],
+            "category": "definition"
+        },
+        {
+            "id": "med_012",
+            "query": "Signs of a stroke",
+            "relevant_ids": [
+                "stroke_signs_001",
+                "neurological_emergency_001"
+            ],
+            "expected_keywords": [
+                "face",
+                "arm",
+                "speech",
+                "time",
+                "FAST",
+                "weakness"
+            ],
+            "category": "emergency"
+        },
+        {
+            "id": "med_013",
+            "query": "How does insulin work in the body?",
+            "relevant_ids": [
+                "insulin_function_001",
+                "glucose_metabolism_001"
+            ],
+            "expected_keywords": [
+                "glucose",
+                "cells",
+                "blood sugar",
+                "pancreas",
+                "hormone"
+            ],
+            "category": "physiology"
+        },
+        {
+            "id": "med_014",
+            "query": "What are ACE inhibitors used for?",
+            "relevant_ids": [
+                "ace_inhibitors_001",
+                "hypertension_meds_001"
+            ],
+            "expected_keywords": [
+                "blood pressure",
+                "heart",
+                "angiotensin",
+                "lisinopril"
+            ],
+            "category": "medication"
+        },
+        {
+            "id": "med_015",
+            "query": "Symptoms of asthma",
+            "relevant_ids": [
+                "asthma_symptoms_001",
+                "respiratory_conditions_001"
+            ],
+            "expected_keywords": [
+                "wheezing",
+                "breathlessness",
+                "cough",
+                "chest",
+                "tightness"
+            ],
+            "category": "symptoms"
+        },
+        {
+            "id": "med_016",
+            "query": "How to prevent cardiovascular disease?",
+            "relevant_ids": [
+                "cvd_prevention_001",
+                "heart_health_001"
+            ],
+            "expected_keywords": [
+                "exercise",
+                "diet",
+                "smoking",
+                "weight",
+                "cholesterol"
+            ],
+            "category": "prevention"
+        },
+        {
+            "id": "med_017",
+            "query": "What causes anemia?",
+            "relevant_ids": [
+                "anemia_causes_001",
+                "blood_disorders_001"
+            ],
+            "expected_keywords": [
+                "iron",
+                "deficiency",
+                "red blood cells",
+                "hemoglobin"
+            ],
+            "category": "etiology"
+        },
+        {
+            "id": "med_018",
+            "query": "How is COVID-19 transmitted?",
+            "relevant_ids": [
+                "covid_transmission_001",
+                "respiratory_infections_001"
+            ],
+            "expected_keywords": [
+                "respiratory",
+                "droplets",
+                "airborne",
+                "contact"
+            ],
+            "category": "infectious"
+        },
+        {
+            "id": "med_019",
+            "query": "What is metabolic syndrome?",
+            "relevant_ids": [
+                "metabolic_syndrome_001",
+                "cardiovascular_risk_001"
+            ],
+            "expected_keywords": [
+                "obesity",
+                "blood pressure",
+                "glucose",
+                "triglycerides"
+            ],
+            "category": "definition"
+        },
+        {
+            "id": "med_020",
+            "query": "Side effects of statins",
+            "relevant_ids": [
+                "statin_effects_001",
+                "cholesterol_meds_001"
+            ],
+            "expected_keywords": [
+                "muscle",
+                "pain",
+                "liver",
+                "myopathy"
+            ],
+            "category": "medication"
+        }
+    ]
+}

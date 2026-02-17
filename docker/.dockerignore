@@ -1,0 +1,60 @@
+# Ignore these files when building Docker image
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Data (mount as volume instead)
+data/raw/
+data/knowledge_base/
+models/
+outputs/
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Tests
+tests/
+*.pytest_cache
+.coverage
+htmlcov/
+
+# Notebooks
+notebooks/
+*.ipynb
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.*
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
+
+# Misc
+.DS_Store
+Thumbs.db

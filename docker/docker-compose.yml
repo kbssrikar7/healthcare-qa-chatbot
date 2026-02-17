@@ -1,0 +1,71 @@
+# Healthcare QA Chatbot - Docker Compose
+# Run with: docker-compose up -d
+
+version: '3.8'
+
+services:
+  # FastAPI Backend
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: healthcare-qa-api
+    ports:
+      - "8000:8000"
+    environment:
+      - USE_GPU=false
+      - LOG_LEVEL=INFO
+      - ENVIRONMENT=production
+      - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN:-}
+    volumes:
+      - ../data:/app/data
+      - ../models:/app/models
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - healthcare-network
+
+  # Streamlit Frontend
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: healthcare-qa-frontend
+    command: ["streamlit", "run", "frontend/streamlit_app.py", "--server.port=7860", "--server.address=0.0.0.0"]
+    ports:
+      - "7860:7860"
+    environment:
+      - API_URL=http://api:8000
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - healthcare-network
+
+  # ChromaDB Vector Store (optional - for persistent storage)
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: healthcare-qa-chromadb
+    ports:
+      - "8001:8000"
+    volumes:
+      - chroma-data:/chroma/chroma
+    environment:
+      - ANONYMIZED_TELEMETRY=false
+    restart: unless-stopped
+    networks:
+      - healthcare-network
+
+networks:
+  healthcare-network:
+    driver: bridge
+
+volumes:
+  chroma-data:
+    driver: local
