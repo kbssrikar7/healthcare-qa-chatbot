@@ -4,7 +4,7 @@
 
 An advanced, explainable AI system for medical question answering, powered by RAG (Retrieval-Augmented Generation) and TinyLlama. Designed for accuracy, privacy, and clinical reasoning transparency.
 
-![MediQuery Demo](https://via.placeholder.com/800x400.png?text=MediQuery+Dashboard+Placeholder)
+
 
 ## Table of Contents
 - [Features](#features)
