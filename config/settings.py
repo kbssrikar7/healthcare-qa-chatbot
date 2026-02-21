@@ -4,7 +4,8 @@ Central configuration management for Healthcare QA Chatbot.
 import os
 from pathlib import Path
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
+from enum import Enum
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -14,6 +15,36 @@ PROJECT_ROOT = Path(__file__).parent.parent
 DATA_DIR = PROJECT_ROOT / "data"
 MODELS_DIR = PROJECT_ROOT / "models"
 OUTPUTS_DIR = PROJECT_ROOT / "outputs"
+
+
+class ModelChoice(str, Enum):
+    """Available LLM model choices."""
+    TINYLLAMA = "tinyllama"
+    BIOMISTRAL_7B = "biomistral-7b"
+
+
+# Model registry with metadata
+AVAILABLE_MODELS: Dict[str, Dict[str, Any]] = {
+    "tinyllama": {
+        "model_name": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+        "display_name": "TinyLlama 1.1B",
+        "description": "Lightweight, fast responses — good for quick answers",
+        "parameters": "1.1B",
+        "max_new_tokens": 512,
+        "requires_gpu": False,
+        "load_in_4bit": False,
+    },
+    "biomistral-7b": {
+        "model_name": "BioMistral/BioMistral-7B",
+        "display_name": "BioMistral 7B",
+        "description": "Medical-specialized, higher accuracy — best for clinical questions",
+        "parameters": "7B",
+        "max_new_tokens": 512,
+        "requires_gpu": True,
+        "load_in_4bit": True,
+    },
+}
+
 
 @dataclass
 class EmbeddingConfig:
@@ -29,6 +60,7 @@ class EmbeddingConfig:
 class LLMConfig:
     """LLM configuration."""
     model_name: str = "BioMistral/BioMistral-7B"
+    default_model: str = "tinyllama"
     max_new_tokens: int = 512
     temperature: float = 0.7
     top_p: float = 0.9
