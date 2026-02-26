@@ -1,33 +1,46 @@
 """
 FastAPI application for Healthcare QA Chatbot.
+
+Enhanced with:
+- Multi-model selection (TinyLlama / BioMistral-7B)
+- Safety guardrails integration (emergency detection, content filtering)
+- Conversation history with follow-up detection
+- Streaming responses
+- Enhanced health-check with system metrics
+- Passage highlighting for XAI
 """
 import os
 import sys
+import time
+import json
+import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 import uvicorn
 
-# Initialize FastAPI app
+from config.settings import AVAILABLE_MODELS
+
+# ── App setup ────────────────────────────────────────────────────────────────
+
 app = FastAPI(
     title="Healthcare QA Chatbot API",
     description="An explainable medical question-answering system combining LLM + RAG + XAI",
-    version="1.0.0"
+    version="2.0.0",
 )
 
-# CORS configuration - Environment-based for security
-# In production, set CORS_ORIGINS to comma-separated allowed origins
-# e.g., CORS_ORIGINS="https://example.com,https://app.example.com"
-cors_origins_env = os.getenv("CORS_ORIGINS", "*")
-if cors_origins_env == "*":
-    allow_origins = ["*"]  # Development mode - allow all
-else:
-    allow_origins = [origin.strip() for origin in cors_origins_env.split(",")]
+# Record startup time
+app.state.start_time = time.time()
 
+# CORS
+cors_origins_env = os.getenv("CORS_ORIGINS", "*")
+allow_origins = ["*"] if cors_origins_env == "*" else [o.strip() for o in cors_origins_env.split(",")]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allow_origins,
@@ -36,29 +49,57 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Global pipeline instances (lazy loaded)
-pipeline = None
-langchain_pipeline = None
-langgraph_pipeline = None
+# ── Global state ─────────────────────────────────────────────────────────────
 
-# Request/Response models
+# Pipeline instances keyed by model name
+pipelines: Dict[str, Any] = {}
+
+# Shared components (loaded once)
+_shared_components: Dict[str, Any] = {}
+
+# Safety guardrails
+guardrails = None
+emergency_detector = None
+drug_checker = None
+
+# Conversation manager
+conversation_manager = None
+
+# Feedback and RL trajectory logging
+feedback_collector = None
+trajectory_logger = None
+
+
+# ── Request / Response models ────────────────────────────────────────────────
+
 class QuestionRequest(BaseModel):
     question: str = Field(..., min_length=5, max_length=1000)
     include_explanation: bool = True
     num_sources: int = Field(default=3, ge=1, le=10)
-    use_langchain: bool = Field(default=False, description="Use LangChain LCEL-based pipeline")
-    use_langgraph: bool = Field(default=False, description="Use LangGraph self-correcting RAG pipeline")
+    model_choice: Optional[str] = Field(
+        default=None,
+        description=(
+            "Model key from /models (e.g. tinyllama, biomistral-7b, airllm-mistral-7b)"
+        ),
+    )
+    use_langchain: bool = Field(default=False, description="Use LangChain LCEL pipeline")
+    use_langgraph: bool = Field(default=False, description="Use LangGraph self-correcting RAG")
+    session_id: Optional[str] = Field(default=None, description="Conversation session ID for follow-ups")
+
 
 class SourceInfo(BaseModel):
     source: str
     content: str
     score: float
     url: Optional[str] = ""
+    highlight_spans: Optional[List[Dict]] = None
+
 
 class ConfidenceInfo(BaseModel):
     score: float
     level: str
     explanation: str
+
 
 class AttributionInfo(BaseModel):
     claim: str
@@ -66,7 +107,17 @@ class AttributionInfo(BaseModel):
     evidence: str
     similarity: float
 
+
+class SafetyInfo(BaseModel):
+    level: str = "safe"
+    flags: List[str] = Field(default_factory=list)
+    is_emergency: bool = False
+    emergency_message: Optional[str] = None
+    drug_warnings: Optional[List[str]] = None
+
+
 class AnswerResponse(BaseModel):
+    response_id: str
     question: str
     answer: str
     sources: List[SourceInfo]
@@ -74,266 +125,829 @@ class AnswerResponse(BaseModel):
     attributions: List[AttributionInfo]
     disclaimer: str
     rationale: Optional[str] = None
+    model_used: Optional[str] = None
+    pipeline_used: Optional[str] = None
+    session_id: Optional[str] = None
+    safety: Optional[SafetyInfo] = None
+    latency_ms: Optional[float] = None
+
 
 class HealthResponse(BaseModel):
     status: str
     pipeline_ready: bool
     message: str
+    uptime_seconds: Optional[float] = None
+    models_loaded: Optional[List[str]] = None
+    knowledge_base_docs: Optional[int] = None
+    memory_usage_mb: Optional[float] = None
+    cache_stats: Optional[Dict] = None
 
-def get_pipeline():
-    """Lazy load the pipeline."""
-    global pipeline
-    if pipeline is None:
-        try:
-            from src.embeddings.embedding_models import MedicalEmbedder
-            from src.embeddings.vector_store import VectorStore
-            from src.retrieval.hybrid_retriever import HybridRetriever
-            from src.generation.llm_wrapper import MedicalLLM
-            from src.generation.prompt_manager import MedicalPromptManager
-            from src.xai.confidence_scorer import ConfidenceScorer
-            from src.xai.source_attribution import SourceAttributor
-            from src.pipeline.qa_pipeline import HealthcareQAPipeline
-            
-            print("🔄 Loading pipeline components...")
-            embedder = MedicalEmbedder(model_name="all-minilm")
-            vector_store = VectorStore(
-                collection_name="medical_knowledge",
-                persist_directory="data/knowledge_base"
-            )
-            retriever = HybridRetriever(embedder, vector_store)
-            
-            # Load LLM with fine-tuned adapter if available
-            from pathlib import Path
-            adapter_path = Path("models/fine_tuned/medical_adapter")
-            if adapter_path.exists():
-                print(f"✅ Found fine-tuned adapter at {adapter_path}")
-                llm = MedicalLLM(
-                    model_name="tinyllama",
-                    adapter_path=str(adapter_path),
-                    load_in_4bit=True
-                )
-            else:
-                print("⚠️ No adapter found, using base model")
-                llm = MedicalLLM(model_name="tinyllama", load_in_4bit=False)
-            prompt_manager = MedicalPromptManager()
-            confidence_scorer = ConfidenceScorer()
-            source_attributor = SourceAttributor()
-            
-            pipeline = HealthcareQAPipeline(
-                retriever=retriever,
-                llm=llm,
-                prompt_manager=prompt_manager,
-                confidence_scorer=confidence_scorer,
-                source_attributor=source_attributor
-            )
-            print("✅ Pipeline loaded successfully")
-        except Exception as e:
-            print(f"❌ Failed to load pipeline: {e}")
-            pipeline = None
-    return pipeline
 
-def get_langchain_pipeline():
-    """Lazy load the LangChain-based pipeline."""
-    global langchain_pipeline
-    if langchain_pipeline is None:
-        try:
-            from src.embeddings.embedding_models import MedicalEmbedder
-            from src.embeddings.vector_store import VectorStore
-            from src.retrieval.hybrid_retriever import HybridRetriever
-            from src.generation.llm_wrapper import MedicalLLM
-            from src.xai.confidence_scorer import ConfidenceScorer
-            from src.xai.source_attribution import SourceAttributor
-            from src.langchain import create_langchain_pipeline
-            
-            print("🔄 Loading LangChain pipeline components...")
-            embedder = MedicalEmbedder(model_name="all-minilm")
-            vector_store = VectorStore(
-                collection_name="medical_knowledge",
-                persist_directory="data/knowledge_base"
-            )
-            retriever = HybridRetriever(embedder, vector_store)
-            
-            # Load LLM with fine-tuned adapter if available
-            from pathlib import Path
-            adapter_path = Path("models/fine_tuned/medical_adapter")
-            if adapter_path.exists():
-                print(f"✅ Found fine-tuned adapter at {adapter_path}")
-                llm = MedicalLLM(
-                    model_name="tinyllama",
-                    adapter_path=str(adapter_path),
-                    load_in_4bit=True
-                )
-            else:
-                print("⚠️ No adapter found, using base model")
-                llm = MedicalLLM(model_name="tinyllama", load_in_4bit=False)
-            
-            confidence_scorer = ConfidenceScorer()
-            source_attributor = SourceAttributor()
-            
-            langchain_pipeline = create_langchain_pipeline(
-                retriever=retriever,
-                llm=llm,
-                confidence_scorer=confidence_scorer,
-                source_attributor=source_attributor
-            )
-            print("✅ LangChain pipeline loaded successfully")
-        except Exception as e:
-            print(f"❌ Failed to load LangChain pipeline: {e}")
-            langchain_pipeline = None
-    return langchain_pipeline
+class FeedbackRequest(BaseModel):
+    response_id: str = Field(..., min_length=1)
+    rating: Optional[int] = Field(default=None, ge=1, le=5)
+    was_helpful: Optional[bool] = None
+    was_accurate: Optional[bool] = None
+    was_safe: Optional[bool] = None
+    feedback_text: Optional[str] = Field(default=None, max_length=2000)
+    session_id: Optional[str] = None
 
-def get_langgraph_pipeline():
-    """Lazy load the LangGraph-based pipeline."""
-    global langgraph_pipeline
-    if langgraph_pipeline is None:
+
+class FeedbackResponse(BaseModel):
+    status: str
+    feedback_id: str
+    response_id: str
+    reward_signal: float
+    trajectory_found: bool
+
+
+# ── Component loaders ────────────────────────────────────────────────────────
+
+def _get_shared_components():
+    """Load shared components (embedder, vector store, retriever) once."""
+    global _shared_components
+    if _shared_components:
+        return _shared_components
+
+    try:
+        from src.embeddings.embedding_models import MedicalEmbedder
+        from src.embeddings.vector_store import VectorStore
+        from src.retrieval.hybrid_retriever import HybridRetriever
+        from src.generation.prompt_manager import MedicalPromptManager
+        from src.xai.confidence_scorer import ConfidenceScorer
+        from src.xai.source_attribution import SourceAttributor
+        from config.settings import config
+        pipeline_config = getattr(config, 'pipeline', None) if config else None
+
+        print("🔄 Loading shared pipeline components...")
+        embedder = MedicalEmbedder(model_name="all-minilm")
+        vector_store = VectorStore(
+            collection_name="medical_knowledge",
+            persist_directory="data/knowledge_base",
+        )
+        
+        # Reranker
+        reranker = None
+        if pipeline_config and getattr(pipeline_config, 'enable_reranker', False):
+            try:
+                from src.retrieval.reranker import CrossEncoderReranker
+                reranker = CrossEncoderReranker()
+                print("✅ Reranker initialized")
+            except Exception as e:
+                print(f"⚠️ Failed to init reranker: {e}")
+
+        retriever = HybridRetriever(embedder, vector_store, reranker=reranker)
+        prompt_manager = MedicalPromptManager()
+        confidence_scorer = ConfidenceScorer()
+        source_attributor = SourceAttributor()
+        
+        # Other quality hooks
+        query_enhancer = None
+        context_compressor = None
+        corrective_rag = None
+        factual_checker = None
+        
+        if pipeline_config:
+            if getattr(pipeline_config, 'enable_query_enhancement', False):
+                try:
+                    from src.retrieval.query_enhancer import QueryEnhancer
+                    query_enhancer = QueryEnhancer()
+                    print("✅ Query enhancer initialized")
+                except Exception as e:
+                    print(f"⚠️ Failed to init query enhancer: {e}")
+                    
+            if getattr(pipeline_config, 'enable_context_compression', False):
+                try:
+                    from src.pipeline.context_compressor import ContextCompressor
+                    context_compressor = ContextCompressor()
+                    print("✅ Context compressor initialized")
+                except Exception as e:
+                    print(f"⚠️ Failed to init context compressor: {e}")
+                    
+            if getattr(pipeline_config, 'enable_corrective_rag', False):
+                try:
+                    from src.retrieval.corrective_rag import CorrectiveRAG
+                    corrective_rag = CorrectiveRAG(retriever=retriever)
+                    print("✅ Corrective RAG initialized")
+                except Exception as e:
+                    print(f"⚠️ Failed to init corrective RAG: {e}")
+                    
+            if getattr(pipeline_config, 'enable_factual_consistency', False):
+                try:
+                    from src.xai.factual_consistency import FactualConsistencyChecker
+                    factual_checker = FactualConsistencyChecker()
+                    print("✅ Factual consistency checker initialized")
+                except Exception as e:
+                    print(f"⚠️ Failed to init factual checker: {e}")
+
+        _shared_components = {
+            "embedder": embedder,
+            "vector_store": vector_store,
+            "retriever": retriever,
+            "prompt_manager": prompt_manager,
+            "confidence_scorer": confidence_scorer,
+            "source_attributor": source_attributor,
+            "query_enhancer": query_enhancer,
+            "context_compressor": context_compressor,
+            "corrective_rag": corrective_rag,
+            "factual_consistency_checker": factual_checker,
+        }
+        print("✅ Shared components loaded")
+    except Exception as e:
+        print(f"❌ Failed to load shared components: {e}")
+
+    return _shared_components
+
+
+def get_pipeline(model_choice: str = "tinyllama"):
+    """Get or create a pipeline for the given model choice."""
+    global pipelines
+
+    if model_choice in pipelines:
+        return pipelines[model_choice]
+
+    import torch
+    import gc
+
+    # FREE PREVIOUS PIPELINES TO PREVENT MEMORY LEAKS ON LAPTOPS
+    for k in list(pipelines.keys()):
+        print(f"🧹 Unloading previous model: {k} to free memory...")
         try:
-            from src.embeddings.embedding_models import MedicalEmbedder
-            from src.embeddings.vector_store import VectorStore
-            from src.retrieval.hybrid_retriever import HybridRetriever
-            from src.generation.llm_wrapper import MedicalLLM
-            from src.xai.confidence_scorer import ConfidenceScorer
-            from src.xai.source_attribution import SourceAttributor
-            from src.langgraph import create_langgraph_pipeline
-            
-            print("🔄 Loading LangGraph pipeline components...")
-            embedder = MedicalEmbedder(model_name="all-minilm")
-            vector_store = VectorStore(
-                collection_name="medical_knowledge",
-                persist_directory="data/knowledge_base"
-            )
-            retriever = HybridRetriever(embedder, vector_store)
-            
-            # Load LLM with fine-tuned adapter if available
-            from pathlib import Path
-            adapter_path = Path("models/fine_tuned/medical_adapter")
-            if adapter_path.exists():
-                print(f"✅ Found fine-tuned adapter at {adapter_path}")
-                llm = MedicalLLM(
-                    model_name="tinyllama",
-                    adapter_path=str(adapter_path),
-                    load_in_4bit=True
-                )
-            else:
-                print("⚠️ No adapter found, using base model")
-                llm = MedicalLLM(model_name="tinyllama", load_in_4bit=False)
-            
-            confidence_scorer = ConfidenceScorer()
-            source_attributor = SourceAttributor()
-            
-            langgraph_pipeline = create_langgraph_pipeline(
-                retriever=retriever,
-                llm=llm,
-                confidence_scorer=confidence_scorer,
-                source_attributor=source_attributor
-            )
-            print("✅ LangGraph pipeline loaded successfully")
+            if hasattr(pipelines[k], "llm") and hasattr(pipelines[k].llm, "cleanup"):
+                pipelines[k].llm.cleanup()
         except Exception as e:
-            print(f"❌ Failed to load LangGraph pipeline: {e}")
-            langgraph_pipeline = None
-    return langgraph_pipeline
+            print(f"⚠️ Error during cleanup of {k}: {e}")
+        del pipelines[k]
+    
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
+    # ── GPU safety guard ─────────────────────────────────────────────────
+    model_info = AVAILABLE_MODELS.get(model_choice)
+    if not model_info:
+        print(f"❌ Unknown model: {model_choice}")
+        return None
+
+    if model_info.get("requires_gpu", False):
+        import torch
+        if not torch.cuda.is_available():
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Model '{model_info['display_name']}' requires a GPU but none is available. "
+                    f"Please use 'tinyllama' instead, or run on Google Colab with a T4 GPU."
+                ),
+            )
+
+    shared = _get_shared_components()
+    if not shared:
+        return None
+
+    try:
+        from src.generation.llm_wrapper import MedicalLLM
+        from src.pipeline.qa_pipeline import HealthcareQAPipeline
+
+        print(f"🔄 Loading LLM: {model_info['display_name']}...")
+
+        # Ensure local writable HF cache path (avoids ~/.cache permission issues on some systems)
+        local_hf_cache = str((Path(__file__).parent.parent / ".hf_cache").resolve())
+        os.environ.setdefault("HF_HOME", local_hf_cache)
+        os.environ.setdefault("TRANSFORMERS_CACHE", local_hf_cache)
+        Path(local_hf_cache).mkdir(parents=True, exist_ok=True)
+
+        backend = model_info.get("backend", "transformers")
+        resolved_model_name = model_info.get("model_name") or model_choice
+
+        # Check for fine-tuned adapter
+        adapter_path = Path("models/fine_tuned/medical_adapter")
+        llm_kwargs = {
+            "model_name": resolved_model_name,
+            "backend": backend,
+            "load_in_4bit": model_info.get("load_in_4bit", False),
+            "airllm_compression": os.getenv("AIRLLM_COMPRESSION"),
+            "hf_token": os.getenv("HUGGINGFACE_TOKEN"),
+        }
+
+        if backend == "transformers" and adapter_path.exists():
+            print(f"✅ Found fine-tuned adapter at {adapter_path}")
+            llm_kwargs["adapter_path"] = str(adapter_path)
+            llm = MedicalLLM(**llm_kwargs)
+        else:
+            if backend == "transformers":
+                print("⚠️ No adapter found, using base model")
+            llm = MedicalLLM(**llm_kwargs)
+
+        # KB fingerprint for cache
+        try:
+            kb_count = shared["vector_store"].collection.count()
+        except:
+            kb_count = 0
+        cache_context_key = f"{resolved_model_name}_{backend}_kb{kb_count}"
+
+        pipeline = HealthcareQAPipeline(
+            retriever=shared["retriever"],
+            llm=llm,
+            prompt_manager=shared["prompt_manager"],
+            confidence_scorer=shared["confidence_scorer"],
+            source_attributor=shared["source_attributor"],
+            query_enhancer=shared.get("query_enhancer"),
+            context_compressor=shared.get("context_compressor"),
+            corrective_rag=shared.get("corrective_rag"),
+            factual_consistency_checker=shared.get("factual_consistency_checker"),
+            cache_context_key=cache_context_key,
+        )
+        pipelines[model_choice] = pipeline
+        print(f"✅ Pipeline loaded for {model_info['display_name']}")
+        return pipeline
+
+    except Exception as e:
+        print(f"❌ Failed to load pipeline for {model_choice}: {e}")
+        return None
+
+
+
+def _init_guardrails():
+    """Initialize safety guardrails."""
+    global guardrails, emergency_detector, drug_checker
+    if guardrails is not None:
+        return
+    try:
+        from src.safety.guardrails import MedicalGuardrails, EmergencyDetector, DrugInteractionChecker
+        guardrails = MedicalGuardrails()
+        emergency_detector = EmergencyDetector()
+        drug_checker = DrugInteractionChecker()
+        print("✅ Safety guardrails initialized")
+    except Exception as e:
+        print(f"⚠️ Failed to load guardrails: {e}")
+
+
+def _init_conversation_manager():
+    """Initialize conversation manager."""
+    global conversation_manager
+    if conversation_manager is not None:
+        return
+    try:
+        from src.conversation.history import ConversationManager
+        conversation_manager = ConversationManager(storage_path="data/conversations")
+        print("✅ Conversation manager initialized")
+    except Exception as e:
+        print(f"⚠️ Failed to load conversation manager: {e}")
+
+
+def _init_feedback_system():
+    """Initialize feedback collector and trajectory logger."""
+    global feedback_collector, trajectory_logger
+    if feedback_collector is not None and trajectory_logger is not None:
+        return
+    try:
+        from src.feedback.collector import FeedbackCollector
+        from src.feedback.trajectory_logger import TrajectoryLogger
+
+        if feedback_collector is None:
+            feedback_collector = FeedbackCollector(
+                storage_path="data/feedback/user_feedback.jsonl"
+            )
+        if trajectory_logger is None:
+            trajectory_logger = TrajectoryLogger(
+                storage_path="data/feedback/response_trajectories.jsonl"
+            )
+        print("✅ Feedback system initialized")
+    except Exception as e:
+        print(f"⚠️ Failed to initialize feedback system: {e}")
+
+
+def _extract_source_scores(sources: List[Any]) -> List[float]:
+    """Extract numeric source scores from QA response sources."""
+    scores: List[float] = []
+    for source in sources or []:
+        score = source.get("score") if isinstance(source, dict) else getattr(source, "score", None)
+        if score is None:
+            continue
+        try:
+            scores.append(float(score))
+        except (TypeError, ValueError):
+            continue
+    return scores
+
+
+def _build_score_stats(scores: List[float]) -> Dict[str, float]:
+    """Build simple retrieval score statistics."""
+    if not scores:
+        return {
+            "count": 0.0,
+            "top_score": 0.0,
+            "mean_score": 0.0,
+            "min_score": 0.0,
+            "max_score": 0.0,
+        }
+
+    return {
+        "count": float(len(scores)),
+        "top_score": float(max(scores)),
+        "mean_score": float(sum(scores) / len(scores)),
+        "min_score": float(min(scores)),
+        "max_score": float(max(scores)),
+    }
+
+
+def _compute_feedback_reward(
+    rating: int,
+    was_helpful: bool,
+    was_accurate: bool,
+    was_safe: bool,
+) -> float:
+    """
+    Compute a normalized reward signal (0-1) from feedback.
+
+    Weighted for RL experiments:
+    - Rating: 40%
+    - Helpful: 20%
+    - Accurate: 20%
+    - Safe: 20%
+    """
+    rating_component = (rating - 1) / 4.0
+    reward = (
+        0.4 * rating_component
+        + 0.2 * float(was_helpful)
+        + 0.2 * float(was_accurate)
+        + 0.2 * float(was_safe)
+    )
+    return round(max(0.0, min(1.0, reward)), 4)
+
+
+def _log_response_trajectory(trajectory_payload: Dict[str, Any]) -> None:
+    """Persist a response trajectory for RL data collection."""
+    _init_feedback_system()
+    if trajectory_logger is None:
+        return
+    try:
+        trajectory_logger.log(trajectory_payload)
+    except Exception as e:
+        print(f"⚠️ Failed to persist response trajectory: {e}")
+
+
+# ── Endpoints ────────────────────────────────────────────────────────────────
 
 @app.get("/", response_model=HealthResponse)
 async def root():
     """Root endpoint."""
     return HealthResponse(
         status="ok",
-        pipeline_ready=pipeline is not None,
-        message="Healthcare QA Chatbot API is running"
+        pipeline_ready=len(pipelines) > 0,
+        message="Healthcare QA Chatbot API is running",
     )
+
 
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
-    """Health check endpoint."""
+    """Enhanced health check with system metrics."""
+    import psutil
+
+    # Gather metrics
+    process = psutil.Process()
+    memory_mb = process.memory_info().rss / (1024 * 1024)
+    uptime = time.time() - app.state.start_time
+
+    # Knowledge base doc count
+    doc_count = None
+    shared = _shared_components
+    if shared and "vector_store" in shared:
+        try:
+            doc_count = shared["vector_store"].collection.count()
+        except Exception:
+            pass
+
+    # Cache stats
+    cache_stats = None
+    for p in pipelines.values():
+        if hasattr(p, "cache_manager") and p.cache_manager:
+            cache_stats = p.cache_manager.get_cache_stats()
+            break
+
     return HealthResponse(
         status="healthy",
-        pipeline_ready=pipeline is not None,
-        message="Service is healthy"
+        pipeline_ready=len(pipelines) > 0,
+        message="Service is healthy",
+        uptime_seconds=round(uptime, 1),
+        models_loaded=list(pipelines.keys()),
+        knowledge_base_docs=doc_count,
+        memory_usage_mb=round(memory_mb, 1),
+        cache_stats=cache_stats,
     )
+
+
+@app.get("/models")
+async def list_models():
+    """Return available models and their descriptions."""
+    result = {}
+    for key, info in AVAILABLE_MODELS.items():
+        result[key] = {
+            "display_name": info["display_name"],
+            "description": info["description"],
+            "parameters": info["parameters"],
+            "requires_gpu": info["requires_gpu"],
+            "backend": info.get("backend", "transformers"),
+            "loaded": key in pipelines,
+        }
+    return result
+
+
+@app.post("/sessions")
+async def create_session():
+    """Create a new conversation session."""
+    _init_conversation_manager()
+    if conversation_manager is None:
+        raise HTTPException(status_code=503, detail="Conversation manager not available")
+    session = conversation_manager.create_session()
+    return {"session_id": session.session_id}
+
+
+@app.get("/sessions/{session_id}")
+async def get_session(session_id: str):
+    """Get conversation history for a session."""
+    _init_conversation_manager()
+    if conversation_manager is None:
+        raise HTTPException(status_code=503, detail="Conversation manager not available")
+    session = conversation_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return session.to_dict()
+
+
+async def _prepare_and_execute_pipeline(request: QuestionRequest, start_ts: float) -> AnswerResponse:
+    """Shared orchestration logic for standard and streaming requests."""
+    response_id = str(uuid.uuid4())
+    question_id = str(uuid.uuid4())
+    request_timestamp = datetime.now(timezone.utc).isoformat()
+
+    # ── 1. Safety check on input ─────────────────────────────────────────
+    _init_guardrails()
+    safety_info = SafetyInfo()
+
+    if guardrails:
+        check = guardrails.check_input(request.question)
+        safety_info.level = check.level.value if hasattr(check.level, "value") else str(check.level)
+        safety_info.flags = check.flags
+        if check.redirect_message:
+            safety_info.is_emergency = True
+            safety_info.emergency_message = check.redirect_message
+
+        # If emergency, return immediately with redirect
+        if safety_info.is_emergency:
+            latency = round((time.time() - start_ts) * 1000, 1)
+            emergency_response = AnswerResponse(
+                response_id=response_id,
+                question=request.question,
+                answer=check.redirect_message or "Please seek immediate medical attention.",
+                sources=[],
+                confidence=ConfidenceInfo(score=1.0, level="high", explanation="Emergency detected"),
+                attributions=[],
+                disclaimer="If this is a medical emergency, call emergency services (911) immediately.",
+                model_used=request.model_choice or "tinyllama",
+                pipeline_used="EmergencyRedirect",
+                safety=safety_info,
+                latency_ms=latency,
+            )
+            _log_response_trajectory(
+                {
+                    "response_id": response_id,
+                    "question_id": question_id,
+                    "timestamp": request_timestamp,
+                    "question": request.question,
+                    "effective_question": request.question,
+                    "session_id": request.session_id,
+                    "state_features": {
+                        "question_length": len(request.question),
+                        "num_sources_requested": float(request.num_sources),
+                        "include_explanation": request.include_explanation,
+                        "has_session_context": False,
+                    },
+                    "action": {
+                        "model_choice": request.model_choice or "tinyllama",
+                        "pipeline": "EmergencyRedirect",
+                        "use_langchain": request.use_langchain,
+                        "use_langgraph": request.use_langgraph,
+                    },
+                    "retrieval": _build_score_stats([]),
+                    "outcome": {
+                        "answer_length": len(emergency_response.answer),
+                        "confidence_score": 1.0,
+                        "confidence_level": "high",
+                        "is_answerable": False,
+                        "from_cache": False,
+                        "factual_consistency": None,
+                        "latency_ms": latency,
+                    },
+                    "safety": emergency_response.safety.model_dump() if emergency_response.safety else {},
+                }
+            )
+            return emergency_response
+
+    # ── 2. Resolve model and pipeline ────────────────────────────────────
+    model_choice = request.model_choice or "tinyllama"
+    pipeline_name = "Standard"
+
+    if request.use_langgraph:
+        pipeline_name = "LangGraph"
+        qa_pipeline = _get_langgraph_pipeline()
+    elif request.use_langchain:
+        pipeline_name = "LangChain"
+        qa_pipeline = _get_langchain_pipeline()
+    else:
+        qa_pipeline = get_pipeline(model_choice=model_choice)
+
+    if qa_pipeline is None:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Pipeline not initialized for {model_choice}. Check model loading.",
+        )
+
+    # ── 3. Conversation context ──────────────────────────────────────────
+    _init_conversation_manager()
+    effective_question = request.question
+    session_id = request.session_id
+
+    if conversation_manager and session_id:
+        ctx = conversation_manager.get_context_for_query(session_id, request.question)
+        if ctx:
+            effective_question = f"Previous context: {ctx}\n\nCurrent question: {request.question}"
+
+    # ── 4. Get answer ────────────────────────────────────────────────────
+    try:
+        if request.use_langgraph or request.use_langchain:
+            response = qa_pipeline.answer(effective_question)
+        else:
+            response = qa_pipeline.answer(
+                question=effective_question,
+                num_documents=request.num_sources,
+                include_explanation=request.include_explanation,
+            )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error processing question with {pipeline_name} pipeline: {str(e)}",
+        )
+
+    # ── 5. Safety check on output ────────────────────────────────────────
+    if guardrails:
+        output_check = guardrails.check_output(response.answer)
+        if output_check.flags:
+            safety_info.flags.extend(output_check.flags)
+
+    if drug_checker:
+        warnings = drug_checker.check_interaction_risk(response.answer)
+        if warnings:
+            safety_info.drug_warnings = [drug_checker.get_interaction_warning(warnings)]
+
+    # ── 6. Record conversation turn ──────────────────────────────────────
+    if conversation_manager and session_id:
+        try:
+            conversation_manager.add_turn(
+                session_id=session_id,
+                question=request.question,
+                answer=response.answer,
+                confidence=response.confidence.get("score", 0) if isinstance(response.confidence, dict) else getattr(response.confidence, "score", 0),
+                sources=[s.get("source", "") if isinstance(s, dict) else getattr(s, "source", "") for s in response.sources],
+            )
+        except Exception:
+            pass  # Don't fail the request if history save fails
+
+    # ── 7. Build response ────────────────────────────────────────────────
+    latency = round((time.time() - start_ts) * 1000, 1)
+    confidence_payload = (
+        response.confidence
+        if isinstance(response.confidence, dict)
+        else {
+            "score": getattr(response.confidence, "score", 0.0),
+            "level": getattr(response.confidence, "level", "low"),
+            "explanation": getattr(response.confidence, "explanation", ""),
+        }
+    )
+
+    confidence_score = float(confidence_payload.get("score", 0.0) or 0.0)
+    confidence_level = str(confidence_payload.get("level", "low"))
+    source_scores = _extract_source_scores(response.sources)
+    score_stats = _build_score_stats(source_scores)
+    source_names = [
+        s.get("source", "") if isinstance(s, dict) else getattr(s, "source", "")
+        for s in response.sources
+    ]
+    includes_followup_context = effective_question != request.question
+
+    answer_response = AnswerResponse(
+        response_id=response_id,
+        question=request.question,
+        answer=response.answer,
+        sources=[SourceInfo(**s) if isinstance(s, dict) else SourceInfo(source=s.source, content=s.content, score=s.score, url=getattr(s, "url", ""), highlight_spans=getattr(s, "highlight_spans", None)) for s in response.sources],
+        confidence=ConfidenceInfo(**response.confidence) if isinstance(response.confidence, dict) else ConfidenceInfo(score=response.confidence.score, level=response.confidence.level, explanation=response.confidence.explanation),
+        attributions=[AttributionInfo(**a) if isinstance(a, dict) else AttributionInfo(claim=a.claim, source=a.source, evidence=a.evidence, similarity=a.similarity) for a in response.attributions],
+        disclaimer=response.disclaimer,
+        rationale=getattr(response, "rationale", None),
+        model_used=model_choice,
+        pipeline_used=pipeline_name,
+        session_id=session_id,
+        safety=safety_info,
+        latency_ms=latency,
+    )
+
+    _log_response_trajectory(
+        {
+            "response_id": response_id,
+            "question_id": question_id,
+            "timestamp": request_timestamp,
+            "question": request.question,
+            "effective_question": effective_question,
+            "session_id": session_id,
+            "state_features": {
+                "question_length": len(request.question),
+                "effective_question_length": len(effective_question),
+                "num_sources_requested": float(request.num_sources),
+                "include_explanation": request.include_explanation,
+                "has_session_context": includes_followup_context,
+            },
+            "action": {
+                "model_choice": model_choice,
+                "pipeline": pipeline_name,
+                "use_langchain": request.use_langchain,
+                "use_langgraph": request.use_langgraph,
+            },
+            "retrieval": {
+                **score_stats,
+                "scores": source_scores[:10],
+                "source_names": source_names[:10],
+            },
+            "outcome": {
+                "answer_length": len(answer_response.answer),
+                "confidence_score": confidence_score,
+                "confidence_level": confidence_level,
+                "is_answerable": bool(getattr(response, "is_answerable", True)),
+                "from_cache": bool(getattr(response, "from_cache", False)),
+                "factual_consistency": getattr(response, "factual_consistency", None),
+                "latency_ms": latency,
+                "num_sources_returned": len(answer_response.sources),
+            },
+            "safety": answer_response.safety.model_dump() if answer_response.safety else {},
+            "metadata": {
+                "model_used": answer_response.model_used,
+                "pipeline_used": answer_response.pipeline_used,
+            },
+        }
+    )
+
+    return answer_response
+
 
 @app.post("/ask", response_model=AnswerResponse)
 async def ask_question(request: QuestionRequest):
     """
     Ask a medical question and get an explainable answer.
-    
-    Set use_langchain=true for the LangChain LCEL-based pipeline.
-    Set use_langgraph=true for the LangGraph self-correcting RAG pipeline.
+
+    - Set model_choice to select any model exposed by /models.
+    - Set session_id for multi-turn conversations.
+    - Set use_langchain/use_langgraph for alternative pipelines.
     """
-    # Choose pipeline based on request
-    if request.use_langgraph:
-        qa_pipeline = get_langgraph_pipeline()
-        pipeline_name = "LangGraph"
-    elif request.use_langchain:
-        qa_pipeline = get_langchain_pipeline()
-        pipeline_name = "LangChain"
-    else:
-        qa_pipeline = get_pipeline()
-        pipeline_name = "Standard"
-    
-    if qa_pipeline is None:
-        raise HTTPException(
-            status_code=503,
-            detail=f"{pipeline_name} pipeline not initialized. Please check that the knowledge base is built."
-        )
-    
-    try:
-        # LangGraph and LangChain pipelines use simple .answer(question) interface
-        if request.use_langgraph or request.use_langchain:
-            response = qa_pipeline.answer(request.question)
-        else:
-            response = qa_pipeline.answer(
-                question=request.question,
-                num_documents=request.num_sources,
-                include_explanation=request.include_explanation
+    start_ts = time.time()
+    return await _prepare_and_execute_pipeline(request, start_ts)
+
+
+@app.post("/feedback", response_model=FeedbackResponse)
+async def submit_feedback(request: FeedbackRequest):
+    """
+    Submit user feedback tied to a prior response_id.
+
+    Stores rating/labels in FeedbackCollector and links trajectory metadata
+    for downstream RL training datasets.
+    """
+    _init_feedback_system()
+    if feedback_collector is None:
+        raise HTTPException(status_code=503, detail="Feedback system not available")
+
+    trajectory = trajectory_logger.get(request.response_id) if trajectory_logger else None
+
+    rating = request.rating
+    if rating is None:
+        observed_signals: List[float] = []
+        if request.was_helpful is not None:
+            observed_signals.append(float(request.was_helpful))
+        if request.was_accurate is not None:
+            observed_signals.append(float(request.was_accurate))
+        if request.was_safe is not None:
+            observed_signals.append(float(request.was_safe))
+        if not observed_signals:
+            raise HTTPException(
+                status_code=400,
+                detail="Provide either rating or at least one of was_helpful/was_accurate/was_safe.",
             )
-        
-        return AnswerResponse(
-            question=response.question,
-            answer=response.answer,
-            sources=[SourceInfo(**s) for s in response.sources],
-            confidence=ConfidenceInfo(**response.confidence),
-            attributions=[AttributionInfo(**a) for a in response.attributions],
-            disclaimer=response.disclaimer,
-            rationale=getattr(response, 'rationale', None)
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error processing question with {pipeline_name} pipeline: {str(e)}"
+        rating = int(round(1 + 4 * (sum(observed_signals) / len(observed_signals))))
+        rating = max(1, min(5, rating))
+
+    was_helpful = request.was_helpful if request.was_helpful is not None else rating >= 4
+    was_accurate = request.was_accurate if request.was_accurate is not None else rating >= 4
+    was_safe = request.was_safe if request.was_safe is not None else True
+    reward_signal = _compute_feedback_reward(
+        rating=rating,
+        was_helpful=was_helpful,
+        was_accurate=was_accurate,
+        was_safe=was_safe,
+    )
+
+    metadata = {
+        "response_id": request.response_id,
+        "reward_signal": reward_signal,
+        "trajectory_found": bool(trajectory),
+    }
+
+    if trajectory:
+        metadata.update(
+            {
+                "question_id": trajectory.get("question_id"),
+                "model_choice": trajectory.get("action", {}).get("model_choice"),
+                "pipeline": trajectory.get("action", {}).get("pipeline"),
+                "latency_ms": trajectory.get("outcome", {}).get("latency_ms"),
+                "confidence_score": trajectory.get("outcome", {}).get("confidence_score"),
+            }
         )
 
-@app.post("/ask/simple")
-async def ask_simple(question: str):
-    """
-    Simple question endpoint (minimal response).
-    """
-    qa_pipeline = get_pipeline()
+    feedback = feedback_collector.submit_feedback(
+        question_id=request.response_id,
+        rating=rating,
+        was_helpful=was_helpful,
+        was_accurate=was_accurate,
+        was_safe=was_safe,
+        feedback_text=request.feedback_text,
+        session_id=request.session_id,
+        **metadata,
+    )
+
+    return FeedbackResponse(
+        status="ok",
+        feedback_id=feedback.feedback_id,
+        response_id=request.response_id,
+        reward_signal=reward_signal,
+        trajectory_found=bool(trajectory),
+    )
+
+
+@app.get("/feedback/stats")
+async def feedback_stats():
+    """Return aggregate user feedback statistics."""
+    _init_feedback_system()
+    if feedback_collector is None:
+        raise HTTPException(status_code=503, detail="Feedback system not available")
+    stats = feedback_collector.get_statistics()
+    return {
+        "total_feedback": stats.total_feedback,
+        "avg_rating": stats.avg_rating,
+        "helpful_rate": stats.helpful_rate,
+        "accuracy_rate": stats.accuracy_rate,
+        "safety_rate": stats.safety_rate,
+        "low_rated_count": stats.low_rated_count,
+    }
+
+
+@app.post("/ask/stream")
+async def ask_stream(request: QuestionRequest):
+    """Stream a medical answer token by token (NDJSON)."""
+    start_ts = time.time()
     
-    if qa_pipeline is None:
-        raise HTTPException(status_code=503, detail="Pipeline not initialized")
-    
-    try:
-        response = qa_pipeline.answer(
-            question=question,
-            num_documents=3,
-            include_explanation=False
-        )
-        return {
-            "answer": response.answer,
-            "confidence": response.confidence["level"]
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    async def generate():
+        try:
+            response = await _prepare_and_execute_pipeline(request, start_ts)
+            
+            # Send metadata first (omit full answer to stream it separately)
+            meta = response.model_dump()
+            meta["answer"] = ""
+            yield json.dumps({"type": "meta", "data": meta}) + "\n"
+            
+            # Simulated token stream (useful for LLMs that don't natively stream, maintaining UX)
+            words = response.answer.split()
+            chunk_size = 3
+            for i in range(0, len(words), chunk_size):
+                chunk = " ".join(words[i : i + chunk_size])
+                if i + chunk_size < len(words):
+                    chunk += " "
+                yield json.dumps({"type": "token", "data": chunk}) + "\n"
+                
+            yield json.dumps({"type": "done", "data": ""}) + "\n"
+            
+        except HTTPException as e:
+            yield json.dumps({"type": "error", "data": e.detail}) + "\n"
+        except Exception as e:
+            yield json.dumps({"type": "error", "data": str(e)}) + "\n"
+
+    return StreamingResponse(generate(), media_type="application/x-ndjson")
+
 
 @app.post("/clear-cache")
 async def clear_cache():
     """Clear cached Q&A responses so fresh answers are generated."""
     cleared = False
-    # Clear pipeline cache if available
-    if pipeline and hasattr(pipeline, 'cache_manager') and pipeline.cache_manager:
-        pipeline.cache_manager.invalidate_cache()
-        cleared = True
-    # Also clear cache files directly as fallback
-    import glob
+    for p in pipelines.values():
+        if hasattr(p, "cache_manager") and p.cache_manager:
+            p.cache_manager.invalidate_cache()
+            cleared = True
+    # Also clear disk cache
     cache_dir = Path("data/cache")
     if cache_dir.exists():
         for f in cache_dir.glob("qa_*.json"):
@@ -344,14 +958,78 @@ async def clear_cache():
                 pass
     return {"status": "ok", "cleared": cleared}
 
+
+# ── Alternative pipeline loaders ─────────────────────────────────────────────
+
+def _get_langchain_pipeline():
+    """Lazy load LangChain pipeline."""
+    if "langchain" in pipelines:
+        return pipelines["langchain"]
+    try:
+        shared = _get_shared_components()
+        if not shared:
+            return None
+        from src.generation.llm_wrapper import MedicalLLM
+        from src.langchain import create_langchain_pipeline
+
+        adapter_path = Path("models/fine_tuned/medical_adapter")
+        llm = MedicalLLM(
+            model_name="tinyllama",
+            adapter_path=str(adapter_path) if adapter_path.exists() else None,
+            load_in_4bit=adapter_path.exists(),
+        )
+        pipeline = create_langchain_pipeline(
+            retriever=shared["retriever"],
+            llm=llm,
+            confidence_scorer=shared["confidence_scorer"],
+            source_attributor=shared["source_attributor"],
+        )
+        pipelines["langchain"] = pipeline
+        print("✅ LangChain pipeline loaded")
+        return pipeline
+    except Exception as e:
+        print(f"❌ Failed to load LangChain pipeline: {e}")
+        return None
+
+
+def _get_langgraph_pipeline():
+    """Lazy load LangGraph pipeline."""
+    if "langgraph" in pipelines:
+        return pipelines["langgraph"]
+    try:
+        shared = _get_shared_components()
+        if not shared:
+            return None
+        from src.generation.llm_wrapper import MedicalLLM
+        from src.langgraph import create_langgraph_pipeline
+
+        adapter_path = Path("models/fine_tuned/medical_adapter")
+        llm = MedicalLLM(
+            model_name="tinyllama",
+            adapter_path=str(adapter_path) if adapter_path.exists() else None,
+            load_in_4bit=adapter_path.exists(),
+        )
+        pipeline = create_langgraph_pipeline(
+            retriever=shared["retriever"],
+            llm=llm,
+            confidence_scorer=shared["confidence_scorer"],
+            source_attributor=shared["source_attributor"],
+        )
+        pipelines["langgraph"] = pipeline
+        print("✅ LangGraph pipeline loaded")
+        return pipeline
+    except Exception as e:
+        print(f"❌ Failed to load LangGraph pipeline: {e}")
+        return None
+
+
+# ── Startup ──────────────────────────────────────────────────────────────────
+
 if __name__ == "__main__":
-    # Pre-load pipeline
-    get_pipeline()
-    
-    # Run server
-    uvicorn.run(
-        app,
-        host="0.0.0.0",
-        port=8000,
-        log_level="info"
-    )
+    # Pre-load default pipeline + guardrails
+    get_pipeline("tinyllama")
+    _init_guardrails()
+    _init_conversation_manager()
+    _init_feedback_system()
+
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")

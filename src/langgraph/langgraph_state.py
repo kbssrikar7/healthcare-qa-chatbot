@@ -92,5 +92,5 @@ def create_initial_state(question: str) -> HealthcareRAGState:
 
 # Routing decision types
 RouteAfterGrading = Literal["generate", "refine", "unanswerable"]
-RouteAfterVerify = Literal["enrich_xai", "regenerate"]
+RouteAfterVerify = Literal["enrich_xai", "refine"]
 RouteAfterXAI = Literal["end", "review"]

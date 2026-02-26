@@ -161,6 +161,7 @@ class FollowUpDetector:
         """
         question_lower = question.lower().strip()
         words = question_lower.split()
+        has_context = bool(previous_context and previous_context.strip())
         
         # Check for follow-up phrases
         for phrase in self.FOLLOWUP_PHRASES:
@@ -179,12 +180,12 @@ class FollowUpDetector:
                 return True
         
         # Very short questions are often follow-ups
-        if len(words) <= 3:
+        if len(words) <= 3 and has_context:
             return True
         
-        # Check for missing subject (implied from context)
+        # Missing-subject heuristic only applies when there is prior context.
         if not self._has_clear_subject(question):
-            return True
+            return has_context
         
         return False
     

@@ -46,22 +46,26 @@ def route_after_grading(state: HealthcareRAGState) -> Literal["generate", "refin
     return "unanswerable"
 
 
-def route_after_verify(state: HealthcareRAGState) -> Literal["enrich_xai", "regenerate"]:
+def route_after_verify(state: HealthcareRAGState) -> Literal["enrich_xai", "refine"]:
     """
     Route after grounding verification.
     
     Decides whether to:
     - "enrich_xai": Answer is grounded, proceed to XAI enrichment
-    - "regenerate": Answer not grounded, add warning and continue
+    - "refine": Answer not grounded, retry retrieval/refinement loop
     """
     is_grounded = state.get("is_grounded", True)
+    retry_count = state.get("retry_count", 0)
     
     if is_grounded:
         return "enrich_xai"
-    else:
-        # For now, proceed anyway but flag it
-        # In a more complex system, we could regenerate
-        return "enrich_xai"
+
+    if retry_count < MAX_RETRY_COUNT:
+        return "refine"
+
+    # If retries are exhausted, continue with current answer path.
+    # This avoids infinite loops in degraded scenarios.
+    return "enrich_xai"
 
 
 def route_after_xai(state: HealthcareRAGState) -> Literal["end", "review"]:

@@ -51,6 +51,15 @@ healthcare_qa_chatbot/
 | API | FastAPI |
 | Frontend | Streamlit |
 
+## Alternative LLM Backends
+
+The API/UI now support:
+- `tinyllama` / `biomistral-7b` (Hugging Face transformers)
+- `lmstudio-local` (LM Studio local server)
+- `airllm-mistral-7b` (AirLLM sharded inference)
+
+Setup guide: `docs/lmstudio_airllm_integration.md`
+
 ## Success Metrics
 
 - Retrieval: Recall@10 > 85%

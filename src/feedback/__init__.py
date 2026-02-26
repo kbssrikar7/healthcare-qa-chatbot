@@ -7,10 +7,12 @@ from src.feedback.collector import (
     FeedbackStats,
     SimpleFeedback
 )
+from src.feedback.trajectory_logger import TrajectoryLogger
 
 __all__ = [
     'FeedbackCollector',
     'UserFeedback',
     'FeedbackStats',
-    'SimpleFeedback'
+    'SimpleFeedback',
+    'TrajectoryLogger'
 ]

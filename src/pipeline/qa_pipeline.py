@@ -1,8 +1,13 @@
 """
 Main QA pipeline orchestrating all components.
 
-Enhanced with grounding gate (answerability check) based on RAG skill patterns.
-Includes response caching for performance optimization.
+Enhanced with:
+- Adaptive grounding gate (hybrid absolute + relative threshold)
+- Optional query enhancement (pre-retrieval)
+- Optional corrective RAG (post-retrieval quality check)
+- Optional context compression (before generation)
+- Optional factual consistency check (post-generation)
+- Cache context key including model/pipeline/KB fingerprint
 """
 import sys
 import re
@@ -11,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from typing import List, Dict, Optional
 from dataclasses import dataclass
+import asyncio
 
 # Import configuration
 try:
@@ -39,19 +45,28 @@ class QAResponse:
     confidence: Dict
     attributions: List[Dict]
     disclaimer: str
-    rationale: Optional[str] = None # Added rationale field
-    is_answerable: bool = True  # New field for grounding gate result
-    from_cache: bool = False    # Indicates if response was cached
+    rationale: Optional[str] = None
+    is_answerable: bool = True
+    from_cache: bool = False
+    factual_consistency: Optional[Dict] = None  # NEW: factual check result
+
 
 class HealthcareQAPipeline:
     """
     Main pipeline orchestrating retrieval, generation, and XAI.
     
-    Includes grounding gate for answerability checking based on ai-rag skill patterns.
-    Supports response caching for improved performance.
+    Stages (each skippable when component is None):
+      1. Query enhancement (pre-retrieval)
+      2. Retrieval (+ reranking inside HybridRetriever)
+      3. Corrective RAG (post-retrieval quality check)
+      4. Grounding gate (adaptive threshold)
+      5. Context compression (before generation)
+      6. LLM generation
+      7. Factual consistency check (post-generation)
+      8. Source attribution & confidence scoring
+      9. Cache response
     """
     
-    # Response when question is not answerable from context
     UNANSWERABLE_RESPONSE = (
         "I don't have enough information in my knowledge base to answer this question accurately. "
         "Please consult a healthcare professional for specific medical advice."
@@ -67,9 +82,16 @@ class HealthcareQAPipeline:
         rationale_generator=None,
         enable_grounding_gate: bool = None,
         cache_manager: Optional["CacheManager"] = None,
+        # Enhanced pipeline components (all optional)
+        query_enhancer=None,
+        context_compressor=None,
+        corrective_rag=None,
+        factual_consistency_checker=None,
         # Configurable thresholds (override config if provided)
         min_retrieval_score: float = None,
-        min_relevant_docs: int = None
+        min_relevant_docs: int = None,
+        # Cache context key for model/pipeline-aware caching
+        cache_context_key: str = "",
     ):
         self.retriever = retriever
         self.llm = llm
@@ -78,12 +100,26 @@ class HealthcareQAPipeline:
         self.source_attributor = source_attributor
         self.rationale_generator = rationale_generator
         
+        # MCP Configuration
+        self.enable_mcp_search = False
+        self.mcp_search_cmd = "npx"
+        self.mcp_search_args = "-y @modelcontextprotocol/server-brave-search"
+        if config and hasattr(config, "pipeline"):
+            self.enable_mcp_search = getattr(config.pipeline, "enable_mcp_search", False)
+            self.mcp_search_cmd = getattr(config.pipeline, "mcp_search_cmd", "npx")
+            self.mcp_search_args = getattr(config.pipeline, "mcp_search_args", "-y @modelcontextprotocol/server-brave-search")
+        
+        # Enhanced pipeline components
+        self.query_enhancer = query_enhancer
+        self.context_compressor = context_compressor
+        self.corrective_rag = corrective_rag
+        self.factual_consistency_checker = factual_consistency_checker
+        self.cache_context_key = cache_context_key
+        
         # Initialize rationale generator if not provided but class is available
         if self.rationale_generator is None and RationaleGenerator is not None and self.llm:
-             self.rationale_generator = RationaleGenerator(self.llm)
+            self.rationale_generator = RationaleGenerator(self.llm)
 
-        # Load from config with fallbacks
-        
         # Load from config with fallbacks
         pipeline_config = getattr(config, 'pipeline', None) if config else None
         
@@ -96,6 +132,9 @@ class HealthcareQAPipeline:
         self.min_relevant_docs = min_relevant_docs if min_relevant_docs is not None else (
             getattr(pipeline_config, 'min_relevant_docs', 1) if pipeline_config else 1
         )
+        # Adaptive thresholds
+        self.adaptive_threshold_ratio = getattr(pipeline_config, 'adaptive_threshold_ratio', 0.5) if pipeline_config else 0.5
+        self.absolute_score_floor = getattr(pipeline_config, 'absolute_score_floor', 0.01) if pipeline_config else 0.01
         
         # Initialize cache manager
         self.cache_manager = cache_manager
@@ -117,12 +156,16 @@ class HealthcareQAPipeline:
         """
         Answer a medical question with explanations.
         
-        Includes grounding gate to check if context is sufficient.
-        Uses caching for improved performance when enabled.
+        Full pipeline: enhance → retrieve → correct → gate → compress → generate → verify.
         """
-        # 0. Check cache first
+        # Build dynamic context key for cache (combining static pipeline info + per-request flags)
+        dynamic_context_key = f"{self.cache_context_key}_srcs{num_documents}_expl{include_explanation}_{template_name}"
+        
+        # 0. Check cache first (with context key for model/pipeline awareness)
         if self.cache_manager:
-            cached = self.cache_manager.get_cached_response(question)
+            cached = self.cache_manager.get_cached_response(
+                question, context_key=dynamic_context_key
+            )
             if cached:
                 return QAResponse(
                     question=cached.get('question', question),
@@ -133,58 +176,145 @@ class HealthcareQAPipeline:
                     disclaimer=cached.get('disclaimer', ''),
                     rationale=cached.get('rationale', None),
                     is_answerable=cached.get('is_answerable', True),
-                    from_cache=True
+                    from_cache=True,
+                    factual_consistency=cached.get('factual_consistency', None),
                 )
         
-        # 1. Retrieve relevant documents
+        # 1. QUERY ENHANCEMENT (pre-retrieval)
+        retrieval_query = question
+        if self.query_enhancer:
+            try:
+                enhanced = self.query_enhancer.enhance_query(question)
+                if enhanced and isinstance(enhanced, list) and len(enhanced) > 0:
+                    # Use the first enhanced query variant
+                    retrieval_query = enhanced[0] if isinstance(enhanced[0], str) else question
+                elif isinstance(enhanced, str) and enhanced:
+                    retrieval_query = enhanced
+            except Exception as e:
+                print(f"⚠️ Query enhancement failed, using original: {e}")
+        
+        # 2. RETRIEVE relevant documents
         documents, context = self.retriever.retrieve_with_context(
-            question,
+            retrieval_query,
             k=num_documents
         )
         
-        # 2. GROUNDING GATE: Check if context is sufficient to answer
+        # 3. CORRECTIVE RAG (post-retrieval quality check)
+        if self.corrective_rag and documents:
+            try:
+                corrected_docs = self.corrective_rag.retrieve_with_correction(
+                    query=retrieval_query,
+                    initial_docs=documents
+                )
+                if corrected_docs and len(corrected_docs) > 0:
+                    documents = corrected_docs
+                    # Rebuild context from corrected docs
+                    context_parts = []
+                    total_length = 0
+                    for i, doc in enumerate(documents, 1):
+                        if total_length + len(doc.content) > 2000:
+                            break
+                        context_parts.append(f"[{i}] Source: {doc.source}\n{doc.content}")
+                        total_length += len(doc.content)
+                    context = "\n\n".join(context_parts)
+            except Exception as e:
+                print(f"⚠️ Corrective RAG failed, using original retrieval: {e}")
+        
+        # 4. GROUNDING GATE: adaptive check
         is_answerable = True
         if self.enable_grounding_gate:
             is_answerable = self._check_answerability(documents)
         
         if not is_answerable:
-            # Return safe response when question cannot be answered from context
-            disclaimer = self.prompt_manager.get_medical_disclaimer()
-            return QAResponse(
-                question=question,
-                answer=self.UNANSWERABLE_RESPONSE,
-                sources=[],
-                confidence={
-                    "score": 0.0,
-                    "level": "low",
-                    "explanation": "Insufficient relevant context found in knowledge base"
-                },
-                attributions=[],
-                disclaimer=disclaimer,
-                rationale=None,
-                is_answerable=False
-            )
+            # Fallback to MCP Search if enabled
+            if self.enable_mcp_search:
+                print("🌐 Local knowledge insufficient. Falling back to MCP Web Search...")
+                try:
+                    from src.mcp_client.agent import execute_mcp_tool_oneshot
+                    
+                    # We will use the brave_web_search tool
+                    mcp_args = self.mcp_search_args.split(" ")
+                    mcp_result = asyncio.run(execute_mcp_tool_oneshot(
+                        server_cmd=self.mcp_search_cmd,
+                        server_args=mcp_args,
+                        tool_name="brave_web_search",
+                        tool_args={"query": question, "count": 3}
+                    ))
+                    
+                    if mcp_result and not mcp_result.startswith("[MCP Error"):
+                        context = f"CONTEXT FROM LIVE WEB SEARCH:\n{mcp_result}"
+                        is_answerable = True
+                        # Add a dummy source for UI attribution
+                        documents = [type('Doc', (object,), {'source': 'MCP Web Search', 'content': context[:500]})()]
+                        print("✅ MCP Web Search succeeded")
+                    else:
+                        print(f"⚠️ MCP Web Search failed or returned nothing: {mcp_result}")
+                except Exception as e:
+                    print(f"⚠️ MCP Web Search exception: {e}")
+                    
+            # If still not answerable after MCP fallback attempt
+            if not is_answerable:
+                disclaimer = self.prompt_manager.get_medical_disclaimer()
+                return QAResponse(
+                    question=question,
+                    answer=self.UNANSWERABLE_RESPONSE,
+                    sources=[],
+                    confidence={
+                        "score": 0.0,
+                        "level": "low",
+                        "explanation": "Insufficient relevant context found in knowledge base and web search"
+                    },
+                    attributions=[],
+                    disclaimer=disclaimer,
+                    rationale=None,
+                    is_answerable=False
+                )
         
-        # 3. Build prompt
+        # 5. CONTEXT COMPRESSION (before generation)
+        generation_context = context
+        if self.context_compressor:
+            try:
+                compressed = self.context_compressor.compress(
+                    context=context,
+                    query=question
+                )
+                if compressed:
+                    generation_context = compressed
+            except Exception as e:
+                print(f"⚠️ Context compression failed, using full context: {e}")
+        
+        # 6. BUILD PROMPT & GENERATE ANSWER
         prompt = self.prompt_manager.build_prompt(
             question=question,
-            context=context,
+            context=generation_context,
             template_name=template_name
         )
         
-        # 4. Generate answer
         generation_result = self.llm.generate(
             prompt,
             max_new_tokens=256,
             return_probabilities=include_explanation
         )
         
-        answer = generation_result.response
+        answer = self._clean_answer(generation_result.response)
         
-        # 4a. Clean answer - remove any training data artifacts
-        answer = self._clean_answer(answer)
+        # 7. FACTUAL CONSISTENCY CHECK (post-generation)
+        factual_result = None
+        if self.factual_consistency_checker and answer:
+            try:
+                fc = self.factual_consistency_checker.check_consistency(
+                    answer=answer,
+                    context=context
+                )
+                factual_result = {
+                    "is_consistent": fc.is_consistent if hasattr(fc, 'is_consistent') else True,
+                    "score": fc.consistency_score if hasattr(fc, 'consistency_score') else 1.0,
+                    "details": fc.claim_results if hasattr(fc, 'claim_results') else [],
+                }
+            except Exception as e:
+                print(f"⚠️ Factual consistency check failed: {e}")
         
-        # 4. Calculate confidence
+        # 8. CONFIDENCE SCORING
         if self.confidence_scorer and include_explanation:
             retrieval_scores = [doc.score for doc in documents]
             confidence_result = self.confidence_scorer.calculate_confidence(
@@ -204,7 +334,7 @@ class HealthcareQAPipeline:
                 "explanation": "Confidence scoring not available"
             }
         
-        # 5. Attribute sources
+        # 9. SOURCE ATTRIBUTION
         if self.source_attributor and include_explanation:
             doc_dicts = [
                 {"content": doc.content, "source": doc.source, "url": doc.metadata.get("url", "")}
@@ -223,17 +353,17 @@ class HealthcareQAPipeline:
         else:
             attributions = []
         
-        # 6. Generate Rationale
+        # 10. RATIONALE
         rationale = None
         if self.rationale_generator and include_explanation:
-             combined_context = "\n".join([d.content for d in documents])
-             rationale = self.rationale_generator.generate_rationale(
-                 question=question,
-                 answer=answer,
-                 context=combined_context
-             )
+            combined_context = "\n".join([d.content for d in documents])
+            rationale = self.rationale_generator.generate_rationale(
+                question=question,
+                answer=answer,
+                context=combined_context
+            )
 
-        # 7. Build source list
+        # 11. BUILD SOURCE LIST
         sources = [
             {
                 "source": doc.source,
@@ -244,7 +374,6 @@ class HealthcareQAPipeline:
             for doc in documents
         ]
         
-        # 7. Get disclaimer
         disclaimer = self.prompt_manager.get_medical_disclaimer()
         
         response = QAResponse(
@@ -256,51 +385,52 @@ class HealthcareQAPipeline:
             disclaimer=disclaimer,
             rationale=rationale,
             is_answerable=True,
-            from_cache=False
+            from_cache=False,
+            factual_consistency=factual_result,
         )
         
-        # 8. Cache the response
+        # 12. CACHE THE RESPONSE (with context key)
         if self.cache_manager:
-            self.cache_manager.cache_response(question, {
-                'question': question,
-                'answer': answer,
-                'sources': sources,
-                'confidence': confidence,
-                'attributions': attributions,
-                'disclaimer': disclaimer,
-                'rationale': rationale,
-                'is_answerable': True
-            })
+            self.cache_manager.cache_response(
+                question,
+                {
+                    'question': question,
+                    'answer': answer,
+                    'sources': sources,
+                    'confidence': confidence,
+                    'attributions': attributions,
+                    'disclaimer': disclaimer,
+                    'rationale': rationale,
+                    'is_answerable': True,
+                    'factual_consistency': factual_result,
+                },
+                context_key=dynamic_context_key,
+            )
         
         return response
     
     def _check_answerability(self, documents: List) -> bool:
         """
-        Check if retrieved documents are sufficient to answer the question.
+        Adaptive grounding gate: doc is relevant if
+            score >= max(absolute_score_floor, adaptive_ratio * top_score)
         
-        Grounding gate based on ai-rag skill pattern.
-        
-        Args:
-            documents: Retrieved documents with scores
-            
-        Returns:
-            True if question appears answerable, False otherwise
+        This handles both cosine-similarity scores (0–1) and RRF scores (~0.016)
+        without the static threshold problem.
         """
         if not documents:
             return False
         
-        # Check if we have enough relevant documents (using configurable thresholds)
-        relevant_docs = [
-            doc for doc in documents 
-            if doc.score >= self.min_retrieval_score
-        ]
+        top_score = max(doc.score for doc in documents)
+        
+        # Hybrid threshold: whichever is larger wins
+        threshold = max(
+            self.absolute_score_floor,
+            self.adaptive_threshold_ratio * top_score,
+        )
+        
+        relevant_docs = [doc for doc in documents if doc.score >= threshold]
         
         if len(relevant_docs) < self.min_relevant_docs:
-            return False
-        
-        # Check if top document has reasonable relevance
-        top_score = max(doc.score for doc in documents)
-        if top_score < self.min_retrieval_score:
             return False
         
         return True
@@ -308,14 +438,10 @@ class HealthcareQAPipeline:
     def _clean_answer(self, answer: str) -> str:
         """
         Pipeline-level answer cleaning to strip training data artifacts.
-        
-        This is a safety net in addition to MedicalLLM._clean_response().
-        Catches patterns that may appear in cached or externally-generated responses.
         """
         if not answer:
             return answer
         
-        # Strip leading answer prefixes the model may generate
         answer = answer.strip()
         for prefix in ['Answer:', 'Factual Answer:', 'Evidence-Based Answer:',
                        'Based on the reference text above, the answer is:',
@@ -324,7 +450,6 @@ class HealthcareQAPipeline:
             if answer.startswith(prefix):
                 answer = answer[len(prefix):].strip()
         
-        # Patterns to truncate at (everything after the first match is removed)
         truncate_patterns = [
             r'Best regards',
             r'Kind regards',
@@ -346,8 +471,6 @@ class HealthcareQAPipeline:
             r'\[\d+\]\s*Source:',
         ]
         
-        # Only match patterns AFTER first 50 chars to avoid truncating
-        # legitimate content at the start of the answer
         min_match_pos = min(50, len(answer))
         earliest_pos = len(answer)
         for pattern in truncate_patterns:
@@ -358,17 +481,14 @@ class HealthcareQAPipeline:
         if earliest_pos < len(answer):
             answer = answer[:earliest_pos]
         
-        # Remove inline source refs like [1], [2], [3]
         answer = re.sub(r'\[\d+\]', '', answer)
         
-        # Clean trailing incomplete sentence
         answer = answer.rstrip()
         if answer and answer[-1] not in '.!?:)"':
             last_period = max(answer.rfind('.'), answer.rfind('!'), answer.rfind('?'))
             if last_period > len(answer) * 0.3:
                 answer = answer[:last_period + 1]
         
-        # Clean extra whitespace
         answer = re.sub(r'  +', ' ', answer)
         answer = re.sub(r'\n\n\n+', '\n\n', answer)
         

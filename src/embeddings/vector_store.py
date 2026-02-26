@@ -5,8 +5,36 @@ import chromadb
 from chromadb.config import Settings
 from typing import List, Dict, Optional, Any
 import uuid
+import hashlib
 from pathlib import Path
 import json
+
+
+def generate_deterministic_id(
+    source: str,
+    content: str,
+    chunk_id: int = 0,
+) -> str:
+    """
+    Generate a deterministic document ID from source + chunk_id + content hash.
+    
+    This ensures:
+    - Same document always gets the same ID across ingestion runs
+    - Different chunks of the same source get distinct IDs
+    - Collisions are extremely unlikely (SHA-256 prefix)
+    
+    Args:
+        source: Document source name
+        content: Document text content
+        chunk_id: Chunk index within the source document
+        
+    Returns:
+        Deterministic hex ID string (32 chars)
+    """
+    content_hash = hashlib.sha256(content.encode()).hexdigest()[:16]
+    key = f"{source}::chunk{chunk_id}::{content_hash}"
+    return hashlib.sha256(key.encode()).hexdigest()[:32]
+
 
 class VectorStore:
     """
@@ -66,11 +94,19 @@ class VectorStore:
         ids: Optional[List[str]] = None
     ) -> List[str]:
         """Add documents with embeddings to the store."""
-        if ids is None:
-            ids = [str(uuid.uuid4()) for _ in documents]
-        
         if metadatas is None:
             metadatas = [{}] * len(documents)
+        
+        # Generate deterministic IDs if not provided
+        if ids is None:
+            ids = [
+                generate_deterministic_id(
+                    source=meta.get("source", ""),
+                    content=doc,
+                    chunk_id=meta.get("chunk_id", i),
+                )
+                for i, (doc, meta) in enumerate(zip(documents, metadatas))
+            ]
         
         # Ensure metadata values are valid types (str, int, float, bool)
         clean_metadatas = []

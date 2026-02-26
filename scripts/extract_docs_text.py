@@ -45,7 +45,7 @@ if __name__ == "__main__":
         "Rubrics_review_evaluation-REVIEW_2.docx",
         "Review_PPT_4-2_2 (1).pptx"
     ]
-    base_dir = "/home/kbs/final_project"
+    base_dir = str(Path(__file__).resolve().parent.parent)
     
     for f in files:
         path = os.path.join(base_dir, f)

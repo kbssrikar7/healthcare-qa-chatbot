@@ -38,7 +38,9 @@ class GenerationResult:
 class MedicalLLM:
     """
     Medical domain LLM wrapper.
-    Supports: BioMistral, TinyLlama, Mistral, Llama
+    Supports backends:
+    - transformers (default)
+    - airllm (low-VRAM sharded inference)
     """
     
     SUPPORTED_MODELS = {
@@ -101,20 +103,48 @@ class MedicalLLM:
         device: Optional[str] = None,
         load_in_4bit: bool = True,
         max_memory: Optional[Dict] = None,
-        adapter_path: Optional[str] = None
+        adapter_path: Optional[str] = None,
+        backend: str = "transformers",
+        airllm_compression: Optional[str] = None,
+        hf_token: Optional[str] = None,
     ):
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.adapter_path = adapter_path
-        
-        # Get model path
-        if model_name in self.SUPPORTED_MODELS:
-            model_path = self.SUPPORTED_MODELS[model_name]
-        else:
-            model_path = model_name
-        
+        self.backend = backend
+        self.hf_token = hf_token
+
+        # Keep argument for compatibility with existing call sites.
+        _ = max_memory
+
+        model_path = self._resolve_model_path(model_name)
         self.model_name = model_name
-        print(f"🔄 Loading LLM: {model_path} on {self.device}")
-        
+        print(f"🔄 Loading LLM ({self.backend}): {model_path} on {self.device}")
+
+        if self.backend == "airllm":
+            self._init_airllm_model(
+                model_path=model_path,
+                compression=airllm_compression,
+            )
+        else:
+            self._init_transformers_model(
+                model_path=model_path,
+                load_in_4bit=load_in_4bit,
+                adapter_path=adapter_path,
+            )
+
+    def _resolve_model_path(self, model_name: str) -> str:
+        """Resolve a shorthand model key to a full model path."""
+        if model_name in self.SUPPORTED_MODELS:
+            return self.SUPPORTED_MODELS[model_name]
+        return model_name
+
+    def _init_transformers_model(
+        self,
+        model_path: str,
+        load_in_4bit: bool,
+        adapter_path: Optional[str],
+    ) -> None:
+        """Initialize Hugging Face transformers backend."""
         # Quantization config for 4-bit loading
         if load_in_4bit and self.device == "cuda":
             try:
@@ -129,7 +159,7 @@ class MedicalLLM:
                 print("⚠️ BitsAndBytes not available, loading without quantization")
         else:
             quantization_config = None
-        
+
         # Load tokenizer - from adapter if available, otherwise base model
         tokenizer_path = adapter_path if adapter_path else model_path
         try:
@@ -139,45 +169,54 @@ class MedicalLLM:
             )
         except OSError as e:
             if "not found" in str(e).lower() or "does not appear" in str(e).lower():
-                raise ModelNotFoundError(f"Model '{tokenizer_path}' not found. Check the model name or internet connection.")
+                raise ModelNotFoundError(
+                    f"Model '{tokenizer_path}' not found. Check the model name or internet connection."
+                ) from e
             raise
-            
+
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
-        
+
         # Load model with granular error handling
         try:
+            if self.device == "cpu":
+                import os
+                threads = min(4, os.cpu_count() or 4)
+                torch.set_num_threads(threads)
+                
             if quantization_config and self.device == "cuda":
                 self.model = AutoModelForCausalLM.from_pretrained(
                     model_path,
                     quantization_config=quantization_config,
                     device_map="auto",
-                    trust_remote_code=True
+                    trust_remote_code=True,
+                    low_cpu_mem_usage=True
                 )
             else:
                 self.model = AutoModelForCausalLM.from_pretrained(
                     model_path,
-                    torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
+                    torch_dtype=torch.float16 if self.device == "cuda" else getattr(torch, "bfloat16", torch.float32),
                     device_map="auto" if self.device == "cuda" else None,
-                    trust_remote_code=True
+                    trust_remote_code=True,
+                    low_cpu_mem_usage=True
                 )
                 if self.device == "cpu":
                     self.model = self.model.to(self.device)
-            
+
             # Load PEFT adapter if specified
             if adapter_path:
                 try:
                     from peft import PeftModel
                     print(f"🔄 Loading PEFT adapter from {adapter_path}")
                     self.model = PeftModel.from_pretrained(self.model, adapter_path)
-                    print(f"✅ Adapter loaded successfully")
+                    print("✅ Adapter loaded successfully")
                 except ImportError:
                     print("⚠️ PEFT not installed, using base model without adapter")
                 except Exception as e:
                     print(f"⚠️ Failed to load adapter: {e}, using base model")
-            
+
             self.model.eval()
-            print(f"✅ Model loaded successfully")
+            print("✅ Model loaded successfully")
         except torch.cuda.OutOfMemoryError as e:
             raise GPUOutOfMemoryError(
                 f"GPU out of memory loading '{model_path}'. "
@@ -186,11 +225,44 @@ class MedicalLLM:
             ) from e
         except OSError as e:
             if "not found" in str(e).lower() or "does not appear" in str(e).lower():
-                raise ModelNotFoundError(f"Model '{model_path}' not found: {e}")
+                raise ModelNotFoundError(f"Model '{model_path}' not found: {e}") from e
             raise
         except Exception as e:
             print(f"❌ Failed to load model: {e}")
             raise
+
+    def _init_airllm_model(
+        self,
+        model_path: str,
+        compression: Optional[str],
+    ) -> None:
+        """Initialize AirLLM backend."""
+        try:
+            from airllm import AutoModel as AirLLMAutoModel
+        except ImportError as e:
+            raise LLMError("airllm is not installed. Run `pip install airllm`.") from e
+
+        try:
+            airllm_device = self.device
+            if airllm_device == "cuda":
+                airllm_device = "cuda:0"
+
+            airllm_kwargs: Dict[str, Any] = {"device": airllm_device}
+            if compression:
+                airllm_kwargs["compression"] = compression
+            if self.hf_token:
+                airllm_kwargs["hf_token"] = self.hf_token
+
+            self.model = AirLLMAutoModel.from_pretrained(model_path, **airllm_kwargs)
+            self.tokenizer = self.model.tokenizer
+            if self.tokenizer.pad_token is None and self.tokenizer.eos_token is not None:
+                self.tokenizer.pad_token = self.tokenizer.eos_token
+            print("✅ AirLLM model loaded")
+        except Exception as e:
+            raise LLMError(
+                f"Failed to initialize AirLLM model '{model_path}'. "
+                "Check model id, Hugging Face access token, and disk space."
+            ) from e
     
     def generate(
         self,
@@ -202,7 +274,33 @@ class MedicalLLM:
         return_probabilities: bool = False
     ) -> GenerationResult:
         """Generate response from the LLM."""
-        
+        if self.backend == "airllm":
+            return self._generate_with_airllm(
+                prompt=prompt,
+                max_new_tokens=max_new_tokens,
+                temperature=temperature,
+                top_p=top_p,
+                do_sample=do_sample,
+            )
+        return self._generate_with_transformers(
+            prompt=prompt,
+            max_new_tokens=max_new_tokens,
+            temperature=temperature,
+            top_p=top_p,
+            do_sample=do_sample,
+            return_probabilities=return_probabilities,
+        )
+
+    def _generate_with_transformers(
+        self,
+        prompt: str,
+        max_new_tokens: int,
+        temperature: float,
+        top_p: float,
+        do_sample: bool,
+        return_probabilities: bool,
+    ) -> GenerationResult:
+        """Generation path for Hugging Face transformers backend."""
         # Tokenize input
         inputs = self.tokenizer(
             prompt,
@@ -210,9 +308,9 @@ class MedicalLLM:
             truncation=True,
             max_length=2048
         ).to(self.model.device)
-        
+
         input_length = inputs.input_ids.shape[1]
-        
+
         # Generate
         with torch.no_grad():
             outputs = self.model.generate(
@@ -226,11 +324,11 @@ class MedicalLLM:
                 output_scores=return_probabilities,
                 return_dict_in_generate=True
             )
-        
+
         # Decode response
         generated_ids = outputs.sequences[0][input_length:]
         response = self.tokenizer.decode(generated_ids, skip_special_tokens=True)
-        
+
         # Get probabilities if requested
         probabilities = None
         if return_probabilities and hasattr(outputs, 'scores'):
@@ -239,16 +337,62 @@ class MedicalLLM:
                 prob = torch.softmax(score[0], dim=-1)
                 probs.append(prob.max().item())
             probabilities = probs
-        
+
         # Post-process: truncate leaked training data
         response = self._clean_response(response)
-        
+
         return GenerationResult(
             response=response.strip(),
             input_tokens=input_length,
             generated_tokens=len(generated_ids),
             probabilities=probabilities
         )
+
+    def _generate_with_airllm(
+        self,
+        prompt: str,
+        max_new_tokens: int,
+        temperature: float,
+        top_p: float,
+        do_sample: bool,
+    ) -> GenerationResult:
+        """Generation path for AirLLM backend."""
+        try:
+            tokenized = self.tokenizer(
+                prompt,
+                return_tensors="pt",
+                truncation=True,
+                max_length=2048,
+            )
+            input_ids = tokenized["input_ids"]
+            if self.device.startswith("cuda"):
+                target_device = self.device if ":" in self.device else "cuda:0"
+                input_ids = input_ids.to(target_device)
+
+            with torch.no_grad():
+                outputs = self.model.generate(
+                    input_ids,
+                    max_new_tokens=max_new_tokens,
+                    temperature=temperature if do_sample else 1.0,
+                    top_p=top_p if do_sample else 1.0,
+                    do_sample=do_sample,
+                    use_cache=True,
+                    return_dict_in_generate=True,
+                )
+
+            sequences = outputs.sequences if hasattr(outputs, "sequences") else outputs
+            generated_ids = sequences[0][input_ids.shape[1]:]
+            response = self.tokenizer.decode(generated_ids, skip_special_tokens=True)
+            response = self._clean_response(response)
+
+            return GenerationResult(
+                response=response.strip(),
+                input_tokens=int(input_ids.shape[1]),
+                generated_tokens=int(len(generated_ids)),
+                probabilities=None,
+            )
+        except Exception as e:
+            raise GenerationError(f"AirLLM generation failed: {e}") from e
     
     def generate_with_context(
         self,
@@ -338,8 +482,10 @@ class MedicalLLM:
     
     def cleanup(self):
         """Free GPU memory."""
-        del self.model
-        del self.tokenizer
+        if hasattr(self, "model"):
+            del self.model
+        if hasattr(self, "tokenizer"):
+            del self.tokenizer
         gc.collect()
         if torch.cuda.is_available():
             torch.cuda.empty_cache()

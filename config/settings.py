@@ -21,6 +21,7 @@ class ModelChoice(str, Enum):
     """Available LLM model choices."""
     TINYLLAMA = "tinyllama"
     BIOMISTRAL_7B = "biomistral-7b"
+    AIRLLM_MISTRAL_7B = "airllm-mistral-7b"
 
 
 # Model registry with metadata
@@ -33,6 +34,7 @@ AVAILABLE_MODELS: Dict[str, Dict[str, Any]] = {
         "max_new_tokens": 512,
         "requires_gpu": False,
         "load_in_4bit": False,
+        "backend": "transformers",
     },
     "biomistral-7b": {
         "model_name": "BioMistral/BioMistral-7B",
@@ -42,6 +44,17 @@ AVAILABLE_MODELS: Dict[str, Dict[str, Any]] = {
         "max_new_tokens": 512,
         "requires_gpu": True,
         "load_in_4bit": True,
+        "backend": "transformers",
+    },
+    "airllm-mistral-7b": {
+        "model_name": os.getenv("AIRLLM_MODEL_ID", "mistralai/Mistral-7B-Instruct-v0.2"),
+        "display_name": "AirLLM Mistral 7B",
+        "description": "AirLLM sharded inference for lower VRAM usage",
+        "parameters": "7B",
+        "max_new_tokens": 512,
+        "requires_gpu": True,
+        "load_in_4bit": False,
+        "backend": "airllm",
     },
 }
 
@@ -61,11 +74,14 @@ class LLMConfig:
     """LLM configuration."""
     model_name: str = "BioMistral/BioMistral-7B"
     default_model: str = "tinyllama"
+    backend: str = os.getenv("LLM_BACKEND", "transformers")
     max_new_tokens: int = 512
     temperature: float = 0.7
     top_p: float = 0.9
     load_in_4bit: bool = True
     device_map: str = "auto"
+    airllm_compression: Optional[str] = os.getenv("AIRLLM_COMPRESSION")
+    hf_home: str = os.getenv("HF_HOME", str(PROJECT_ROOT / ".hf_cache"))
     
     # Fine-tuning
     lora_r: int = 16
@@ -102,6 +118,21 @@ class PipelineConfig:
     min_retrieval_score: float = 0.3
     min_relevant_docs: int = 1
     enable_grounding_gate: bool = True
+    # Adaptive threshold: doc is relevant if score >= max(absolute_floor, ratio * top_score)
+    adaptive_threshold_ratio: float = 0.5
+    absolute_score_floor: float = 0.01  # Catches RRF-scale scores (~0.016)
+    
+    # Enhanced pipeline feature flags
+    enable_reranker: bool = False
+    enable_query_enhancement: bool = False
+    enable_context_compression: bool = False
+    enable_corrective_rag: bool = False
+    enable_factual_consistency: bool = False
+    
+    # MCP Integration
+    enable_mcp_search: bool = os.getenv("ENABLE_MCP_SEARCH", "false").lower() == "true"
+    mcp_search_cmd: str = os.getenv("MCP_SEARCH_CMD", "npx")
+    mcp_search_args: str = os.getenv("MCP_SEARCH_ARGS", "-y @modelcontextprotocol/server-brave-search")
     
     # Caching
     enable_response_cache: bool = True
@@ -158,4 +189,3 @@ class Config:
 
 # Global config instance
 config = Config()
-

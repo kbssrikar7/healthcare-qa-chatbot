@@ -7,7 +7,7 @@ from typing import List, Optional, Dict, Any
 from langchain_core.retrievers import BaseRetriever
 from langchain_core.documents import Document
 from langchain_core.callbacks.manager import CallbackManagerForRetrieverRun
-from pydantic import Field
+from pydantic import Field, ConfigDict
 
 # Import the existing retriever
 import sys
@@ -33,10 +33,24 @@ class LangChainHybridRetriever(BaseRetriever):
     k: int = Field(default=5, description="Number of documents to retrieve")
     use_hybrid: bool = Field(default=True, description="Whether to use hybrid retrieval")
     use_reranking: bool = Field(default=True, description="Whether to apply reranking")
-    
-    class Config:
-        """Pydantic config."""
-        arbitrary_types_allowed = True
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    def __init__(self, **kwargs: Any):
+        """
+        Initialize wrapper.
+
+        Accepts both `hybrid_retriever=` and legacy `retriever=` argument
+        for backward compatibility with older tests/callers.
+        """
+        if "retriever" in kwargs and "hybrid_retriever" not in kwargs:
+            kwargs["hybrid_retriever"] = kwargs.pop("retriever")
+        super().__init__(**kwargs)
+
+    @property
+    def _retriever(self) -> Any:
+        """Legacy alias expected by older tests/callers."""
+        return self.hybrid_retriever
     
     def _get_relevant_documents(
         self,

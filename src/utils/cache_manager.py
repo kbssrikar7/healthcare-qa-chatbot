@@ -45,21 +45,23 @@ class CacheManager:
         self._query_cache: Dict[str, Dict] = {}
         self._embedding_cache: Dict[str, Any] = {}
     
-    def _hash_key(self, key: str) -> str:
-        """Generate hash for cache key."""
-        return hashlib.md5(key.encode()).hexdigest()
+    def _hash_key(self, key: str, context_key: str = "") -> str:
+        """Generate hash for cache key including optional context."""
+        full_key = f"{key}::{context_key}"
+        return hashlib.md5(full_key.encode()).hexdigest()
     
-    def get_cached_response(self, query: str) -> Optional[Dict]:
+    def get_cached_response(self, query: str, context_key: str = "") -> Optional[Dict]:
         """
         Get cached Q&A response for query.
         
         Args:
             query: User query
+            context_key: Optional context (model, pipeline, KB fingerprint)
             
         Returns:
             Cached response dict or None
         """
-        key = self._hash_key(query.lower().strip())
+        key = self._hash_key(query.lower().strip(), context_key)
         
         # Check memory cache first
         if key in self._query_cache:
@@ -88,15 +90,16 @@ class CacheManager:
         
         return None
     
-    def cache_response(self, query: str, response: Dict) -> None:
+    def cache_response(self, query: str, response: Dict, context_key: str = "") -> None:
         """
         Cache Q&A response.
         
         Args:
             query: User query
             response: Response dict to cache
+            context_key: Optional context (model, pipeline, KB fingerprint)
         """
-        key = self._hash_key(query.lower().strip())
+        key = self._hash_key(query.lower().strip(), context_key)
         entry = {
             'query': query,
             'response': response,

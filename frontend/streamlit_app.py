@@ -7,9 +7,14 @@ import json
 import streamlit as st
 import requests
 import time
+import html
 from typing import Optional
 from pathlib import Path
 from datetime import datetime
+
+def sanitize_html(text: str) -> str:
+    """Escape HTML content to prevent XSS attacks."""
+    return html.escape(str(text)) if text else ""
 
 # Configuration - Load from environment with fallback
 API_URL = os.getenv("API_URL", "http://localhost:8000")
@@ -690,17 +695,50 @@ st.markdown("<style>\n    /* ========== CSS Variables & Theme ========== */\n   
 """, unsafe_allow_html=True)
 
 
-def ask_question(question: str, num_sources: int = 5) -> Optional[dict]:
+def fetch_available_models() -> dict:
+    """Fetch available models from API."""
+    try:
+        resp = requests.get(f"{API_URL}/models", timeout=5)
+        if resp.status_code == 200:
+            return resp.json()
+    except Exception:
+        pass
+    # Fallback
+    return {
+        "tinyllama": {"display_name": "TinyLlama 1.1B", "description": "Lightweight, fast responses", "parameters": "1.1B", "requires_gpu": False, "loaded": False},
+        "biomistral-7b": {"display_name": "BioMistral 7B", "description": "Medical-specialized, higher accuracy", "parameters": "7B", "requires_gpu": True, "loaded": False},
+        "airllm-mistral-7b": {"display_name": "AirLLM Mistral 7B", "description": "AirLLM sharded inference", "parameters": "7B", "requires_gpu": True, "loaded": False},
+    }
+
+
+def ask_question(
+    question: str,
+    num_sources: int = 5,
+    model_choice: str = None,
+    use_langchain: bool = False,
+    use_langgraph: bool = False,
+    session_id: str = None,
+) -> Optional[dict]:
     """Send question to API and get response."""
     try:
+        payload = {
+            "question": question,
+            "include_explanation": True,
+            "num_sources": num_sources,
+        }
+        if model_choice:
+            payload["model_choice"] = model_choice
+        if use_langchain:
+            payload["use_langchain"] = True
+        if use_langgraph:
+            payload["use_langgraph"] = True
+        if session_id:
+            payload["session_id"] = session_id
+
         response = requests.post(
             f"{API_URL}/ask",
-            json={
-                "question": question,
-                "include_explanation": True,
-                "num_sources": num_sources
-            },
-            timeout=300
+            json=payload,
+            timeout=300,
         )
         if response.status_code == 200:
             return response.json()
@@ -722,6 +760,41 @@ def clear_backend_cache():
     """Clear the backend response cache."""
     try:
         response = requests.post(f"{API_URL}/clear-cache", timeout=10)
+        return response.status_code == 200
+    except Exception:
+        return False
+
+
+def submit_feedback(
+    response_id: str,
+    rating: Optional[int] = None,
+    was_helpful: Optional[bool] = None,
+    was_accurate: Optional[bool] = None,
+    was_safe: Optional[bool] = None,
+    feedback_text: Optional[str] = None,
+) -> bool:
+    """Submit answer feedback to backend."""
+    payload = {
+        "response_id": response_id,
+        "session_id": st.session_state.get("session_id"),
+    }
+    if rating is not None:
+        payload["rating"] = rating
+    if was_helpful is not None:
+        payload["was_helpful"] = was_helpful
+    if was_accurate is not None:
+        payload["was_accurate"] = was_accurate
+    if was_safe is not None:
+        payload["was_safe"] = was_safe
+    if feedback_text:
+        payload["feedback_text"] = feedback_text
+
+    try:
+        response = requests.post(
+            f"{API_URL}/feedback",
+            json=payload,
+            timeout=15,
+        )
         return response.status_code == 200
     except Exception:
         return False
@@ -775,8 +848,8 @@ def display_sources(sources: list):
             st.markdown(f"""
             <div class="source-card">
                 <div class="source-badge">Match: {source['score']:.0%}</div>
-                <div class="source-text">{source['content'][:180]}...</div>
-                <div class="source-meta">{source['source']}</div>
+                <div class="source-text">{sanitize_html(source['content'][:180])}...</div>
+                <div class="source-meta">{sanitize_html(source['source'])}</div>
             </div>
             """, unsafe_allow_html=True)
             
@@ -796,28 +869,70 @@ def display_attributions(attributions: list):
             if attr['source'] != "Unsupported":
                 st.markdown(f"""
                 <div class="attribution-card">
-                    <div class="attribution-claim">"{attr['claim']}"</div>
-                    <div class="attribution-source">Verified by: {attr['source']} ({attr['similarity']:.0%} match)</div>
+                    <div class="attribution-claim">"{sanitize_html(attr['claim'])}"</div>
+                    <div class="attribution-source">Verified by: {sanitize_html(attr['source'])} ({attr['similarity']:.0%} match)</div>
                 </div>
                 """, unsafe_allow_html=True)
 
 
 def render_answer(result):
     """Render the full answer card with professional styling."""
-    # Bot Answer Card
+
+    # ── Emergency / Safety Warning ──
+    safety = result.get('safety')
+    if safety and safety.get('is_emergency'):
+        st.markdown(f"""
+        <div style="background:#dc2626; color:white; padding:16px 20px; border-radius:10px; margin-bottom:16px; font-weight:600;">
+            {sanitize_html(safety.get('emergency_message', 'Please seek immediate medical attention.'))}
+        </div>
+        """, unsafe_allow_html=True)
+
+    if safety and safety.get('drug_warnings'):
+        for w in safety['drug_warnings']:
+            st.warning(w)
+
+    # ── Bot Answer Card ──
     st.markdown(f"""
     <div class="chat-card bot-card">
         <div class="card-label">MediQuery AI</div>
-        <div class="card-content">{result['answer']}</div>
+        <div class="card-content">{sanitize_html(result['answer'])}</div>
     </div>
     """, unsafe_allow_html=True)
-    
+
+    # ── Response metadata badges ──
+    meta_parts = []
+    if result.get('model_used'):
+        meta_parts.append(f"Model: {result['model_used']}")
+    if result.get('pipeline_used'):
+        meta_parts.append(f"Pipeline: {result['pipeline_used']}")
+    if result.get('latency_ms'):
+        meta_parts.append(f"Latency: {result['latency_ms']:.0f}ms")
+    elif result.get('elapsed_time'):
+        meta_parts.append(f"Latency: {result['elapsed_time']:.2f}s")
+    if meta_parts:
+        badges_html = " &middot; ".join(meta_parts)
+        st.markdown(f"""
+        <div style="color: var(--text-secondary, #888); font-size: 0.78rem; margin: -8px 0 12px 4px;">
+            {badges_html}
+        </div>
+        """, unsafe_allow_html=True)
+
+    # ── Safety level badge ──
+    if safety and safety.get('level') and safety['level'] != 'safe':
+        level_colors = {'caution': '#fbbf24', 'blocked': '#f87171', 'emergency': '#dc2626'}
+        badge_color = level_colors.get(safety['level'], '#888')
+        st.markdown(f"""
+        <span style="background:{badge_color}; color:#1e1e2e; padding:2px 10px; border-radius:12px; font-size:0.75rem; font-weight:600;">
+            Safety: {safety['level'].title()}
+        </span>
+        """, unsafe_allow_html=True)
+
     # Display Rationale if available
     if result.get('rationale'):
         with st.expander("AI Reasoning", expanded=False):
             st.markdown(f"""
             <div class="reasoning-box">
-                {result['rationale']}
+                {sanitize_html(result['rationale'])}
             </div>
             """, unsafe_allow_html=True)
     
@@ -856,17 +971,50 @@ def render_answer(result):
     display_attributions(result.get('attributions', []))
     
     # Disclaimer
-    elapsed_html = ""
-    if result.get('elapsed_time'):
-        elapsed_html = f"<div class='disclaimer-meta'>Generated in {result['elapsed_time']:.2f}s</div>"
-        
     st.markdown(f"""
     <div class="disclaimer-box">
         <div class="disclaimer-title">Medical Disclaimer</div>
         <div class="disclaimer-text">{result['disclaimer']}</div>
-        {elapsed_html}
     </div>
     """, unsafe_allow_html=True)
+
+    response_id = result.get("response_id")
+    if response_id:
+        if "feedback_submitted" not in st.session_state:
+            st.session_state.feedback_submitted = {}
+
+        submitted = st.session_state.feedback_submitted.get(response_id)
+        if submitted:
+            st.caption(f"Feedback recorded: {submitted}")
+        else:
+            st.caption("Was this answer helpful?")
+            fb_col1, fb_col2, _ = st.columns([1, 1, 6])
+
+            if fb_col1.button("Helpful", key=f"feedback_helpful_{response_id}", use_container_width=True):
+                ok = submit_feedback(
+                    response_id=response_id,
+                    rating=5,
+                    was_helpful=True,
+                    was_accurate=True,
+                    was_safe=True,
+                )
+                if ok:
+                    st.session_state.feedback_submitted[response_id] = "Helpful"
+                    st.rerun()
+                st.warning("Could not submit feedback. Check backend /feedback endpoint.")
+
+            if fb_col2.button("Needs Improvement", key=f"feedback_negative_{response_id}", use_container_width=True):
+                ok = submit_feedback(
+                    response_id=response_id,
+                    rating=1,
+                    was_helpful=False,
+                    was_accurate=False,
+                    was_safe=True,
+                )
+                if ok:
+                    st.session_state.feedback_submitted[response_id] = "Needs Improvement"
+                    st.rerun()
+                st.warning("Could not submit feedback. Check backend /feedback endpoint.")
 
 
 # ========== Question History Persistence ==========
@@ -911,7 +1059,7 @@ def clear_question_history():
     save_question_history([])
 
 
-def processing_chain(question, num_sources):
+def processing_chain(question, num_sources, model_choice=None, use_langchain=False, use_langgraph=False):
     """Process a question and add to history."""
     st.session_state.messages.append({"role": "user", "content": question})
     
@@ -926,11 +1074,21 @@ def processing_chain(question, num_sources):
         """, unsafe_allow_html=True)
         
         start_time = time.time()
-        result = ask_question(question, num_sources)
+        result = ask_question(
+            question,
+            num_sources,
+            model_choice=model_choice,
+            use_langchain=use_langchain,
+            use_langgraph=use_langgraph,
+            session_id=st.session_state.get("session_id"),
+        )
         elapsed = time.time() - start_time
         
         if result:
             result['elapsed_time'] = elapsed
+            # Track session_id from response
+            if result.get('session_id'):
+                st.session_state.session_id = result['session_id']
             st.write("Response generated successfully")
             status.update(label="Response ready", state="complete", expanded=False)
             
@@ -943,6 +1101,10 @@ def processing_chain(question, num_sources):
 
 
 def main():
+    # Initialize session state
+    if "session_id" not in st.session_state:
+        st.session_state.session_id = None
+
     # Sidebar
     with st.sidebar:
         st.markdown("""
@@ -956,11 +1118,33 @@ def main():
         
         st.markdown("---")
         
-        # New chat button (clean labels, no emojis — improving-streamlit-design skill)
+        # New chat button
         if st.button("New chat", use_container_width=True, type="primary"):
             st.session_state.messages = []
+            st.session_state.session_id = None
             st.rerun()
         
+        st.markdown('<div class="sidebar-section">Model settings</div>', unsafe_allow_html=True)
+
+        # Model selector
+        available_models = fetch_available_models()
+        model_keys = list(available_models.keys())
+        model_choice = st.selectbox(
+            "LLM Model",
+            options=model_keys,
+            format_func=lambda k: f"{available_models[k]['display_name']} ({available_models[k]['parameters']})",
+            help="Select the language model for answering questions",
+        )
+
+        # Pipeline selector
+        pipeline_choice = st.radio(
+            "Pipeline",
+            ["Standard", "LangChain (LCEL)", "LangGraph (Self-Correcting)"],
+            help="Standard is recommended for most use cases",
+        )
+        use_langchain = pipeline_choice == "LangChain (LCEL)"
+        use_langgraph = pipeline_choice == "LangGraph (Self-Correcting)"
+
         st.markdown('<div class="sidebar-section">Analysis settings</div>', unsafe_allow_html=True)
         num_sources = st.slider(
             "Number of references", 
@@ -991,7 +1175,7 @@ def main():
                     help=f"{item['question']}\n\n{item['timestamp']}"
                 ):
                     st.session_state.messages = []
-                    processing_chain(item['question'], num_sources)
+                    processing_chain(item['question'], num_sources, model_choice, use_langchain, use_langgraph)
             
             if st.button("Clear history", use_container_width=True):
                 clear_question_history()
@@ -1030,7 +1214,7 @@ def main():
             st.markdown(f"""
             <div class="chat-card user-card">
                 <div class="card-label">You</div>
-                <div class="card-content">{message["content"]}</div>
+                <div class="card-content">{sanitize_html(message["content"])}</div>
             </div>
             """, unsafe_allow_html=True)
         else:
@@ -1038,7 +1222,7 @@ def main():
 
     # Chat Input 
     if question := st.chat_input("Ask a medical question..."):
-        processing_chain(question, num_sources)
+        processing_chain(question, num_sources, model_choice, use_langchain, use_langgraph)
 
     # Suggestion chips (from building-streamlit-chat-ui skill)
     if not st.session_state.messages:
@@ -1052,7 +1236,7 @@ def main():
         cols = st.columns(4)
         for i, (label, question) in enumerate(SUGGESTIONS.items()):
             if cols[i].button(label, type="secondary", use_container_width=True):
-                processing_chain(question, num_sources)
+                processing_chain(question, num_sources, model_choice, use_langchain, use_langgraph)
 
 
 if __name__ == "__main__":

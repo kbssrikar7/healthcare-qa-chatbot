@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional, Iterator
 from langchain_core.language_models.llms import LLM
 from langchain_core.callbacks.manager import CallbackManagerForLLMRun
 from langchain_core.outputs import GenerationChunk
+from pydantic import ConfigDict
 
 # Import the existing MedicalLLM
 import sys
@@ -38,11 +39,8 @@ class LangChainMedicalLLM(LLM):
     
     # Internal state (not serialized)
     _llm: Optional[MedicalLLM] = None
-    
-    class Config:
-        """Pydantic config."""
-        arbitrary_types_allowed = True
-        extra = "allow"
+
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow")
     
     def __init__(
         self,
@@ -52,6 +50,7 @@ class LangChainMedicalLLM(LLM):
         temperature: float = 0.7,
         top_p: float = 0.9,
         max_new_tokens: int = 512,
+        llm: Optional[Any] = None,
         **kwargs
     ):
         """
@@ -64,9 +63,15 @@ class LangChainMedicalLLM(LLM):
             temperature: Sampling temperature
             top_p: Top-p sampling parameter
             max_new_tokens: Maximum tokens to generate
+            llm: Optional pre-initialized LLM (used mainly for tests/injection)
         """
+        resolved_model_name = model_name
+        if llm is not None and (not model_name or model_name == "tinyllama"):
+            # Keep a stable identifier when wrapping an existing external LLM.
+            resolved_model_name = "medical-llm"
+
         super().__init__(
-            model_name=model_name,
+            model_name=resolved_model_name,
             load_in_4bit=load_in_4bit,
             adapter_path=adapter_path,
             temperature=temperature,
@@ -74,7 +79,7 @@ class LangChainMedicalLLM(LLM):
             max_new_tokens=max_new_tokens,
             **kwargs
         )
-        self._llm = None  # Lazy initialization
+        self._llm = llm  # Lazy init unless injected
     
     def _get_llm(self) -> MedicalLLM:
         """Lazily initialize the underlying MedicalLLM."""
@@ -89,6 +94,8 @@ class LangChainMedicalLLM(LLM):
     @property
     def _llm_type(self) -> str:
         """Return identifier for this LLM type."""
+        if self.model_name == "medical-llm":
+            return "medical-llm"
         return f"medical-llm-{self.model_name}"
     
     @property
@@ -214,10 +221,8 @@ class LangChainMedicalLLMFromExisting(LLM):
     temperature: float = 0.7
     top_p: float = 0.9
     max_new_tokens: int = 512
-    
-    class Config:
-        """Pydantic config."""
-        arbitrary_types_allowed = True
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     
     @property
     def _llm_type(self) -> str:

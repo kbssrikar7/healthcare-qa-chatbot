@@ -3,11 +3,14 @@ Hybrid retrieval combining dense and sparse search with RRF fusion.
 
 Enhanced with:
 - Reciprocal Rank Fusion (RRF) for combining dense + sparse results
+- Lazy batched BM25 initialization from vector store
+- Stable document ID-based deduplication (not content prefix)
 - Optional cross-encoder reranking for improved precision
 - Configurable retrieval parameters
 """
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
+import hashlib
 import numpy as np
 from rank_bm25 import BM25Okapi
 
@@ -19,6 +22,7 @@ class RetrievedDocument:
     source: str
     score: float
     metadata: Dict
+    doc_id: str = ""
 
 
 def reciprocal_rank_fusion(
@@ -52,16 +56,25 @@ def reciprocal_rank_fusion(
     return fused_scores
 
 
+def _stable_doc_id(content: str, source: str = "") -> str:
+    """Generate a stable document ID from content + source for deduplication."""
+    key = f"{source}::{content[:300]}"
+    return hashlib.sha256(key.encode()).hexdigest()[:16]
+
+
 class HybridRetriever:
     """
     Combine dense and sparse retrieval for better results.
     
     Features:
     - Dense retrieval via vector store
-    - Sparse retrieval via BM25
-    - Reciprocal Rank Fusion for score combination
+    - Sparse retrieval via BM25 (lazy-loaded from vector store)
+    - Reciprocal Rank Fusion with stable-ID deduplication
     - Optional cross-encoder reranking
     """
+    
+    # Batch size for loading documents from vector store for BM25
+    _BM25_LOAD_BATCH = 5000
     
     def __init__(
         self,
@@ -70,7 +83,7 @@ class HybridRetriever:
         corpus: List[Dict] = None,
         dense_weight: float = 0.7,
         sparse_weight: float = 0.3,
-        reranker = None,
+        reranker=None,
         rrf_k: int = 60
     ):
         """
@@ -79,7 +92,7 @@ class HybridRetriever:
         Args:
             embedder: Embedding model for query encoding
             vector_store: Vector store for dense retrieval
-            corpus: Document corpus for BM25 initialization
+            corpus: Document corpus for BM25 initialization (if None, auto-loads lazily)
             dense_weight: Weight for dense retrieval in fusion
             sparse_weight: Weight for sparse retrieval in fusion
             reranker: Optional cross-encoder reranker
@@ -92,46 +105,100 @@ class HybridRetriever:
         self.reranker = reranker
         self.rrf_k = rrf_k
         self.corpus = corpus
-        self.corpus_map = {}  # Map content hash to corpus index
+        self.corpus_map: Dict[str, int] = {}  # doc_id -> corpus index
         self.bm25 = None
+        self._bm25_init_attempted = False
         
         # Initialize BM25 for sparse retrieval if corpus provided
         if corpus:
             self._init_bm25(corpus)
     
     def _init_bm25(self, corpus: List[Dict]):
-        """Initialize BM25 index."""
+        """Initialize BM25 index from a corpus list."""
         self.corpus = corpus
         tokenized_corpus = []
+        self.corpus_map = {}
         
         for i, doc in enumerate(corpus):
             content = doc.get("content", "")
             tokenized_corpus.append(content.lower().split())
-            # Create content hash mapping
-            self.corpus_map[content[:100]] = i
+            doc_id = doc.get("id", _stable_doc_id(content, doc.get("source", "")))
+            self.corpus_map[doc_id] = i
         
         self.bm25 = BM25Okapi(tokenized_corpus)
+        self._bm25_init_attempted = True
         print(f"✅ BM25 index initialized with {len(corpus)} documents")
+    
+    def _lazy_init_bm25_from_store(self):
+        """
+        Lazy-load BM25 corpus from vector store in batches.
+        Called on the first hybrid retrieval if no corpus was provided.
+        """
+        if self._bm25_init_attempted:
+            return
+        self._bm25_init_attempted = True
+        
+        try:
+            total = self.vector_store.collection.count()
+            if total == 0:
+                print("⚠️ Vector store is empty — BM25 not initialized")
+                return
+            
+            print(f"🔄 Lazy-loading BM25 corpus from vector store ({total:,} docs)...")
+            corpus = []
+            offset = 0
+            
+            while offset < total:
+                batch = self.vector_store.collection.get(
+                    limit=self._BM25_LOAD_BATCH,
+                    offset=offset,
+                    include=["documents", "metadatas"]
+                )
+                if not batch["documents"]:
+                    break
+                
+                ids = batch.get("ids", [])
+                for j, (doc_text, meta) in enumerate(
+                    zip(batch["documents"], batch["metadatas"])
+                ):
+                    corpus.append({
+                        "content": doc_text,
+                        "source": meta.get("source", "unknown") if meta else "unknown",
+                        "id": ids[j] if j < len(ids) else _stable_doc_id(doc_text),
+                        "metadata": meta or {},
+                    })
+                offset += len(batch["documents"])
+            
+            if corpus:
+                self._init_bm25(corpus)
+            else:
+                print("⚠️ No documents retrieved from vector store for BM25")
+        except Exception as e:
+            print(f"⚠️ BM25 lazy-init failed: {e}")
     
     def _dense_retrieve(
         self,
         query: str,
         k: int
-    ) -> List[Tuple[str, float, Dict]]:
-        """Perform dense vector retrieval."""
+    ) -> List[Tuple[str, float, Dict, str]]:
+        """
+        Perform dense vector retrieval.
+        Returns list of (content, score, metadata, doc_id) tuples.
+        """
         query_embedding = self.embedder.embed_query(query)
         results = self.vector_store.search(query_embedding.tolist(), n_results=k)
         
         documents = []
         if results["documents"] and results["documents"][0]:
-            for doc, distance, metadata in zip(
+            ids = results.get("ids", [[]])[0]
+            for idx, (doc, distance, metadata) in enumerate(zip(
                 results["documents"][0],
                 results["distances"][0],
                 results["metadatas"][0]
-            ):
-                # Convert distance to similarity score
+            )):
                 similarity = 1 - distance
-                documents.append((doc, float(similarity), metadata))
+                doc_id = ids[idx] if idx < len(ids) else _stable_doc_id(doc, metadata.get("source", ""))
+                documents.append((doc, float(similarity), metadata, doc_id))
         
         return documents
     
@@ -139,30 +206,32 @@ class HybridRetriever:
         self,
         query: str,
         k: int
-    ) -> List[Tuple[str, float, Dict]]:
-        """Perform sparse BM25 retrieval."""
+    ) -> List[Tuple[str, float, Dict, str]]:
+        """
+        Perform sparse BM25 retrieval.
+        Returns list of (content, score, metadata, doc_id) tuples.
+        """
         if self.bm25 is None or self.corpus is None:
             return []
         
         tokenized_query = query.lower().split()
         scores = self.bm25.get_scores(tokenized_query)
         
-        # Get top k indices
         top_indices = np.argsort(scores)[::-1][:k]
         
         documents = []
         for idx in top_indices:
             if scores[idx] > 0:
                 doc = self.corpus[idx]
-                documents.append((
-                    doc.get("content", ""),
-                    float(scores[idx]),
-                    {
-                        "source": doc.get("source", "unknown"),
-                        "url": doc.get("url", ""),
-                        **doc.get("metadata", {})
-                    }
-                ))
+                content = doc.get("content", "")
+                doc_id = doc.get("id", _stable_doc_id(content, doc.get("source", "")))
+                metadata = {
+                    "source": doc.get("source", "unknown"),
+                    "url": doc.get("url", ""),
+                    "id": doc_id,
+                    **doc.get("metadata", {})
+                }
+                documents.append((content, float(scores[idx]), metadata, doc_id))
         
         return documents
     
@@ -185,6 +254,10 @@ class HybridRetriever:
         Returns:
             List of retrieved documents sorted by relevance
         """
+        # Lazy-init BM25 from vector store if needed
+        if use_hybrid and self.bm25 is None and not self._bm25_init_attempted:
+            self._lazy_init_bm25_from_store()
+        
         fetch_k = k * 3 if use_reranking else k * 2
         
         # Dense retrieval
@@ -194,10 +267,9 @@ class HybridRetriever:
             # Sparse retrieval
             sparse_results = self._sparse_retrieve(query, fetch_k)
             
-            # Create ranked lists for RRF
-            # Use content[:100] as document ID
-            dense_ranked = [(doc[:100], score) for doc, score, _ in dense_results]
-            sparse_ranked = [(doc[:100], score) for doc, score, _ in sparse_results]
+            # Create ranked lists for RRF using STABLE doc IDs (not content prefix)
+            dense_ranked = [(doc_id, score) for _, score, _, doc_id in dense_results]
+            sparse_ranked = [(doc_id, score) for _, score, _, doc_id in sparse_results]
             
             # Apply RRF
             fused_scores = reciprocal_rank_fusion(
@@ -206,27 +278,27 @@ class HybridRetriever:
                 weights=[self.dense_weight, self.sparse_weight]
             )
             
-            # Merge documents with fused scores
-            doc_map = {}
-            for doc, score, metadata in dense_results + sparse_results:
-                doc_key = doc[:100]
-                if doc_key not in doc_map:
-                    doc_map[doc_key] = (doc, metadata)
+            # Merge documents by stable ID (dedup)
+            doc_map: Dict[str, Tuple[str, Dict]] = {}
+            for content, score, metadata, doc_id in dense_results + sparse_results:
+                if doc_id not in doc_map:
+                    doc_map[doc_id] = (content, metadata)
             
             # Build final documents list
             documents = []
-            for doc_key, fused_score in sorted(
+            for doc_id, fused_score in sorted(
                 fused_scores.items(),
                 key=lambda x: x[1],
                 reverse=True
             )[:fetch_k]:
-                if doc_key in doc_map:
-                    content, metadata = doc_map[doc_key]
+                if doc_id in doc_map:
+                    content, metadata = doc_map[doc_id]
                     documents.append(RetrievedDocument(
                         content=content,
                         source=metadata.get("source", "unknown"),
                         score=fused_score,
-                        metadata=metadata
+                        metadata=metadata,
+                        doc_id=doc_id,
                     ))
         else:
             # Dense only
@@ -235,9 +307,10 @@ class HybridRetriever:
                     content=doc,
                     source=metadata.get("source", "unknown"),
                     score=score,
-                    metadata=metadata
+                    metadata=metadata,
+                    doc_id=doc_id,
                 )
-                for doc, score, metadata in dense_results
+                for doc, score, metadata, doc_id in dense_results
             ]
         
         # Apply reranking if available
@@ -245,13 +318,13 @@ class HybridRetriever:
             documents = self.reranker.rerank(query, documents, top_k=k)
             # Ensure we have RetrievedDocument objects
             if documents and not isinstance(documents[0], RetrievedDocument):
-                # Reranker returned different format
                 documents = [
                     RetrievedDocument(
                         content=d.text if hasattr(d, 'text') else d.content,
                         source=d.metadata.get("source", "unknown") if hasattr(d, 'metadata') else "unknown",
                         score=d.score if hasattr(d, 'score') else 0.0,
-                        metadata=d.metadata if hasattr(d, 'metadata') else {}
+                        metadata=d.metadata if hasattr(d, 'metadata') else {},
+                        doc_id=getattr(d, 'doc_id', ''),
                     )
                     for d in documents
                 ]

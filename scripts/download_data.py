@@ -11,7 +11,8 @@ from datasets import load_dataset
 from tqdm import tqdm
 import pandas as pd
 
-DATA_DIR = Path("/home/kbs/final_project/data/raw")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DATA_DIR = PROJECT_ROOT / "data" / "raw"
 
 
 def download_mediqa():

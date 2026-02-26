@@ -352,3 +352,164 @@ Respond with only a number between 0 and 1."""
             print(f"  Std:  {values['std']:.4f}")
         
         print(f"\n{'=' * 50}\n")
+
+
+# =============================================================================
+# Extended Evaluation Metrics (Improvement #8)
+# =============================================================================
+
+def compute_hallucination_rate(
+    answers: List[str],
+    contexts: List[str],
+    min_term_length: int = 4,
+    grounding_threshold: float = 0.3,
+) -> float:
+    """
+    Estimate hallucination rate by checking if key claims in answers
+    are grounded in the provided context.
+    
+    Args:
+        answers: Generated answers
+        contexts: Retrieved contexts used for generation
+        min_term_length: Minimum word length to consider as key term
+        grounding_threshold: Ratio below which a sentence is 'hallucinated'
+        
+    Returns:
+        Hallucination rate (0.0 = fully grounded, 1.0 = fully hallucinated)
+    """
+    if not answers:
+        return 0.0
+    
+    hallucinated_count = 0
+    for answer, context in zip(answers, contexts):
+        sentences = [s.strip() for s in answer.split('.') if len(s.strip()) > 10]
+        for sentence in sentences:
+            key_terms = [w.lower() for w in sentence.split() if len(w) > min_term_length]
+            if key_terms:
+                grounded = sum(1 for t in key_terms if t in context.lower()) / len(key_terms)
+                if grounded < grounding_threshold:
+                    hallucinated_count += 1
+                    break  # One hallucinated sentence = answer is hallucinated
+    
+    return hallucinated_count / len(answers)
+
+
+def compute_calibration_error(
+    predicted_confidences: List[float],
+    actual_correctness: List[float],
+    n_bins: int = 10,
+) -> float:
+    """
+    Expected Calibration Error (ECE).
+    
+    Measures how well confidence scores align with actual accuracy.
+    A well-calibrated model has ECE close to 0.
+    
+    Args:
+        predicted_confidences: Model's confidence for each prediction
+        actual_correctness: Binary correctness (1=correct, 0=incorrect)
+        n_bins: Number of bins for calibration
+        
+    Returns:
+        ECE score (lower is better, 0.0 = perfectly calibrated)
+    """
+    if not predicted_confidences:
+        return 0.0
+    
+    confs = np.array(predicted_confidences)
+    accs = np.array(actual_correctness)
+    bin_boundaries = np.linspace(0, 1, n_bins + 1)
+    
+    ece = 0.0
+    for i in range(n_bins):
+        mask = (confs > bin_boundaries[i]) & (confs <= bin_boundaries[i + 1])
+        if mask.sum() == 0:
+            continue
+        avg_conf = confs[mask].mean()
+        avg_acc = accs[mask].mean()
+        weight = mask.sum() / len(confs)
+        ece += weight * abs(avg_acc - avg_conf)
+    
+    return float(ece)
+
+
+@dataclass
+class LatencyStats:
+    """Latency statistics for pipeline performance tracking."""
+    avg_ms: float
+    p50_ms: float
+    p95_ms: float
+    p99_ms: float
+    min_ms: float
+    max_ms: float
+    count: int
+    
+    def to_dict(self) -> Dict:
+        return {
+            "avg_ms": round(self.avg_ms, 1),
+            "p50_ms": round(self.p50_ms, 1),
+            "p95_ms": round(self.p95_ms, 1),
+            "p99_ms": round(self.p99_ms, 1),
+            "min_ms": round(self.min_ms, 1),
+            "max_ms": round(self.max_ms, 1),
+            "count": self.count,
+        }
+
+
+class LatencyTracker:
+    """Track and compute latency statistics for pipeline stages."""
+    
+    def __init__(self):
+        self._latencies: List[float] = []
+    
+    def record(self, latency_ms: float) -> None:
+        """Record a latency measurement in milliseconds."""
+        self._latencies.append(latency_ms)
+    
+    def get_stats(self) -> Optional[LatencyStats]:
+        """Compute and return latency statistics."""
+        if not self._latencies:
+            return None
+        arr = np.array(self._latencies)
+        return LatencyStats(
+            avg_ms=float(np.mean(arr)),
+            p50_ms=float(np.percentile(arr, 50)),
+            p95_ms=float(np.percentile(arr, 95)),
+            p99_ms=float(np.percentile(arr, 99)),
+            min_ms=float(np.min(arr)),
+            max_ms=float(np.max(arr)),
+            count=len(arr),
+        )
+    
+    def reset(self) -> None:
+        """Reset all recorded latencies."""
+        self._latencies.clear()
+
+
+@dataclass
+class ComprehensiveMetrics:
+    """Full evaluation metrics combining retrieval, generation, and operational."""
+    # Retrieval quality
+    precision_at_k: float = 0.0
+    recall_at_k: float = 0.0
+    mrr: float = 0.0
+    ndcg_at_k: float = 0.0
+    
+    # Answer quality
+    faithfulness: float = 0.0
+    hallucination_rate: float = 0.0
+    
+    # Confidence calibration
+    calibration_error: float = 0.0
+    avg_confidence: float = 0.0
+    
+    # Safety
+    emergency_detection_recall: float = 0.0
+    
+    # Performance
+    avg_latency_ms: float = 0.0
+    p95_latency_ms: float = 0.0
+    
+    def to_dict(self) -> Dict[str, float]:
+        return {k: round(v, 4) for k, v in self.__dict__.items()}
+

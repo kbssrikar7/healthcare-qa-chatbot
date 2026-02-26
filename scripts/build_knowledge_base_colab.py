@@ -13,13 +13,23 @@ import gc
 from pathlib import Path
 
 # Add project to path
-PROJECT_ROOT = Path("/content/final_project")  # Change to your path
+import os
+# Allow overriding PROJECT_ROOT via environment variable for portability
+project_root_env = os.environ.get("PROJECT_ROOT")
+PROJECT_ROOT = Path(project_root_env) if project_root_env else Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 import pandas as pd
 from tqdm import tqdm
 import numpy as np
 from typing import List, Dict, Generator
+import hashlib
+
+def generate_deterministic_id(source: str, content: str, chunk_id: int = 0) -> str:
+    """Generate a stable document ID from source + chunk_id + content hash."""
+    content_hash = hashlib.sha256(content.encode()).hexdigest()[:16]
+    key = f"{source}::chunk{chunk_id}::{content_hash}"
+    return hashlib.sha256(key.encode()).hexdigest()[:32]
 
 
 class SimpleEmbedder:
@@ -301,7 +311,14 @@ def main():
                 for chunk in batch
             ]
             
-            ids = [f"chunk_{i + j}" for j in range(len(batch))]
+            ids = [
+                generate_deterministic_id(
+                    source=chunk.source,
+                    content=chunk.content,
+                    chunk_id=chunk.chunk_id
+                )
+                for chunk in batch
+            ]
             
             vector_store.add_documents(
                 documents=texts,
