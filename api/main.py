@@ -2,7 +2,7 @@
 FastAPI application for Healthcare QA Chatbot.
 
 Enhanced with:
-- Multi-model selection (TinyLlama / BioMistral-7B)
+- Single model: TinyLlama 1.1B
 - Safety guardrails integration (emergency detection, content filtering)
 - Conversation history with follow-up detection
 - Streaming responses
@@ -10,6 +10,7 @@ Enhanced with:
 - Passage highlighting for XAI
 """
 import os
+from loguru import logger
 import sys
 import time
 import json
@@ -18,9 +19,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel, Field
 from typing import List, Dict, Optional, Any
 import uvicorn
@@ -33,6 +34,13 @@ app = FastAPI(
     title="Healthcare QA Chatbot API",
     description="An explainable medical question-answering system combining LLM + RAG + XAI",
     version="2.0.0",
+    openapi_tags=[
+        {"name": "Health", "description": "Service health and readiness checks"},
+        {"name": "QA", "description": "Ask medical questions and get explainable answers"},
+        {"name": "Models", "description": "Available LLM model information"},
+        {"name": "Sessions", "description": "Conversation session management"},
+        {"name": "Feedback", "description": "User feedback and rating collection"},
+    ],
 )
 
 # Record startup time
@@ -48,6 +56,58 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# ── Error response model ─────────────────────────────────────────────────────
+
+class ErrorResponse(BaseModel):
+    """Structured error response returned by all error handlers."""
+    detail: str
+    error_code: str = "INTERNAL_ERROR"
+    request_id: Optional[str] = None
+
+
+# ── Correlation ID middleware ────────────────────────────────────────────────
+
+@app.middleware("http")
+async def add_correlation_id(request: Request, call_next):
+    """Attach a unique request_id to every request for traceability."""
+    request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
+    request.state.request_id = request_id
+    response = await call_next(request)
+    response.headers["X-Request-ID"] = request_id
+    return response
+
+
+# ── Global exception handler ────────────────────────────────────────────────
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Catch unhandled exceptions and return structured JSON."""
+    request_id = getattr(request.state, "request_id", None)
+    logger.error("Unhandled exception [{}]: {}", request_id, exc)
+    return JSONResponse(
+        status_code=500,
+        content=ErrorResponse(
+            detail="An internal error occurred. Please try again.",
+            error_code="INTERNAL_ERROR",
+            request_id=request_id,
+        ).model_dump(),
+    )
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """Return structured JSON for HTTP exceptions."""
+    request_id = getattr(request.state, "request_id", None)
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=ErrorResponse(
+            detail=str(exc.detail),
+            error_code=f"HTTP_{exc.status_code}",
+            request_id=request_id,
+        ).model_dump(),
+    )
 
 # ── Global state ─────────────────────────────────────────────────────────────
 
@@ -78,9 +138,7 @@ class QuestionRequest(BaseModel):
     num_sources: int = Field(default=3, ge=1, le=10)
     model_choice: Optional[str] = Field(
         default=None,
-        description=(
-            "Model key from /models (e.g. tinyllama, biomistral-7b, airllm-mistral-7b)"
-        ),
+        description="Model key from /models (e.g. tinyllama)",
     )
     use_langchain: bool = Field(default=False, description="Use LangChain LCEL pipeline")
     use_langgraph: bool = Field(default=False, description="Use LangGraph self-correcting RAG")
@@ -170,6 +228,25 @@ def _get_shared_components():
         return _shared_components
 
     try:
+        # --- MONKEYPATCH for pydantic vs spacy in python 3.14 ---
+        import pydantic.v1.schema as p_schema
+        original_model_schema = p_schema.model_type_schema
+        def bypass_model_schema(*args, **kwargs):
+            try:
+                return original_model_schema(*args, **kwargs)
+            except ValueError:
+                return {"type": "object"}, {}, set()
+        p_schema.model_type_schema = bypass_model_schema
+        
+        original_get_annotation = p_schema.get_annotation_from_field_info
+        def bypass_annotation(*args, **kwargs):
+            try:
+                return original_get_annotation(*args, **kwargs)
+            except ValueError:
+                return args[0]
+        p_schema.get_annotation_from_field_info = bypass_annotation
+        # --------------------------------------------------------
+
         from src.embeddings.embedding_models import MedicalEmbedder
         from src.embeddings.vector_store import VectorStore
         from src.retrieval.hybrid_retriever import HybridRetriever
@@ -179,7 +256,7 @@ def _get_shared_components():
         from config.settings import config
         pipeline_config = getattr(config, 'pipeline', None) if config else None
 
-        print("🔄 Loading shared pipeline components...")
+        logger.info(" Loading shared pipeline components...")
         embedder = MedicalEmbedder(model_name="all-minilm")
         vector_store = VectorStore(
             collection_name="medical_knowledge",
@@ -192,9 +269,9 @@ def _get_shared_components():
             try:
                 from src.retrieval.reranker import CrossEncoderReranker
                 reranker = CrossEncoderReranker()
-                print("✅ Reranker initialized")
+                logger.info(" Reranker initialized")
             except Exception as e:
-                print(f"⚠️ Failed to init reranker: {e}")
+                logger.warning(f" Failed to init reranker: {e}")
 
         retriever = HybridRetriever(embedder, vector_store, reranker=reranker)
         prompt_manager = MedicalPromptManager()
@@ -212,33 +289,33 @@ def _get_shared_components():
                 try:
                     from src.retrieval.query_enhancer import QueryEnhancer
                     query_enhancer = QueryEnhancer()
-                    print("✅ Query enhancer initialized")
+                    logger.info(" Query enhancer initialized")
                 except Exception as e:
-                    print(f"⚠️ Failed to init query enhancer: {e}")
+                    logger.warning(f" Failed to init query enhancer: {e}")
                     
             if getattr(pipeline_config, 'enable_context_compression', False):
                 try:
                     from src.pipeline.context_compressor import ContextCompressor
                     context_compressor = ContextCompressor()
-                    print("✅ Context compressor initialized")
+                    logger.info(" Context compressor initialized")
                 except Exception as e:
-                    print(f"⚠️ Failed to init context compressor: {e}")
+                    logger.warning(f" Failed to init context compressor: {e}")
                     
             if getattr(pipeline_config, 'enable_corrective_rag', False):
                 try:
                     from src.retrieval.corrective_rag import CorrectiveRAG
                     corrective_rag = CorrectiveRAG(retriever=retriever)
-                    print("✅ Corrective RAG initialized")
+                    logger.info(" Corrective RAG initialized")
                 except Exception as e:
-                    print(f"⚠️ Failed to init corrective RAG: {e}")
+                    logger.warning(f" Failed to init corrective RAG: {e}")
                     
             if getattr(pipeline_config, 'enable_factual_consistency', False):
                 try:
                     from src.xai.factual_consistency import FactualConsistencyChecker
                     factual_checker = FactualConsistencyChecker()
-                    print("✅ Factual consistency checker initialized")
+                    logger.info(" Factual consistency checker initialized")
                 except Exception as e:
-                    print(f"⚠️ Failed to init factual checker: {e}")
+                    logger.warning(f" Failed to init factual checker: {e}")
 
         _shared_components = {
             "embedder": embedder,
@@ -252,9 +329,10 @@ def _get_shared_components():
             "corrective_rag": corrective_rag,
             "factual_consistency_checker": factual_checker,
         }
-        print("✅ Shared components loaded")
+        logger.info(" Shared components loaded")
     except Exception as e:
-        print(f"❌ Failed to load shared components: {e}")
+        import traceback
+        logger.error(f" Failed to load shared components:\n{traceback.format_exc()}")
 
     return _shared_components
 
@@ -271,12 +349,12 @@ def get_pipeline(model_choice: str = "tinyllama"):
 
     # FREE PREVIOUS PIPELINES TO PREVENT MEMORY LEAKS ON LAPTOPS
     for k in list(pipelines.keys()):
-        print(f"🧹 Unloading previous model: {k} to free memory...")
+        logger.info(f" Unloading previous model: {k} to free memory...")
         try:
             if hasattr(pipelines[k], "llm") and hasattr(pipelines[k].llm, "cleanup"):
                 pipelines[k].llm.cleanup()
         except Exception as e:
-            print(f"⚠️ Error during cleanup of {k}: {e}")
+            logger.warning(f" Error during cleanup of {k}: {e}")
         del pipelines[k]
     
     gc.collect()
@@ -286,7 +364,7 @@ def get_pipeline(model_choice: str = "tinyllama"):
     # ── GPU safety guard ─────────────────────────────────────────────────
     model_info = AVAILABLE_MODELS.get(model_choice)
     if not model_info:
-        print(f"❌ Unknown model: {model_choice}")
+        logger.error(f" Unknown model: {model_choice}")
         return None
 
     if model_info.get("requires_gpu", False):
@@ -308,7 +386,7 @@ def get_pipeline(model_choice: str = "tinyllama"):
         from src.generation.llm_wrapper import MedicalLLM
         from src.pipeline.qa_pipeline import HealthcareQAPipeline
 
-        print(f"🔄 Loading LLM: {model_info['display_name']}...")
+        logger.info(f" Loading LLM: {model_info['display_name']}...")
 
         # Ensure local writable HF cache path (avoids ~/.cache permission issues on some systems)
         local_hf_cache = str((Path(__file__).parent.parent / ".hf_cache").resolve())
@@ -323,19 +401,17 @@ def get_pipeline(model_choice: str = "tinyllama"):
         adapter_path = Path("models/fine_tuned/medical_adapter")
         llm_kwargs = {
             "model_name": resolved_model_name,
-            "backend": backend,
             "load_in_4bit": model_info.get("load_in_4bit", False),
-            "airllm_compression": os.getenv("AIRLLM_COMPRESSION"),
             "hf_token": os.getenv("HUGGINGFACE_TOKEN"),
         }
 
         if backend == "transformers" and adapter_path.exists():
-            print(f"✅ Found fine-tuned adapter at {adapter_path}")
+            logger.info(f" Found fine-tuned adapter at {adapter_path}")
             llm_kwargs["adapter_path"] = str(adapter_path)
             llm = MedicalLLM(**llm_kwargs)
         else:
             if backend == "transformers":
-                print("⚠️ No adapter found, using base model")
+                logger.warning(" No adapter found, using base model")
             llm = MedicalLLM(**llm_kwargs)
 
         # KB fingerprint for cache
@@ -358,11 +434,11 @@ def get_pipeline(model_choice: str = "tinyllama"):
             cache_context_key=cache_context_key,
         )
         pipelines[model_choice] = pipeline
-        print(f"✅ Pipeline loaded for {model_info['display_name']}")
+        logger.info(f" Pipeline loaded for {model_info['display_name']}")
         return pipeline
 
     except Exception as e:
-        print(f"❌ Failed to load pipeline for {model_choice}: {e}")
+        logger.error(f" Failed to load pipeline for {model_choice}: {e}")
         return None
 
 
@@ -377,9 +453,9 @@ def _init_guardrails():
         guardrails = MedicalGuardrails()
         emergency_detector = EmergencyDetector()
         drug_checker = DrugInteractionChecker()
-        print("✅ Safety guardrails initialized")
+        logger.info(" Safety guardrails initialized")
     except Exception as e:
-        print(f"⚠️ Failed to load guardrails: {e}")
+        logger.warning(f" Failed to load guardrails: {e}")
 
 
 def _init_conversation_manager():
@@ -390,9 +466,9 @@ def _init_conversation_manager():
     try:
         from src.conversation.history import ConversationManager
         conversation_manager = ConversationManager(storage_path="data/conversations")
-        print("✅ Conversation manager initialized")
+        logger.info(" Conversation manager initialized")
     except Exception as e:
-        print(f"⚠️ Failed to load conversation manager: {e}")
+        logger.warning(f" Failed to load conversation manager: {e}")
 
 
 def _init_feedback_system():
@@ -412,9 +488,9 @@ def _init_feedback_system():
             trajectory_logger = TrajectoryLogger(
                 storage_path="data/feedback/response_trajectories.jsonl"
             )
-        print("✅ Feedback system initialized")
+        logger.info(" Feedback system initialized")
     except Exception as e:
-        print(f"⚠️ Failed to initialize feedback system: {e}")
+        logger.warning(f" Failed to initialize feedback system: {e}")
 
 
 def _extract_source_scores(sources: List[Any]) -> List[float]:
@@ -484,12 +560,12 @@ def _log_response_trajectory(trajectory_payload: Dict[str, Any]) -> None:
     try:
         trajectory_logger.log(trajectory_payload)
     except Exception as e:
-        print(f"⚠️ Failed to persist response trajectory: {e}")
+        logger.warning(f" Failed to persist response trajectory: {e}")
 
 
 # ── Endpoints ────────────────────────────────────────────────────────────────
 
-@app.get("/", response_model=HealthResponse)
+@app.get("/", response_model=HealthResponse, tags=["Health"])
 async def root():
     """Root endpoint."""
     return HealthResponse(
@@ -499,7 +575,7 @@ async def root():
     )
 
 
-@app.get("/health", response_model=HealthResponse)
+@app.get("/health", response_model=HealthResponse, tags=["Health"])
 async def health_check():
     """Enhanced health check with system metrics."""
     import psutil
@@ -537,7 +613,7 @@ async def health_check():
     )
 
 
-@app.get("/models")
+@app.get("/models", tags=["Models"])
 async def list_models():
     """Return available models and their descriptions."""
     result = {}
@@ -553,7 +629,7 @@ async def list_models():
     return result
 
 
-@app.post("/sessions")
+@app.post("/sessions", tags=["Sessions"])
 async def create_session():
     """Create a new conversation session."""
     _init_conversation_manager()
@@ -563,7 +639,7 @@ async def create_session():
     return {"session_id": session.session_id}
 
 
-@app.get("/sessions/{session_id}")
+@app.get("/sessions/{session_id}", tags=["Sessions"])
 async def get_session(session_id: str):
     """Get conversation history for a session."""
     _init_conversation_manager()
@@ -667,22 +743,32 @@ async def _prepare_and_execute_pipeline(request: QuestionRequest, start_ts: floa
     _init_conversation_manager()
     effective_question = request.question
     session_id = request.session_id
+    conversation_context = None
+
+    # Auto-create session if none provided (enables multi-turn without explicit /sessions call)
+    if conversation_manager and not session_id:
+        try:
+            session = conversation_manager.create_session()
+            session_id = session.session_id
+        except Exception:
+            pass  # Proceed without session — single-turn still works
 
     if conversation_manager and session_id:
         ctx = conversation_manager.get_context_for_query(session_id, request.question)
         if ctx:
-            effective_question = f"Previous context: {ctx}\n\nCurrent question: {request.question}"
+            # Pass conversation context separately — do NOT rewrite the question.
+            # The pipeline uses it for better retrieval and prompt construction.
+            conversation_context = ctx
 
     # ── 4. Get answer ────────────────────────────────────────────────────
     try:
-        if request.use_langgraph or request.use_langchain:
-            response = qa_pipeline.answer(effective_question)
-        else:
-            response = qa_pipeline.answer(
-                question=effective_question,
-                num_documents=request.num_sources,
-                include_explanation=request.include_explanation,
-            )
+        # Unified interface: all pipelines receive the same params
+        response = qa_pipeline.answer(
+            question=effective_question,
+            num_documents=request.num_sources,
+            include_explanation=request.include_explanation,
+            **({"conversation_context": conversation_context} if conversation_context and not (request.use_langgraph or request.use_langchain) else {})
+        )
     except Exception as e:
         raise HTTPException(
             status_code=500,
@@ -798,7 +884,7 @@ async def _prepare_and_execute_pipeline(request: QuestionRequest, start_ts: floa
     return answer_response
 
 
-@app.post("/ask", response_model=AnswerResponse)
+@app.post("/ask", response_model=AnswerResponse, tags=["QA"])
 async def ask_question(request: QuestionRequest):
     """
     Ask a medical question and get an explainable answer.
@@ -811,7 +897,7 @@ async def ask_question(request: QuestionRequest):
     return await _prepare_and_execute_pipeline(request, start_ts)
 
 
-@app.post("/feedback", response_model=FeedbackResponse)
+@app.post("/feedback", response_model=FeedbackResponse, tags=["Feedback"])
 async def submit_feedback(request: FeedbackRequest):
     """
     Submit user feedback tied to a prior response_id.
@@ -861,7 +947,7 @@ async def submit_feedback(request: FeedbackRequest):
     if trajectory:
         metadata.update(
             {
-                "question_id": trajectory.get("question_id"),
+                "original_question_id": trajectory.get("question_id"),
                 "model_choice": trajectory.get("action", {}).get("model_choice"),
                 "pipeline": trajectory.get("action", {}).get("pipeline"),
                 "latency_ms": trajectory.get("outcome", {}).get("latency_ms"),
@@ -889,7 +975,7 @@ async def submit_feedback(request: FeedbackRequest):
     )
 
 
-@app.get("/feedback/stats")
+@app.get("/feedback/stats", tags=["Feedback"])
 async def feedback_stats():
     """Return aggregate user feedback statistics."""
     _init_feedback_system()
@@ -906,7 +992,7 @@ async def feedback_stats():
     }
 
 
-@app.post("/ask/stream")
+@app.post("/ask/stream", tags=["QA"])
 async def ask_stream(request: QuestionRequest):
     """Stream a medical answer token by token (NDJSON)."""
     start_ts = time.time()
@@ -939,7 +1025,7 @@ async def ask_stream(request: QuestionRequest):
     return StreamingResponse(generate(), media_type="application/x-ndjson")
 
 
-@app.post("/clear-cache")
+@app.post("/clear-cache", tags=["Health"])
 async def clear_cache():
     """Clear cached Q&A responses so fresh answers are generated."""
     cleared = False
@@ -985,10 +1071,10 @@ def _get_langchain_pipeline():
             source_attributor=shared["source_attributor"],
         )
         pipelines["langchain"] = pipeline
-        print("✅ LangChain pipeline loaded")
+        logger.info(" LangChain pipeline loaded")
         return pipeline
     except Exception as e:
-        print(f"❌ Failed to load LangChain pipeline: {e}")
+        logger.error(f" Failed to load LangChain pipeline: {e}")
         return None
 
 
@@ -1016,10 +1102,10 @@ def _get_langgraph_pipeline():
             source_attributor=shared["source_attributor"],
         )
         pipelines["langgraph"] = pipeline
-        print("✅ LangGraph pipeline loaded")
+        logger.info(" LangGraph pipeline loaded")
         return pipeline
     except Exception as e:
-        print(f"❌ Failed to load LangGraph pipeline: {e}")
+        logger.error(f" Failed to load LangGraph pipeline: {e}")
         return None
 
 

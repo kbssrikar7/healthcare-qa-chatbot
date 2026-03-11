@@ -2,7 +2,7 @@
 Integration tests for Healthcare QA Chatbot improvements.
 
 Tests cover:
-- Multi-model pipeline selection
+- TinyLlama pipeline configuration
 - Safety guardrails integration
 - Conversation history across turns
 - Query expansion in retrieval
@@ -29,15 +29,13 @@ class TestMultiModelSelection:
         """Test AVAILABLE_MODELS has expected entries."""
         from config.settings import AVAILABLE_MODELS
         assert "tinyllama" in AVAILABLE_MODELS
-        assert "biomistral-7b" in AVAILABLE_MODELS
         assert AVAILABLE_MODELS["tinyllama"]["display_name"] == "TinyLlama 1.1B"
-        assert AVAILABLE_MODELS["biomistral-7b"]["requires_gpu"] is True
+        assert AVAILABLE_MODELS["tinyllama"]["requires_gpu"] is False
 
     def test_model_choice_enum(self):
         """Test ModelChoice enum values."""
         from config.settings import ModelChoice
         assert ModelChoice.TINYLLAMA.value == "tinyllama"
-        assert ModelChoice.BIOMISTRAL_7B.value == "biomistral-7b"
 
     def test_llm_config_default_model(self):
         """Test that LLMConfig has a default_model field."""
@@ -52,10 +50,10 @@ class TestMultiModelSelection:
         assert cfg.llm.model_name == "tinyllama"
 
     def test_config_from_env_production(self):
-        """Test production config uses BioMistral."""
+        """Test production config uses TinyLlama."""
         from config.settings import Config
         cfg = Config.from_env("production")
-        assert "BioMistral" in cfg.llm.model_name
+        assert "TinyLlama" in cfg.llm.model_name
 
 
 # =============================================================================
@@ -277,10 +275,10 @@ class TestAPIModels:
         from api.main import QuestionRequest
         req = QuestionRequest(
             question="What is diabetes?",
-            model_choice="biomistral-7b",
+            model_choice="tinyllama",
             use_langchain=True,
         )
-        assert req.model_choice == "biomistral-7b"
+        assert req.model_choice == "tinyllama"
         assert req.use_langchain is True
 
     def test_safety_info_defaults(self):

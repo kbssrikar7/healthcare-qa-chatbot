@@ -52,18 +52,18 @@ def get_theme_css():
         --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
         --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.4), 0 2px 4px -2px rgba(0,0,0,0.3);
         --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.5), 0 4px 6px -4px rgba(0,0,0,0.4);
-        --radius-sm: 6px;
-        --radius-md: 10px;
-        --radius-lg: 16px;
-        --user-card-bg: linear-gradient(135deg, #1e293b 0%, #1e2738 100%);
+        --radius-sm: 0px;
+        --radius-md: 0px;
+        --radius-lg: 0px;
+        --user-card-bg: #1e293b;
         --user-card-border: #334155;
         --user-card-label: #60a5fa;
-        --disclaimer-bg: linear-gradient(135deg, #2d2305 0%, #3d3010 100%);
+        --disclaimer-bg: #2d2305;
         --disclaimer-border: #a16207;
         --disclaimer-title: #fbbf24;
         --disclaimer-text: #fde68a;
         --disclaimer-meta: #d97706;
-        --reasoning-bg: linear-gradient(135deg, #052e16 0%, #064e3b 100%);
+        --reasoning-bg: #052e16;
         --reasoning-text: #6ee7b7;
         --attr-bg: #1e293b;
         --source-badge-bg: #312e81;
@@ -225,18 +225,18 @@ def get_theme_css():
         --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
         --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
         --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.05);
-        --radius-sm: 6px;
-        --radius-md: 10px;
-        --radius-lg: 16px;
-        --user-card-bg: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+        --radius-sm: 0px;
+        --radius-md: 0px;
+        --radius-lg: 0px;
+        --user-card-bg: #eff6ff;
         --user-card-border: #bfdbfe;
         --user-card-label: #2563eb;
-        --disclaimer-bg: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        --disclaimer-bg: #fffbeb;
         --disclaimer-border: var(--warning);
         --disclaimer-title: #b45309;
         --disclaimer-text: #78350f;
         --disclaimer-meta: #a16207;
-        --reasoning-bg: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        --reasoning-bg: #f0fdf4;
         --reasoning-text: #166534;
         --attr-bg: #f1f5f9;
         --source-badge-bg: #eef2ff;
@@ -268,12 +268,12 @@ st.markdown("<style>\n    /* ========== CSS Variables & Theme ========== */\n   
     .app-logo {
         width: 48px;
         height: 48px;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        background: var(--primary);
         border-radius: var(--radius-md);
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: var(--shadow-md);
+        box-shadow: none;
     }
     
     .app-logo svg {
@@ -283,11 +283,8 @@ st.markdown("<style>\n    /* ========== CSS Variables & Theme ========== */\n   
     
     .main-title {
         font-size: 2.5rem;
-        font-weight: 800;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        font-weight: 700;
+        color: var(--text-primary);
         margin: 0;
         letter-spacing: -0.025em;
     }
@@ -321,8 +318,8 @@ st.markdown("<style>\n    /* ========== CSS Variables & Theme ========== */\n   
         top: 12px;
         width: 32px;
         height: 32px;
-        background: linear-gradient(135deg, #3b82f6, #2563eb);
-        border-radius: 50%;
+        background: #2563eb;
+        border-radius: var(--radius-sm);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -357,7 +354,7 @@ st.markdown("<style>\n    /* ========== CSS Variables & Theme ========== */\n   
         top: 12px;
         width: 32px;
         height: 32px;
-        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        background: var(--primary);
         border-radius: var(--radius-sm);
     }
     
@@ -434,19 +431,19 @@ st.markdown("<style>\n    /* ========== CSS Variables & Theme ========== */\n   
         width: 100%;
         height: 6px;
         background: var(--border);
-        border-radius: 3px;
+        border-radius: var(--radius-sm);
         overflow: hidden;
     }
     
     .confidence-fill {
         height: 100%;
-        border-radius: 3px;
+        border-radius: var(--radius-sm);
         transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
-    .confidence-fill.high { background: linear-gradient(90deg, #10b981, #059669); }
-    .confidence-fill.medium { background: linear-gradient(90deg, #f59e0b, #d97706); }
-    .confidence-fill.low { background: linear-gradient(90deg, #ef4444, #dc2626); }
+    .confidence-fill.high { background: var(--success); }
+    .confidence-fill.medium { background: var(--warning); }
+    .confidence-fill.low { background: var(--danger); }
     
     .confidence-desc {
         font-size: 0.85rem;
@@ -494,7 +491,7 @@ st.markdown("<style>\n    /* ========== CSS Variables & Theme ========== */\n   
         color: var(--source-badge-text);
         background: var(--source-badge-bg);
         padding: 4px 10px;
-        border-radius: 12px;
+        border-radius: var(--radius-sm);
         text-transform: uppercase;
         letter-spacing: 0.03em;
         margin-bottom: 0.75rem;
@@ -581,14 +578,15 @@ st.markdown("<style>\n    /* ========== CSS Variables & Theme ========== */\n   
     /* ========== Key Terms ========== */
     .key-term {
         display: inline-block;
-        background: linear-gradient(135deg, var(--primary), var(--primary-light));
-        color: white;
-        padding: 6px 14px;
-        border-radius: 20px;
+        background: var(--surface-elevated);
+        border: 1px solid var(--border);
+        color: var(--primary);
+        padding: 4px 10px;
+        border-radius: var(--radius-sm);
         margin: 4px;
         font-size: 0.85rem;
-        font-weight: 500;
-        box-shadow: 0 2px 4px rgba(79, 70, 229, 0.25);
+        font-weight: 600;
+        box-shadow: none;
     }
 
     /* ========== Loading States ========== */
@@ -604,7 +602,7 @@ st.markdown("<style>\n    /* ========== CSS Variables & Theme ========== */\n   
         width: 8px;
         height: 8px;
         background: var(--primary);
-        border-radius: 50%;
+        border-radius: 0;
         animation: pulse 1.4s infinite ease-in-out both;
     }
     
@@ -616,6 +614,30 @@ st.markdown("<style>\n    /* ========== CSS Variables & Theme ========== */\n   
         40% { transform: scale(1); opacity: 1; }
     }
 
+    /* ========== Loading Skeleton ========== */
+    .skeleton-container {
+        padding: 1.25rem 1.5rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        margin-bottom: 1rem;
+        margin-left: 48px;
+    }
+    .skeleton-line {
+        height: 14px;
+        margin-bottom: 10px;
+        background: linear-gradient(90deg, var(--border) 25%, var(--surface-elevated) 50%, var(--border) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 4px;
+    }
+    .skeleton-line.short { width: 45%; }
+    .skeleton-line.medium { width: 75%; }
+    .skeleton-line.long { width: 92%; }
+    @keyframes shimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
     /* ========== Example Buttons ========== */
     .stButton > button {
         background: var(--surface) !important;
@@ -623,7 +645,7 @@ st.markdown("<style>\n    /* ========== CSS Variables & Theme ========== */\n   
         color: var(--text-primary) !important;
         font-weight: 500 !important;
         transition: all 0.2s ease !important;
-        border-radius: var(--radius-md) !important;
+        border-radius: var(--radius-sm) !important;
     }
     
     .stButton > button:hover {
@@ -647,7 +669,7 @@ st.markdown("<style>\n    /* ========== CSS Variables & Theme ========== */\n   
     .sidebar-logo {
         width: 48px;
         height: 48px;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        background: var(--primary);
         border-radius: var(--radius-md);
         display: flex;
         align-items: center;
@@ -703,11 +725,9 @@ def fetch_available_models() -> dict:
             return resp.json()
     except Exception:
         pass
-    # Fallback
+    # Fallback — TinyLlama only
     return {
         "tinyllama": {"display_name": "TinyLlama 1.1B", "description": "Lightweight, fast responses", "parameters": "1.1B", "requires_gpu": False, "loaded": False},
-        "biomistral-7b": {"display_name": "BioMistral 7B", "description": "Medical-specialized, higher accuracy", "parameters": "7B", "requires_gpu": True, "loaded": False},
-        "airllm-mistral-7b": {"display_name": "AirLLM Mistral 7B", "description": "AirLLM sharded inference", "parameters": "7B", "requires_gpu": True, "loaded": False},
     }
 
 
@@ -818,7 +838,7 @@ def display_confidence(confidence: dict):
     <div class="confidence-container">
         <div class="confidence-header">
             <span class="confidence-label">AI confidence score</span>
-            <span class="confidence-badge" style="background: {badge_color}; color: #1e1e2e; padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">{badge_label} &middot; {width_percent}%</span>
+            <span class="confidence-badge" style="background: {badge_color}; color: #1e1e2e; padding: 2px 10px; border-radius: 0; font-size: 0.75rem; font-weight: 600;">{badge_label} &middot; {width_percent}%</span>
         </div>
         <div class="confidence-track">
             <div class="confidence-fill {level}" style="width: {width_percent}%"></div>
@@ -882,7 +902,7 @@ def render_answer(result):
     safety = result.get('safety')
     if safety and safety.get('is_emergency'):
         st.markdown(f"""
-        <div style="background:#dc2626; color:white; padding:16px 20px; border-radius:10px; margin-bottom:16px; font-weight:600;">
+        <div style="background:#dc2626; color:white; padding:16px 20px; border-radius:0; margin-bottom:16px; font-weight:600;">
             {sanitize_html(safety.get('emergency_message', 'Please seek immediate medical attention.'))}
         </div>
         """, unsafe_allow_html=True)
@@ -922,7 +942,7 @@ def render_answer(result):
         level_colors = {'caution': '#fbbf24', 'blocked': '#f87171', 'emergency': '#dc2626'}
         badge_color = level_colors.get(safety['level'], '#888')
         st.markdown(f"""
-        <span style="background:{badge_color}; color:#1e1e2e; padding:2px 10px; border-radius:12px; font-size:0.75rem; font-weight:600;">
+        <span style="background:{badge_color}; color:#1e1e2e; padding:2px 10px; border-radius:0; font-size:0.75rem; font-weight:600;">
             Safety: {safety['level'].title()}
         </span>
         """, unsafe_allow_html=True)
@@ -987,10 +1007,10 @@ def render_answer(result):
         if submitted:
             st.caption(f"Feedback recorded: {submitted}")
         else:
-            st.caption("Was this answer helpful?")
+            st.caption("Please rate the medical accuracy:")
             fb_col1, fb_col2, _ = st.columns([1, 1, 6])
 
-            if fb_col1.button("Helpful", key=f"feedback_helpful_{response_id}", use_container_width=True):
+            if fb_col1.button("Accurate", key=f"feedback_helpful_{response_id}", use_container_width=True):
                 ok = submit_feedback(
                     response_id=response_id,
                     rating=5,
@@ -999,11 +1019,11 @@ def render_answer(result):
                     was_safe=True,
                 )
                 if ok:
-                    st.session_state.feedback_submitted[response_id] = "Helpful"
+                    st.session_state.feedback_submitted[response_id] = "Accurate"
                     st.rerun()
                 st.warning("Could not submit feedback. Check backend /feedback endpoint.")
 
-            if fb_col2.button("Needs Improvement", key=f"feedback_negative_{response_id}", use_container_width=True):
+            if fb_col2.button("Inaccurate", key=f"feedback_negative_{response_id}", use_container_width=True):
                 ok = submit_feedback(
                     response_id=response_id,
                     rating=1,
@@ -1012,7 +1032,7 @@ def render_answer(result):
                     was_safe=True,
                 )
                 if ok:
-                    st.session_state.feedback_submitted[response_id] = "Needs Improvement"
+                    st.session_state.feedback_submitted[response_id] = "Inaccurate"
                     st.rerun()
                 st.warning("Could not submit feedback. Check backend /feedback endpoint.")
 
@@ -1089,6 +1109,11 @@ def processing_chain(question, num_sources, model_choice=None, use_langchain=Fal
             # Track session_id from response
             if result.get('session_id'):
                 st.session_state.session_id = result['session_id']
+                # Persist session_id to URL so it survives page reloads
+                try:
+                    st.query_params["sid"] = result['session_id']
+                except Exception:
+                    pass
             st.write("Response generated successfully")
             status.update(label="Response ready", state="complete", expanded=False)
             
@@ -1098,12 +1123,15 @@ def processing_chain(question, num_sources, model_choice=None, use_langchain=Fal
             st.rerun()
         else:
             status.update(label="Error generating response", state="error")
+            st.toast("Failed to get a response. Is the API server running?", icon="\u26a0\ufe0f")
 
 
 def main():
     # Initialize session state
     if "session_id" not in st.session_state:
-        st.session_state.session_id = None
+        # Restore session_id from URL query params (survives page reloads)
+        saved_sid = st.query_params.get("sid")
+        st.session_state.session_id = saved_sid if saved_sid else None
 
     # Sidebar
     with st.sidebar:
@@ -1124,17 +1152,13 @@ def main():
             st.session_state.session_id = None
             st.rerun()
         
-        st.markdown('<div class="sidebar-section">Model settings</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sidebar-section">Model</div>', unsafe_allow_html=True)
 
-        # Model selector
+        # Single model — show info instead of selector
         available_models = fetch_available_models()
-        model_keys = list(available_models.keys())
-        model_choice = st.selectbox(
-            "LLM Model",
-            options=model_keys,
-            format_func=lambda k: f"{available_models[k]['display_name']} ({available_models[k]['parameters']})",
-            help="Select the language model for answering questions",
-        )
+        model_choice = "tinyllama"
+        model_info = available_models.get(model_choice, {})
+        st.caption(f"{model_info.get('display_name', 'TinyLlama 1.1B')} ({model_info.get('parameters', '1.1B')})")
 
         # Pipeline selector
         pipeline_choice = st.radio(

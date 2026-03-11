@@ -8,6 +8,7 @@ Enhanced with:
 - Optional cross-encoder reranking for improved precision
 - Configurable retrieval parameters
 """
+from loguru import logger
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
 import hashlib
@@ -127,7 +128,7 @@ class HybridRetriever:
         
         self.bm25 = BM25Okapi(tokenized_corpus)
         self._bm25_init_attempted = True
-        print(f"✅ BM25 index initialized with {len(corpus)} documents")
+        logger.info(f" BM25 index initialized with {len(corpus)} documents")
     
     def _lazy_init_bm25_from_store(self):
         """
@@ -141,10 +142,10 @@ class HybridRetriever:
         try:
             total = self.vector_store.collection.count()
             if total == 0:
-                print("⚠️ Vector store is empty — BM25 not initialized")
+                logger.warning(" Vector store is empty — BM25 not initialized")
                 return
             
-            print(f"🔄 Lazy-loading BM25 corpus from vector store ({total:,} docs)...")
+            logger.info(f" Lazy-loading BM25 corpus from vector store ({total:,} docs)...")
             corpus = []
             offset = 0
             
@@ -172,9 +173,9 @@ class HybridRetriever:
             if corpus:
                 self._init_bm25(corpus)
             else:
-                print("⚠️ No documents retrieved from vector store for BM25")
+                logger.warning(" No documents retrieved from vector store for BM25")
         except Exception as e:
-            print(f"⚠️ BM25 lazy-init failed: {e}")
+            logger.warning(f" BM25 lazy-init failed: {e}")
     
     def _dense_retrieve(
         self,

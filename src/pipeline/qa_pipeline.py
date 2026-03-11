@@ -9,6 +9,7 @@ Enhanced with:
 - Optional factual consistency check (post-generation)
 - Cache context key including model/pipeline/KB fingerprint
 """
+from loguru import logger
 import sys
 import re
 from pathlib import Path
@@ -151,12 +152,20 @@ class HealthcareQAPipeline:
         question: str,
         num_documents: int = 5,
         include_explanation: bool = True,
-        template_name: str = "medical_qa"
+        template_name: str = "medical_qa",
+        conversation_context: str = None
     ) -> QAResponse:
         """
         Answer a medical question with explanations.
         
         Full pipeline: enhance → retrieve → correct → gate → compress → generate → verify.
+        
+        Args:
+            question: The user's question.
+            num_documents: Number of documents to retrieve.
+            include_explanation: Whether to include XAI explanations.
+            template_name: Prompt template name.
+            conversation_context: Optional previous conversation context for follow-ups.
         """
         # Build dynamic context key for cache (combining static pipeline info + per-request flags)
         dynamic_context_key = f"{self.cache_context_key}_srcs{num_documents}_expl{include_explanation}_{template_name}"
@@ -182,16 +191,21 @@ class HealthcareQAPipeline:
         
         # 1. QUERY ENHANCEMENT (pre-retrieval)
         retrieval_query = question
+        
+        # Augment with conversation context for follow-ups
+        if conversation_context:
+            retrieval_query = f"{conversation_context}\n\nCurrent question: {question}"
+        
         if self.query_enhancer:
             try:
-                enhanced = self.query_enhancer.enhance_query(question)
-                if enhanced and isinstance(enhanced, list) and len(enhanced) > 0:
-                    # Use the first enhanced query variant
-                    retrieval_query = enhanced[0] if isinstance(enhanced[0], str) else question
+                enhanced = self.query_enhancer.enhance(question)
+                # enhance() returns an EnhancedQuery dataclass with .all_queries
+                if hasattr(enhanced, 'all_queries') and enhanced.all_queries:
+                    retrieval_query = enhanced.all_queries[0]
                 elif isinstance(enhanced, str) and enhanced:
                     retrieval_query = enhanced
             except Exception as e:
-                print(f"⚠️ Query enhancement failed, using original: {e}")
+                logger.warning(f"Query enhancement failed, using original: {e}")
         
         # 2. RETRIEVE relevant documents
         documents, context = self.retriever.retrieve_with_context(
@@ -202,10 +216,12 @@ class HealthcareQAPipeline:
         # 3. CORRECTIVE RAG (post-retrieval quality check)
         if self.corrective_rag and documents:
             try:
-                corrected_docs = self.corrective_rag.retrieve_with_correction(
+                corrected_result = self.corrective_rag.retrieve_with_correction(
                     query=retrieval_query,
-                    initial_docs=documents
+                    k=num_documents,
                 )
+                # retrieve_with_correction returns Tuple[List, bool]
+                corrected_docs, was_corrected = corrected_result
                 if corrected_docs and len(corrected_docs) > 0:
                     documents = corrected_docs
                     # Rebuild context from corrected docs
@@ -218,7 +234,7 @@ class HealthcareQAPipeline:
                         total_length += len(doc.content)
                     context = "\n\n".join(context_parts)
             except Exception as e:
-                print(f"⚠️ Corrective RAG failed, using original retrieval: {e}")
+                logger.warning(f"Corrective RAG failed, using original retrieval: {e}")
         
         # 4. GROUNDING GATE: adaptive check
         is_answerable = True
@@ -228,29 +244,47 @@ class HealthcareQAPipeline:
         if not is_answerable:
             # Fallback to MCP Search if enabled
             if self.enable_mcp_search:
-                print("🌐 Local knowledge insufficient. Falling back to MCP Web Search...")
+                logger.info("Local knowledge insufficient. Falling back to MCP Web Search...")
                 try:
                     from src.mcp_client.agent import execute_mcp_tool_oneshot
                     
-                    # We will use the brave_web_search tool
                     mcp_args = self.mcp_search_args.split(" ")
-                    mcp_result = asyncio.run(execute_mcp_tool_oneshot(
+                    coro = execute_mcp_tool_oneshot(
                         server_cmd=self.mcp_search_cmd,
                         server_args=mcp_args,
                         tool_name="brave_web_search",
                         tool_args={"query": question, "count": 3}
-                    ))
+                    )
+                    
+                    # Safe async execution: handle both sync and async calling contexts.
+                    # asyncio.run() crashes inside FastAPI because the event loop is already running.
+                    try:
+                        loop = asyncio.get_running_loop()
+                        # We're inside an async context (e.g. FastAPI) — use a new thread
+                        import concurrent.futures
+                        with concurrent.futures.ThreadPoolExecutor() as pool:
+                            mcp_result = pool.submit(asyncio.run, coro).result(timeout=30)
+                    except RuntimeError:
+                        # No event loop running — safe to use asyncio.run()
+                        mcp_result = asyncio.run(coro)
                     
                     if mcp_result and not mcp_result.startswith("[MCP Error"):
                         context = f"CONTEXT FROM LIVE WEB SEARCH:\n{mcp_result}"
                         is_answerable = True
-                        # Add a dummy source for UI attribution
-                        documents = [type('Doc', (object,), {'source': 'MCP Web Search', 'content': context[:500]})()]
-                        print("✅ MCP Web Search succeeded")
+                        # Build a complete document object that matches the interface
+                        # downstream code expects: .source, .content, .score, .metadata
+                        mcp_doc = type('MCPDocument', (object,), {
+                            'source': 'MCP Web Search',
+                            'content': context[:500],
+                            'score': 0.5,  # lower than KB docs — web results are less curated
+                            'metadata': {'url': '', 'source': 'MCP Web Search', 'source_type': 'mcp_web_search'}
+                        })()
+                        documents = [mcp_doc]
+                        logger.info("MCP Web Search succeeded")
                     else:
-                        print(f"⚠️ MCP Web Search failed or returned nothing: {mcp_result}")
+                        logger.warning(f"MCP Web Search failed or returned nothing: {mcp_result}")
                 except Exception as e:
-                    print(f"⚠️ MCP Web Search exception: {e}")
+                    logger.warning(f"MCP Web Search exception: {e}")
                     
             # If still not answerable after MCP fallback attempt
             if not is_answerable:
@@ -274,14 +308,17 @@ class HealthcareQAPipeline:
         generation_context = context
         if self.context_compressor:
             try:
-                compressed = self.context_compressor.compress(
-                    context=context,
-                    query=question
-                )
-                if compressed:
-                    generation_context = compressed
+                # ContextCompressor.compress() takes (documents, query) positionally
+                # and returns a CompressedContext dataclass with .text
+                compressed = self.context_compressor.compress(documents, question)
+                if compressed and compressed.text:
+                    generation_context = compressed.text
+                    logger.info(
+                        f"Context compressed: {compressed.original_length} → {compressed.compressed_length} chars "
+                        f"(ratio: {compressed.compression_ratio:.2f})"
+                    )
             except Exception as e:
-                print(f"⚠️ Context compression failed, using full context: {e}")
+                logger.warning(f"Context compression failed, using full context: {e}")
         
         # 6. BUILD PROMPT & GENERATE ANSWER
         prompt = self.prompt_manager.build_prompt(
@@ -312,7 +349,7 @@ class HealthcareQAPipeline:
                     "details": fc.claim_results if hasattr(fc, 'claim_results') else [],
                 }
             except Exception as e:
-                print(f"⚠️ Factual consistency check failed: {e}")
+                logger.warning(f" Factual consistency check failed: {e}")
         
         # 8. CONFIDENCE SCORING
         if self.confidence_scorer and include_explanation:
@@ -438,61 +475,10 @@ class HealthcareQAPipeline:
     def _clean_answer(self, answer: str) -> str:
         """
         Pipeline-level answer cleaning to strip training data artifacts.
+        Delegates to the shared text cleaning utility.
         """
-        if not answer:
-            return answer
-        
-        answer = answer.strip()
-        for prefix in ['Answer:', 'Factual Answer:', 'Evidence-Based Answer:',
-                       'Based on the reference text above, the answer is:',
-                       'Based on the reference text above, the evidence-based answer is:',
-                       'Based on the reference text,']:
-            if answer.startswith(prefix):
-                answer = answer[len(prefix):].strip()
-        
-        truncate_patterns = [
-            r'Best regards',
-            r'Kind regards',
-            r'Sincerely',
-            r'\[Your Name\]',
-            r'Chat Doctor',
-            r'ChatDoctor',
-            r'HealthCareMagic',
-            r'Thank you for choosing',
-            r'Thank you for using',
-            r'If you have any further questions',
-            r'please do not hesitate',
-            r"don't hesitate to ask",
-            r'I hope this helps',
-            r'I hope this information',
-            r'\nQuestion:',
-            r'\nQ:',
-            r'\nAnswer:',
-            r'\[\d+\]\s*Source:',
-        ]
-        
-        min_match_pos = min(50, len(answer))
-        earliest_pos = len(answer)
-        for pattern in truncate_patterns:
-            match = re.search(pattern, answer, re.IGNORECASE)
-            if match and match.start() >= min_match_pos and match.start() < earliest_pos:
-                earliest_pos = match.start()
-        
-        if earliest_pos < len(answer):
-            answer = answer[:earliest_pos]
-        
-        answer = re.sub(r'\[\d+\]', '', answer)
-        
-        answer = answer.rstrip()
-        if answer and answer[-1] not in '.!?:)"':
-            last_period = max(answer.rfind('.'), answer.rfind('!'), answer.rfind('?'))
-            if last_period > len(answer) * 0.3:
-                answer = answer[:last_period + 1]
-        
-        answer = re.sub(r'  +', ' ', answer)
-        answer = re.sub(r'\n\n\n+', '\n\n', answer)
-        
-        return answer.strip()
+        from src.utils.text_cleaning import clean_llm_response
+        return clean_llm_response(answer)
     
     def batch_answer(
         self,

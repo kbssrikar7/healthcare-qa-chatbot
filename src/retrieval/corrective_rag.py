@@ -4,6 +4,7 @@ Corrective RAG (CRAG) - Validates and improves retrieval quality.
 Based on rag-agent-builder and rag-architecture skill patterns.
 Implements iterative retrieval refinement when initial results are poor.
 """
+from loguru import logger
 from typing import List, Tuple, Optional
 from dataclasses import dataclass
 

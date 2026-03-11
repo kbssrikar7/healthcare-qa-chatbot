@@ -167,18 +167,61 @@ EXPLANATION: [brief explanation of scores]
         )
     
     def _mock_evaluate(self, answer: str) -> GenerationMetrics:
-        """Return mock evaluation when no judge LLM is available."""
-        # Simple heuristic scoring for testing
-        has_disclaimer = any(w in answer.lower() for w in ['consult', 'doctor', 'professional'])
-        length_score = min(1.0, len(answer) / 200)
+        """
+        Heuristic evaluation when no judge LLM is available.
+        
+        Scores based on:
+        - Length adequacy (too short = low completeness, too long = verbose)
+        - Disclaimer presence (safety)
+        - Medical term density (accuracy proxy)
+        - Sentence structure (relevance proxy)
+        """
+        if not answer:
+            return GenerationMetrics(
+                accuracy_score=0.0, relevance_score=0.0,
+                completeness_score=0.0, safety_score=0.0,
+                overall_score=0.0, explanation="Empty answer"
+            )
+        
+        # Length-based completeness
+        word_count = len(answer.split())
+        if word_count < 10:
+            completeness = 0.2
+        elif word_count < 30:
+            completeness = 0.5
+        elif word_count < 200:
+            completeness = min(1.0, word_count / 150)
+        else:
+            completeness = max(0.5, 1.0 - (word_count - 200) / 500)  # penalize verbosity
+        
+        # Safety: check for disclaimers and cautions
+        safety_terms = ['consult', 'doctor', 'professional', 'medical advice',
+                       'healthcare provider', 'disclaimer', 'physician']
+        safety_count = sum(1 for w in safety_terms if w in answer.lower())
+        safety = min(1.0, 0.5 + safety_count * 0.15)
+        
+        # Medical term density as accuracy proxy
+        med_terms = ['treatment', 'symptom', 'diagnosis', 'condition', 'medication',
+                    'therapy', 'clinical', 'patient', 'disease', 'chronic',
+                    'acute', 'dose', 'mg', 'blood', 'immune', 'cell']
+        med_count = sum(1 for t in med_terms if t in answer.lower())
+        accuracy = min(1.0, 0.4 + med_count * 0.08)
+        
+        # Sentence count as relevance proxy (structured = better)
+        sentences = [s.strip() for s in answer.split('.') if len(s.strip()) > 10]
+        relevance = min(1.0, 0.5 + len(sentences) * 0.1)
+        
+        # Weighted overall
+        overall = (accuracy * 0.35 + relevance * 0.25 +
+                  completeness * 0.2 + safety * 0.2)
         
         return GenerationMetrics(
-            accuracy_score=0.7,
-            relevance_score=0.75,
-            completeness_score=length_score,
-            safety_score=0.9 if has_disclaimer else 0.6,
-            overall_score=0.7,
-            explanation="Mock evaluation (no judge LLM available)"
+            accuracy_score=round(min(1.0, max(0.0, accuracy)), 3),
+            relevance_score=round(min(1.0, max(0.0, relevance)), 3),
+            completeness_score=round(min(1.0, max(0.0, completeness)), 3),
+            safety_score=round(min(1.0, max(0.0, safety)), 3),
+            overall_score=round(min(1.0, max(0.0, overall)), 3),
+            explanation=f"Heuristic eval: {word_count} words, {len(sentences)} sentences, {med_count} medical terms"
         )
     
     def batch_evaluate(

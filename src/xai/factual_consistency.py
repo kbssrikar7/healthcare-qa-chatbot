@@ -8,9 +8,7 @@ hallucinations where the model generates plausible but unsupported statements.
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
 import re
-import logging
-
-logger = logging.getLogger(__name__)
+from loguru import logger
 
 
 @dataclass

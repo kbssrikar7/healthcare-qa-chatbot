@@ -1,5 +1,6 @@
 """
 LLM wrapper for medical question answering.
+Uses TinyLlama as the sole model backend via Hugging Face transformers.
 """
 import re
 import torch
@@ -7,6 +8,7 @@ from typing import List, Optional, Dict, Any
 from dataclasses import dataclass
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 import gc
+from loguru import logger
 
 
 # Custom exceptions for granular error handling
@@ -35,109 +37,70 @@ class GenerationResult:
     generated_tokens: int
     probabilities: Optional[List[float]] = None
 
+
 class MedicalLLM:
     """
     Medical domain LLM wrapper.
-    Supports backends:
-    - transformers (default)
-    - airllm (low-VRAM sharded inference)
+    Uses TinyLlama 1.1B via Hugging Face transformers.
     """
-    
+
     SUPPORTED_MODELS = {
-        "biomistral": "BioMistral/BioMistral-7B",
         "tinyllama": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
-        "mistral": "mistralai/Mistral-7B-Instruct-v0.2",
     }
-    
+
     # Patterns that indicate the model has leaked training data
-    # and is generating beyond the intended answer
     STOP_PATTERNS = [
-        # New Q&A pair starting (ChatDoctor / HealthCareMagic training data leak)
-        r'\nQuestion:',
-        r'\nQ:',
-        r'\nAnswer:',
-        # Sign-offs and letter-style endings
-        r'Best regards',
-        r'Kind regards',
-        r'Sincerely',
-        r'Yours truly',
-        r'Warm regards',
-        r'With best wishes',
-        r'\[Your Name\]',
-        r'\[Doctor\'?s? Name\]',
-        # ChatDoctor / HealthCareMagic specific leaks
-        r'Chat Doctor',
-        r'ChatDoctor',
-        r'HealthCareMagic',
-        r'Thank you for choosing',
-        r'Thank you for using',
-        r'Thank you for reaching out',
-        r'Thank you for contacting',
+        r'\nQuestion:', r'\nQ:', r'\nAnswer:',
+        r'Best regards', r'Kind regards', r'Sincerely',
+        r'Yours truly', r'Warm regards', r'With best wishes',
+        r'\[Your Name\]', r"\[Doctor'?s? Name\]",
+        r'Chat Doctor', r'ChatDoctor', r'HealthCareMagic',
+        r'Thank you for choosing', r'Thank you for using',
+        r'Thank you for reaching out', r'Thank you for contacting',
         r'If you have any further questions',
-        r'please do not hesitate',
-        r'don\'t hesitate to ask',
+        r'please do not hesitate', r"don't hesitate to ask",
         r'I hope this (?:helps|information|answers)',
-        r'Wishing you (?:good|the best)',
-        r'Take care',
-        # Greetings that indicate a new response is starting
-        r'\nHi,?\s',
-        r'\nHello,?\s',
-        r'\nDear ',
-        r'\nHi doctor',
-        r'\nHello doctor',
-        r'\nHi,\s*\n',
-        # Source reference markers leaking from context
+        r'Wishing you (?:good|the best)', r'Take care',
+        r'\nHi,?\s', r'\nHello,?\s', r'\nDear ',
+        r'\nHi doctor', r'\nHello doctor', r'\nHi,\s*\n',
         r'\[\d+\]\s*Source:',
-        # System-level markers
-        r'\n---',
-        r'<\|',
-        r'\[/INST\]',
-        r'</s>',
-        r'<\|im_end\|>',
-        r'<\|endoftext\|>',
+        r'\n---', r'<\|', r'\[/INST\]', r'</s>',
+        r'<\|im_end\|>', r'<\|endoftext\|>',
     ]
-    
+
     def __init__(
         self,
         model_name: str = "tinyllama",
         device: Optional[str] = None,
-        load_in_4bit: bool = True,
+        load_in_4bit: bool = False,
         max_memory: Optional[Dict] = None,
         adapter_path: Optional[str] = None,
-        backend: str = "transformers",
-        airllm_compression: Optional[str] = None,
         hf_token: Optional[str] = None,
+        **kwargs,
     ):
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.adapter_path = adapter_path
-        self.backend = backend
         self.hf_token = hf_token
-
-        # Keep argument for compatibility with existing call sites.
-        _ = max_memory
+        _ = max_memory  # kept for backward compat
 
         model_path = self._resolve_model_path(model_name)
         self.model_name = model_name
-        print(f"🔄 Loading LLM ({self.backend}): {model_path} on {self.device}")
+        logger.info("Loading LLM: {} on {}", model_path, self.device)
 
-        if self.backend == "airllm":
-            self._init_airllm_model(
-                model_path=model_path,
-                compression=airllm_compression,
-            )
-        else:
-            self._init_transformers_model(
-                model_path=model_path,
-                load_in_4bit=load_in_4bit,
-                adapter_path=adapter_path,
-            )
+        self._init_transformers_model(
+            model_path=model_path,
+            load_in_4bit=load_in_4bit,
+            adapter_path=adapter_path,
+        )
 
+    # ------------------------------------------------------------------
     def _resolve_model_path(self, model_name: str) -> str:
         """Resolve a shorthand model key to a full model path."""
         if model_name in self.SUPPORTED_MODELS:
             return self.SUPPORTED_MODELS[model_name]
         return model_name
 
+    # ------------------------------------------------------------------
     def _init_transformers_model(
         self,
         model_path: str,
@@ -145,125 +108,95 @@ class MedicalLLM:
         adapter_path: Optional[str],
     ) -> None:
         """Initialize Hugging Face transformers backend."""
-        # Quantization config for 4-bit loading
         if load_in_4bit and self.device == "cuda":
             try:
                 quantization_config = BitsAndBytesConfig(
                     load_in_4bit=True,
                     bnb_4bit_compute_dtype=torch.float16,
                     bnb_4bit_use_double_quant=True,
-                    bnb_4bit_quant_type="nf4"
+                    bnb_4bit_quant_type="nf4",
                 )
             except Exception:
                 quantization_config = None
-                print("⚠️ BitsAndBytes not available, loading without quantization")
+                logger.warning("BitsAndBytes not available, loading without quantization")
         else:
             quantization_config = None
 
-        # Load tokenizer - from adapter if available, otherwise base model
+        # Tokenizer
         tokenizer_path = adapter_path if adapter_path else model_path
         try:
             self.tokenizer = AutoTokenizer.from_pretrained(
-                tokenizer_path,
-                trust_remote_code=True
+                tokenizer_path, trust_remote_code=True
             )
         except OSError as e:
             if "not found" in str(e).lower() or "does not appear" in str(e).lower():
                 raise ModelNotFoundError(
-                    f"Model '{tokenizer_path}' not found. Check the model name or internet connection."
+                    f"Model '{tokenizer_path}' not found. "
+                    "Check the model name or internet connection."
                 ) from e
             raise
 
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
-        # Load model with granular error handling
+        # Model
         try:
             if self.device == "cpu":
                 import os
                 threads = min(4, os.cpu_count() or 4)
                 torch.set_num_threads(threads)
-                
+
             if quantization_config and self.device == "cuda":
                 self.model = AutoModelForCausalLM.from_pretrained(
                     model_path,
                     quantization_config=quantization_config,
                     device_map="auto",
                     trust_remote_code=True,
-                    low_cpu_mem_usage=True
+                    low_cpu_mem_usage=True,
                 )
             else:
                 self.model = AutoModelForCausalLM.from_pretrained(
                     model_path,
-                    torch_dtype=torch.float16 if self.device == "cuda" else getattr(torch, "bfloat16", torch.float32),
+                    torch_dtype=(
+                        torch.float16
+                        if self.device == "cuda"
+                        else getattr(torch, "bfloat16", torch.float32)
+                    ),
                     device_map="auto" if self.device == "cuda" else None,
                     trust_remote_code=True,
-                    low_cpu_mem_usage=True
+                    low_cpu_mem_usage=True,
                 )
                 if self.device == "cpu":
                     self.model = self.model.to(self.device)
 
-            # Load PEFT adapter if specified
+            # PEFT adapter
             if adapter_path:
                 try:
                     from peft import PeftModel
-                    print(f"🔄 Loading PEFT adapter from {adapter_path}")
+                    logger.info("Loading PEFT adapter from {}", adapter_path)
                     self.model = PeftModel.from_pretrained(self.model, adapter_path)
-                    print("✅ Adapter loaded successfully")
+                    logger.info("Adapter loaded successfully")
                 except ImportError:
-                    print("⚠️ PEFT not installed, using base model without adapter")
+                    logger.warning("PEFT not installed, using base model without adapter")
                 except Exception as e:
-                    print(f"⚠️ Failed to load adapter: {e}, using base model")
+                    logger.warning("Failed to load adapter: {}, using base model", e)
 
             self.model.eval()
-            print("✅ Model loaded successfully")
+            logger.info("Model loaded successfully")
         except torch.cuda.OutOfMemoryError as e:
             raise GPUOutOfMemoryError(
                 f"GPU out of memory loading '{model_path}'. "
-                "Try: 1) Using load_in_4bit=True, 2) Using a smaller model like 'tinyllama', "
-                "3) Reducing batch size, 4) Using device='cpu'"
+                "Try: 1) load_in_4bit=True, 2) Reducing batch size, 3) device='cpu'"
             ) from e
         except OSError as e:
             if "not found" in str(e).lower() or "does not appear" in str(e).lower():
                 raise ModelNotFoundError(f"Model '{model_path}' not found: {e}") from e
             raise
         except Exception as e:
-            print(f"❌ Failed to load model: {e}")
+            logger.error("Failed to load model: {}", e)
             raise
 
-    def _init_airllm_model(
-        self,
-        model_path: str,
-        compression: Optional[str],
-    ) -> None:
-        """Initialize AirLLM backend."""
-        try:
-            from airllm import AutoModel as AirLLMAutoModel
-        except ImportError as e:
-            raise LLMError("airllm is not installed. Run `pip install airllm`.") from e
-
-        try:
-            airllm_device = self.device
-            if airllm_device == "cuda":
-                airllm_device = "cuda:0"
-
-            airllm_kwargs: Dict[str, Any] = {"device": airllm_device}
-            if compression:
-                airllm_kwargs["compression"] = compression
-            if self.hf_token:
-                airllm_kwargs["hf_token"] = self.hf_token
-
-            self.model = AirLLMAutoModel.from_pretrained(model_path, **airllm_kwargs)
-            self.tokenizer = self.model.tokenizer
-            if self.tokenizer.pad_token is None and self.tokenizer.eos_token is not None:
-                self.tokenizer.pad_token = self.tokenizer.eos_token
-            print("✅ AirLLM model loaded")
-        except Exception as e:
-            raise LLMError(
-                f"Failed to initialize AirLLM model '{model_path}'. "
-                "Check model id, Hugging Face access token, and disk space."
-            ) from e
-    
+    # ------------------------------------------------------------------
     def generate(
         self,
         prompt: str,
@@ -271,47 +204,15 @@ class MedicalLLM:
         temperature: float = 0.3,
         top_p: float = 0.85,
         do_sample: bool = True,
-        return_probabilities: bool = False
+        return_probabilities: bool = False,
     ) -> GenerationResult:
         """Generate response from the LLM."""
-        if self.backend == "airllm":
-            return self._generate_with_airllm(
-                prompt=prompt,
-                max_new_tokens=max_new_tokens,
-                temperature=temperature,
-                top_p=top_p,
-                do_sample=do_sample,
-            )
-        return self._generate_with_transformers(
-            prompt=prompt,
-            max_new_tokens=max_new_tokens,
-            temperature=temperature,
-            top_p=top_p,
-            do_sample=do_sample,
-            return_probabilities=return_probabilities,
-        )
-
-    def _generate_with_transformers(
-        self,
-        prompt: str,
-        max_new_tokens: int,
-        temperature: float,
-        top_p: float,
-        do_sample: bool,
-        return_probabilities: bool,
-    ) -> GenerationResult:
-        """Generation path for Hugging Face transformers backend."""
-        # Tokenize input
         inputs = self.tokenizer(
-            prompt,
-            return_tensors="pt",
-            truncation=True,
-            max_length=2048
+            prompt, return_tensors="pt", truncation=True, max_length=2048
         ).to(self.model.device)
 
         input_length = inputs.input_ids.shape[1]
 
-        # Generate
         with torch.no_grad():
             outputs = self.model.generate(
                 **inputs,
@@ -322,86 +223,37 @@ class MedicalLLM:
                 pad_token_id=self.tokenizer.pad_token_id,
                 eos_token_id=self.tokenizer.eos_token_id,
                 output_scores=return_probabilities,
-                return_dict_in_generate=True
+                return_dict_in_generate=True,
             )
 
-        # Decode response
         generated_ids = outputs.sequences[0][input_length:]
         response = self.tokenizer.decode(generated_ids, skip_special_tokens=True)
 
-        # Get probabilities if requested
         probabilities = None
-        if return_probabilities and hasattr(outputs, 'scores'):
+        if return_probabilities and hasattr(outputs, "scores"):
             probs = []
             for score in outputs.scores:
                 prob = torch.softmax(score[0], dim=-1)
                 probs.append(prob.max().item())
             probabilities = probs
 
-        # Post-process: truncate leaked training data
         response = self._clean_response(response)
 
         return GenerationResult(
             response=response.strip(),
             input_tokens=input_length,
             generated_tokens=len(generated_ids),
-            probabilities=probabilities
+            probabilities=probabilities,
         )
 
-    def _generate_with_airllm(
-        self,
-        prompt: str,
-        max_new_tokens: int,
-        temperature: float,
-        top_p: float,
-        do_sample: bool,
-    ) -> GenerationResult:
-        """Generation path for AirLLM backend."""
-        try:
-            tokenized = self.tokenizer(
-                prompt,
-                return_tensors="pt",
-                truncation=True,
-                max_length=2048,
-            )
-            input_ids = tokenized["input_ids"]
-            if self.device.startswith("cuda"):
-                target_device = self.device if ":" in self.device else "cuda:0"
-                input_ids = input_ids.to(target_device)
-
-            with torch.no_grad():
-                outputs = self.model.generate(
-                    input_ids,
-                    max_new_tokens=max_new_tokens,
-                    temperature=temperature if do_sample else 1.0,
-                    top_p=top_p if do_sample else 1.0,
-                    do_sample=do_sample,
-                    use_cache=True,
-                    return_dict_in_generate=True,
-                )
-
-            sequences = outputs.sequences if hasattr(outputs, "sequences") else outputs
-            generated_ids = sequences[0][input_ids.shape[1]:]
-            response = self.tokenizer.decode(generated_ids, skip_special_tokens=True)
-            response = self._clean_response(response)
-
-            return GenerationResult(
-                response=response.strip(),
-                input_tokens=int(input_ids.shape[1]),
-                generated_tokens=int(len(generated_ids)),
-                probabilities=None,
-            )
-        except Exception as e:
-            raise GenerationError(f"AirLLM generation failed: {e}") from e
-    
+    # ------------------------------------------------------------------
     def generate_with_context(
         self,
         question: str,
         context: str,
-        max_new_tokens: int = 256
+        max_new_tokens: int = 256,
     ) -> GenerationResult:
         """Generate response with context (for RAG) using TinyLlama chat format."""
-        # TinyLlama chat template tokens
         SYS = "<|system|>"
         USR = "<|user|>"
         AST = "<|assistant|>"
@@ -420,66 +272,18 @@ class MedicalLLM:
         )
 
         return self.generate(prompt, max_new_tokens=max_new_tokens)
-    
+
+    # ------------------------------------------------------------------
     def _clean_response(self, response: str) -> str:
         """
         Clean the LLM response by removing leaked training data.
-        
-        The fine-tuned model (trained on ChatDoctor/HealthCareMagic data)
-        sometimes generates beyond the answer boundary, producing sign-offs,
-        new Q&A pairs, or other training artifacts. This method detects and
-        truncates the response at the earliest such pattern.
+
+        Delegates to the shared text cleaning utility.
         """
-        if not response:
-            return response
-        
-        # Strip leading whitespace and common answer prefixes that the model
-        # may generate (these are legitimate starts, not leaks)
-        response = response.strip()
-        for prefix in ['Answer:', 'Factual Answer:', 'Evidence-Based Answer:',
-                       'Based on the reference text above, the answer is:',
-                       'Based on the reference text above, the evidence-based answer is:',
-                       'Based on the reference text,']:
-            if response.startswith(prefix):
-                response = response[len(prefix):].strip()
-        
-        # Find the earliest occurrence of any stop pattern
-        # Only consider matches AFTER the first 50 chars to avoid
-        # truncating legitimate answer content at the start
-        min_match_pos = min(50, len(response))
-        earliest_pos = len(response)
-        for pattern in self.STOP_PATTERNS:
-            match = re.search(pattern, response, re.IGNORECASE)
-            if match and match.start() >= min_match_pos and match.start() < earliest_pos:
-                earliest_pos = match.start()
-        
-        # Truncate at the earliest stop pattern
-        if earliest_pos < len(response):
-            response = response[:earliest_pos]
-        
-        # Remove inline source reference markers like "[1]", "[2]", "[3]" etc
-        # that leak from the RAG context into the answer
-        response = re.sub(r'\[\d+\]', '', response)
-        
-        # Remove trailing incomplete sentences (if response was truncated mid-sentence)
-        # Only do this if the response doesn't end with proper punctuation
-        response = response.rstrip()
-        if response and response[-1] not in '.!?:)"':
-            # Find the last complete sentence
-            last_period = max(
-                response.rfind('.'),
-                response.rfind('!'),
-                response.rfind('?')
-            )
-            if last_period > len(response) * 0.3:  # Only trim if we keep at least 30%
-                response = response[:last_period + 1]
-        
-        # Clean up extra whitespace left from removals
-        response = re.sub(r'  +', ' ', response)
-        response = re.sub(r'\n\n\n+', '\n\n', response)
-        
-        return response.strip()
-    
+        from src.utils.text_cleaning import clean_llm_response
+        return clean_llm_response(response)
+
+    # ------------------------------------------------------------------
     def cleanup(self):
         """Free GPU memory."""
         if hasattr(self, "model"):

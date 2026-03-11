@@ -1,6 +1,7 @@
 """
 Medical embedding models for semantic search.
 """
+from loguru import logger
 import torch
 import numpy as np
 from typing import List, Union, Optional
@@ -38,7 +39,7 @@ class MedicalEmbedder:
             model_path = model_name
         
         self.model_name = model_name
-        print(f"🔄 Loading embedding model: {model_path} on {self.device}")
+        logger.info(f" Loading embedding model: {model_path} on {self.device}")
         
         try:
             self.model = SentenceTransformer(
@@ -46,9 +47,9 @@ class MedicalEmbedder:
                 device=self.device,
                 cache_folder=cache_dir
             )
-            print(f"✅ Model loaded. Dimension: {self.embedding_dimension}")
+            logger.info(f" Model loaded. Dimension: {self.embedding_dimension}")
         except Exception as e:
-            print(f"⚠️ Failed to load {model_path}, falling back to all-MiniLM")
+            logger.warning(f" Failed to load {model_path}, falling back to all-MiniLM")
             self.model = SentenceTransformer(
                 self.SUPPORTED_MODELS["all-minilm"],
                 device=self.device

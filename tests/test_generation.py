@@ -118,4 +118,4 @@ class TestLLMWrapper:
         from src.generation.llm_wrapper import MedicalLLM
         
         assert "tinyllama" in MedicalLLM.SUPPORTED_MODELS
-        assert "biomistral" in MedicalLLM.SUPPORTED_MODELS
+        assert len(MedicalLLM.SUPPORTED_MODELS) == 1

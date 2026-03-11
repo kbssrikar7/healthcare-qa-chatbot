@@ -20,8 +20,6 @@ OUTPUTS_DIR = PROJECT_ROOT / "outputs"
 class ModelChoice(str, Enum):
     """Available LLM model choices."""
     TINYLLAMA = "tinyllama"
-    BIOMISTRAL_7B = "biomistral-7b"
-    AIRLLM_MISTRAL_7B = "airllm-mistral-7b"
 
 
 # Model registry with metadata
@@ -35,26 +33,6 @@ AVAILABLE_MODELS: Dict[str, Dict[str, Any]] = {
         "requires_gpu": False,
         "load_in_4bit": False,
         "backend": "transformers",
-    },
-    "biomistral-7b": {
-        "model_name": "BioMistral/BioMistral-7B",
-        "display_name": "BioMistral 7B",
-        "description": "Medical-specialized, higher accuracy — best for clinical questions",
-        "parameters": "7B",
-        "max_new_tokens": 512,
-        "requires_gpu": True,
-        "load_in_4bit": True,
-        "backend": "transformers",
-    },
-    "airllm-mistral-7b": {
-        "model_name": os.getenv("AIRLLM_MODEL_ID", "mistralai/Mistral-7B-Instruct-v0.2"),
-        "display_name": "AirLLM Mistral 7B",
-        "description": "AirLLM sharded inference for lower VRAM usage",
-        "parameters": "7B",
-        "max_new_tokens": 512,
-        "requires_gpu": True,
-        "load_in_4bit": False,
-        "backend": "airllm",
     },
 }
 
@@ -72,15 +50,13 @@ class EmbeddingConfig:
 @dataclass
 class LLMConfig:
     """LLM configuration."""
-    model_name: str = "BioMistral/BioMistral-7B"
+    model_name: str = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
     default_model: str = "tinyllama"
-    backend: str = os.getenv("LLM_BACKEND", "transformers")
     max_new_tokens: int = 512
     temperature: float = 0.7
     top_p: float = 0.9
-    load_in_4bit: bool = True
+    load_in_4bit: bool = False
     device_map: str = "auto"
-    airllm_compression: Optional[str] = os.getenv("AIRLLM_COMPRESSION")
     hf_home: str = os.getenv("HF_HOME", str(PROJECT_ROOT / ".hf_cache"))
     
     # Fine-tuning
@@ -123,11 +99,11 @@ class PipelineConfig:
     absolute_score_floor: float = 0.01  # Catches RRF-scale scores (~0.016)
     
     # Enhanced pipeline feature flags
-    enable_reranker: bool = False
-    enable_query_enhancement: bool = False
+    enable_reranker: bool = True
+    enable_query_enhancement: bool = True
     enable_context_compression: bool = False
-    enable_corrective_rag: bool = False
-    enable_factual_consistency: bool = False
+    enable_corrective_rag: bool = True
+    enable_factual_consistency: bool = True
     
     # MCP Integration
     enable_mcp_search: bool = os.getenv("ENABLE_MCP_SEARCH", "false").lower() == "true"
@@ -173,7 +149,7 @@ class Config:
         
         if env == "production":
             return cls(
-                llm=LLMConfig(model_name="BioMistral/BioMistral-7B", load_in_4bit=True),
+                llm=LLMConfig(model_name="TinyLlama/TinyLlama-1.1B-Chat-v1.0", load_in_4bit=False),
                 safety=SafetyConfig(confidence_threshold=0.6),
                 pipeline=PipelineConfig(min_retrieval_score=0.4, cache_ttl_seconds=7200)
             )

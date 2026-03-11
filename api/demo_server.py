@@ -1,8 +1,17 @@
 """
 Simplified API server for Healthcare QA Chatbot - Demo Mode.
 
-This server runs without the full vector store, using the fine-tuned LLM 
-directly for demonstrations.
+⚠️ SAFETY WARNING ⚠️
+This server bypasses the RAG retrieval pipeline entirely and generates answers
+from the LLM alone (no grounding, no source attribution, no factual verification).
+
+Do NOT use this server for:
+- Any evaluation or benchmarking (results are not comparable to the RAG pipeline)
+- Any user-facing deployment (answers are ungrounded and potentially hallucinatory)
+- Any academic demonstration claiming RAG+XAI capabilities
+
+This server exists ONLY for quick LLM-only smoke tests.
+For the full pipeline, use: python api/main.py
 """
 import os
 import sys
@@ -16,9 +25,13 @@ from typing import List, Dict, Optional
 import uvicorn
 
 app = FastAPI(
-    title="Healthcare QA Chatbot API (Demo Mode)",
-    description="Explainable medical QA system - Demo without vector store",
-    version="1.0.0"
+    title="Healthcare QA Chatbot API (⚠️ DEMO MODE — UNGROUNDED)",
+    description=(
+        "⚠️ DEMO ONLY — This server bypasses RAG retrieval entirely. "
+        "Answers are generated from the LLM alone without source grounding. "
+        "For the full pipeline, use: python api/main.py"
+    ),
+    version="1.0.0-demo"
 )
 
 app.add_middleware(
@@ -98,7 +111,7 @@ async def root():
     return HealthResponse(
         status="ok",
         pipeline_ready=llm is not None,
-        message="Healthcare QA API (Demo Mode) is running"
+        message="⚠️ DEMO MODE — Answers are NOT grounded in retrieved sources. Use api/main.py for full RAG pipeline."
     )
 
 @app.get("/health", response_model=HealthResponse)
@@ -106,7 +119,7 @@ async def health_check():
     return HealthResponse(
         status="healthy",
         pipeline_ready=llm is not None,
-        message="Service is healthy"
+        message="⚠️ DEMO MODE (ungrounded) — For production, use api/main.py"
     )
 
 @app.post("/ask", response_model=AnswerResponse)
@@ -145,7 +158,12 @@ async def ask_question(request: QuestionRequest):
             "explanation": "Answer generated from fine-tuned medical knowledge model."
         }
         
-        disclaimer = "This information is for educational purposes only. Always consult a healthcare professional for medical advice."
+        disclaimer = (
+            "⚠️ DEMO MODE: This answer was generated WITHOUT source retrieval. "
+            "It is NOT grounded in peer-reviewed medical literature. "
+            "This information is for educational purposes only. "
+            "Always consult a healthcare professional for medical advice."
+        )
         
         return AnswerResponse(
             question=request.question,
@@ -163,6 +181,14 @@ async def ask_question(request: QuestionRequest):
         )
 
 if __name__ == "__main__":
+    import sys as _sys
+    print("\n" + "=" * 70, file=_sys.stderr)
+    print("⚠️  WARNING: RUNNING IN DEMO MODE (UNGROUNDED)", file=_sys.stderr)
+    print("   Answers are generated from the LLM alone.", file=_sys.stderr)
+    print("   There is NO retrieval, NO source attribution, NO XAI.", file=_sys.stderr)
+    print("   For the full RAG pipeline, use: python api/main.py", file=_sys.stderr)
+    print("=" * 70 + "\n", file=_sys.stderr)
+    
     # Pre-load LLM
     get_llm()
     

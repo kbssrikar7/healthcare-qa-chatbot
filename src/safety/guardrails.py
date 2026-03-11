@@ -1,6 +1,7 @@
 """
 Safety guardrails for medical QA chatbot.
 """
+from loguru import logger
 import re
 import unicodedata
 from typing import List, Dict, Tuple, Optional

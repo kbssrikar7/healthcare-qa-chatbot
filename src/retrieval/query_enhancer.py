@@ -6,6 +6,7 @@ Based on RAG skill patterns for query rewriting and expansion:
 - Medical terminology expansion
 - HyDE (Hypothetical Document Embeddings) option
 """
+from loguru import logger
 from typing import List, Optional
 from dataclasses import dataclass
 

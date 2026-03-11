@@ -10,9 +10,7 @@ from datetime import datetime
 import uuid
 import json
 import re
-import logging
-
-logger = logging.getLogger(__name__)
+from loguru import logger
 
 
 @dataclass

@@ -3,6 +3,7 @@ Cross-encoder reranking for improved retrieval precision.
 
 Based on RAG skill patterns for production-grade reranking.
 """
+from loguru import logger
 from typing import List, Tuple, Optional
 from dataclasses import dataclass
 
@@ -71,7 +72,7 @@ class CrossEncoderReranker:
         self.model = CrossEncoder(model_path, device=self.device)
         self.model_name = model_name
         
-        print(f"✅ Reranker initialized: {model_path} on {self.device}")
+        logger.info(f" Reranker initialized: {model_path} on {self.device}")
     
     def rerank(
         self,

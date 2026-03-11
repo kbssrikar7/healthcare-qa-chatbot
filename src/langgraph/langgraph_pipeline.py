@@ -128,8 +128,6 @@ class LangGraphHealthcareQAPipeline:
         builder.add_edge("retrieve", "grade")
         builder.add_edge("refine", "retrieve")  # LOOP back
         builder.add_edge("generate", "verify")
-        builder.add_edge("verify", "enrich_xai")
-        builder.add_edge("enrich_xai", END)
         builder.add_edge("unanswerable", END)
         
         # Conditional edges
@@ -142,6 +140,19 @@ class LangGraphHealthcareQAPipeline:
                 "unanswerable": "unanswerable"
             }
         )
+        
+        # After verification: re-route to refine if not grounded, else proceed
+        builder.add_conditional_edges(
+            "verify",
+            route_after_verify,
+            {
+                "enrich_xai": "enrich_xai",
+                "refine": "refine",
+            }
+        )
+        
+        # After XAI: always end (review flag is in state for caller to inspect)
+        builder.add_edge("enrich_xai", END)
         
         # Compile with optional checkpointing
         if self.enable_checkpointing:
@@ -249,18 +260,26 @@ class LangGraphHealthcareQAPipeline:
             from_cache=False
         )
     
-    def answer(self, question: str) -> QAResponse:
+    def answer(self, question: str, num_documents: int = None, include_explanation: bool = True) -> QAResponse:
         """
         Answer a question and return QAResponse (compatible with existing pipeline).
         
         Args:
             question: User's medical question
+            num_documents: Number of documents to retrieve (overrides self.k if provided)
+            include_explanation: Whether to include XAI explanations
             
         Returns:
             QAResponse compatible with existing API
         """
-        result = self.invoke(question)
-        return self.to_qa_response(result)
+        original_k = self.k
+        if num_documents is not None:
+            self.k = num_documents
+        try:
+            result = self.invoke(question)
+            return self.to_qa_response(result)
+        finally:
+            self.k = original_k
     
     def get_graph_visualization(self) -> str:
         """

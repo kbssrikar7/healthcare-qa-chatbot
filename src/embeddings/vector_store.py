@@ -1,6 +1,7 @@
 """
 Vector store management for document retrieval.
 """
+from loguru import logger
 import chromadb
 from chromadb.config import Settings
 from typing import List, Dict, Optional, Any
@@ -83,8 +84,8 @@ class VectorStore:
             metadata={"hnsw:space": "cosine"}
         )
         
-        print(f"✅ Vector store initialized: {collection_name}")
-        print(f"📊 Documents in collection: {self.collection.count()}")
+        logger.info(f" Vector store initialized: {collection_name}")
+        logger.info(f" Documents in collection: {self.collection.count()}")
     
     def add_documents(
         self,
