@@ -18,6 +18,7 @@ eggs/
 venv/
 venv312/
 .venv/
+.venv312/
 ENV/
 
 # ==============================================
@@ -79,6 +80,9 @@ data/knowledge_base/
 data/embeddings/
 data/processed/
 data/cache/
+data/tmp_chroma_test/
+data/question_history.json
+api/data/
 models/
 outputs/
 images/
@@ -109,6 +113,7 @@ medical_adapter.zip
 *.zip
 *.tar.gz
 *.tar
+*.pdf
 *.rar
 
 # ==============================================
@@ -136,6 +141,9 @@ docs/
 # ==============================================
 # Misc
 # ==============================================
+.hf_cache/
+try.ipynb
+nalavda.xml
 =0.4.0
 *.bak
 *.tmp

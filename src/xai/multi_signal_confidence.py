@@ -10,15 +10,17 @@ contribution (Section 5.3 of paper).
 """
 
 import re
-import numpy as np
 from dataclasses import dataclass, field
 from difflib import SequenceMatcher
-from typing import List, Optional, Dict
+from typing import Dict, List, Optional
+
+import numpy as np
 
 
 @dataclass
 class ConfidenceBreakdown:
     """Detailed breakdown of confidence signals for explainability."""
+
     retrieval_confidence: float = 0.0
     generation_confidence: float = 0.0
     consistency_score: float = 0.0
@@ -26,7 +28,7 @@ class ConfidenceBreakdown:
     medical_entity_coverage: float = 0.0
     overall_confidence: float = 0.0
     calibrated_confidence: float = 0.0
-    confidence_level: str = "low"   # low | medium | high
+    confidence_level: str = "low"  # low | medium | high
     explanation: str = ""
     signal_weights: Dict[str, float] = field(default_factory=dict)
 
@@ -55,9 +57,9 @@ class MultiSignalConfidenceScorer:
     """
 
     DEFAULT_WEIGHTS: Dict[str, float] = {
-        "retrieval":       0.25,
-        "generation":      0.25,
-        "consistency":     0.20,
+        "retrieval": 0.25,
+        "generation": 0.25,
+        "consistency": 0.20,
         "source_agreement": 0.15,
         "entity_coverage": 0.15,
     }
@@ -112,27 +114,27 @@ class MultiSignalConfidenceScorer:
         """
         bd = ConfidenceBreakdown()
 
-        bd.retrieval_confidence  = self._retrieval_confidence(retrieved_documents)
+        bd.retrieval_confidence = self._retrieval_confidence(retrieved_documents)
         bd.generation_confidence = self._generation_confidence(generation_probabilities)
-        bd.consistency_score     = self._self_consistency_score(answer, alternative_answers)
-        bd.source_agreement      = self._source_agreement_score(answer, retrieved_documents)
+        bd.consistency_score = self._self_consistency_score(answer, alternative_answers)
+        bd.source_agreement = self._source_agreement_score(answer, retrieved_documents)
         bd.medical_entity_coverage = self._entity_coverage_score(
             query, answer, retrieved_documents
         )
 
         raw = (
-            self.weights.get("retrieval",        0) * bd.retrieval_confidence +
-            self.weights.get("generation",       0) * bd.generation_confidence +
-            self.weights.get("consistency",      0) * bd.consistency_score +
-            self.weights.get("source_agreement", 0) * bd.source_agreement +
-            self.weights.get("entity_coverage",  0) * bd.medical_entity_coverage
+            self.weights.get("retrieval", 0) * bd.retrieval_confidence
+            + self.weights.get("generation", 0) * bd.generation_confidence
+            + self.weights.get("consistency", 0) * bd.consistency_score
+            + self.weights.get("source_agreement", 0) * bd.source_agreement
+            + self.weights.get("entity_coverage", 0) * bd.medical_entity_coverage
         )
 
-        bd.overall_confidence    = float(np.clip(raw, 0.0, 1.0))
+        bd.overall_confidence = float(np.clip(raw, 0.0, 1.0))
         bd.calibrated_confidence = self._platt_calibrate(bd.overall_confidence)
-        bd.confidence_level      = self._confidence_level(bd.calibrated_confidence)
-        bd.signal_weights        = dict(self.weights)
-        bd.explanation           = self._generate_explanation(bd)
+        bd.confidence_level = self._confidence_level(bd.calibrated_confidence)
+        bd.signal_weights = dict(self.weights)
+        bd.explanation = self._generate_explanation(bd)
 
         return bd
 
@@ -149,37 +151,41 @@ class MultiSignalConfidenceScorer:
         if not scores:
             return 0.0
 
-        top_score  = max(scores)
+        top_score = max(scores)
         mean_score = float(np.mean(scores))
         # Score dropoff: large gap between top and last → high confidence
-        dropoff = (scores[0] - scores[-1]) / (scores[0] + 1e-8) if len(scores) > 1 else 0.5
+        dropoff = (
+            (scores[0] - scores[-1]) / (scores[0] + 1e-8) if len(scores) > 1 else 0.5
+        )
 
-        return float(np.clip(0.4 * top_score + 0.3 * mean_score + 0.3 * dropoff, 0.0, 1.0))
+        return float(
+            np.clip(0.4 * top_score + 0.3 * mean_score + 0.3 * dropoff, 0.0, 1.0)
+        )
 
-    def _generation_confidence(
-        self, probabilities: Optional[List[float]]
-    ) -> float:
+    def _generation_confidence(self, probabilities: Optional[List[float]]) -> float:
         """Score from token-level generation probabilities."""
         if not probabilities:
-            return 0.5   # neutral when unavailable
+            return 0.5  # neutral when unavailable
 
         probs = np.array(probabilities, dtype=float)
         probs = np.clip(probs, 1e-10, 1.0)
 
-        geo_mean  = float(np.exp(np.mean(np.log(probs))))
-        min_prob  = float(np.min(probs))
-        entropy   = -float(np.mean(probs * np.log2(probs)))
-        max_ent   = float(np.log2(len(probs) + 1))
+        geo_mean = float(np.exp(np.mean(np.log(probs))))
+        min_prob = float(np.min(probs))
+        entropy = -float(np.mean(probs * np.log2(probs)))
+        max_ent = float(np.log2(len(probs) + 1))
         norm_cert = 1.0 - entropy / (max_ent + 1e-8)
 
-        return float(np.clip(0.5 * geo_mean + 0.2 * min_prob + 0.3 * norm_cert, 0.0, 1.0))
+        return float(
+            np.clip(0.5 * geo_mean + 0.2 * min_prob + 0.3 * norm_cert, 0.0, 1.0)
+        )
 
     def _self_consistency_score(
         self, primary_answer: str, alternatives: Optional[List[str]]
     ) -> float:
         """Score based on agreement across multiple generation samples."""
         if not alternatives or len(alternatives) < 2:
-            return 0.5   # neutral when unavailable
+            return 0.5  # neutral when unavailable
 
         sims = [
             SequenceMatcher(None, primary_answer.lower(), alt.lower()).ratio()
@@ -201,15 +207,13 @@ class MultiSignalConfidenceScorer:
 
         return min(supporting / max(len(documents), 1), 1.0)
 
-    def _entity_coverage_score(
-        self, query: str, answer: str, documents: list
-    ) -> float:
+    def _entity_coverage_score(self, query: str, answer: str, documents: list) -> float:
         """Score based on medical entity overlap between query, answer, and sources."""
 
         def _extract(text: str) -> set:
             patterns = [
-                r"\b[A-Z][a-z]+(?:\s[A-Z][a-z]+)+\b",            # multi-word proper nouns
-                r"\b\d+\s*(?:mg|ml|mcg|units|mmol|g)\b",          # dosages
+                r"\b[A-Z][a-z]+(?:\s[A-Z][a-z]+)+\b",  # multi-word proper nouns
+                r"\b\d+\s*(?:mg|ml|mcg|units|mmol|g)\b",  # dosages
                 r"\b(?:type\s*[12]\s*diabetes|hypertension|cancer|infection)\b",
             ]
             entities: set = set()
@@ -217,19 +221,18 @@ class MultiSignalConfidenceScorer:
                 entities.update(re.findall(p, text, re.IGNORECASE))
             return {e.lower() for e in entities}
 
-        query_ent  = _extract(query)
+        query_ent = _extract(query)
         answer_ent = _extract(answer)
         source_ent: set = set()
         for doc in documents:
             source_ent.update(_extract(getattr(doc, "content", "")))
 
         if not query_ent:
-            return 0.5   # neutral when no entities found
+            return 0.5  # neutral when no entities found
 
-        coverage  = len(query_ent & answer_ent) / len(query_ent)
+        coverage = len(query_ent & answer_ent) / len(query_ent)
         grounding = (
-            len(answer_ent & source_ent) / len(answer_ent)
-            if answer_ent else 0.5
+            len(answer_ent & source_ent) / len(answer_ent) if answer_ent else 0.5
         )
         return float(0.5 * coverage + 0.5 * grounding)
 
@@ -259,15 +262,17 @@ class MultiSignalConfidenceScorer:
         """
         from scipy.optimize import minimize  # lightweight; already in scipy
 
-        preds  = np.array(predictions, dtype=float)
-        labels = np.array(labels,      dtype=float)
+        preds = np.array(predictions, dtype=float)
+        labels = np.array(labels, dtype=float)
 
         def nll(params: np.ndarray) -> float:
             a, b = params
             p = np.clip(1.0 / (1.0 + np.exp(-(a * preds + b))), 1e-7, 1 - 1e-7)
             return -float(np.mean(labels * np.log(p) + (1 - labels) * np.log(1 - p)))
 
-        result = minimize(nll, [1.0, 0.0], method="Nelder-Mead", options={"xatol": 1e-6})
+        result = minimize(
+            nll, [1.0, 0.0], method="Nelder-Mead", options={"xatol": 1e-6}
+        )
         self.platt_a, self.platt_b = float(result.x[0]), float(result.x[1])
         return {"a": self.platt_a, "b": self.platt_b}
 

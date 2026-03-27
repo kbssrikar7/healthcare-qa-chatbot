@@ -49,60 +49,13 @@ from src.pipeline.qa_pipeline import QAResponse
 # ---------------------------------------------------------------------------
 # Helper: build a safe context string for LangChain pipeline
 # ---------------------------------------------------------------------------
-
-
-def _build_safe_context_lc(
-    docs: list,
-    max_chars: int = 2000,
-) -> str:
-    """
-    Convert a list of LangChain Documents into a context string that is safe
-    to pass directly to TinyLlama.
-
-    Key differences from the old ``format_docs_as_context``:
-    - Source labels are placed on a plain numbered line like
-      ``[1] Source: MedQuAD`` instead of as a prefix of the content
-      (``[Source: MedQuAD (relevance: 0.02)]``).  The relevance score
-      annotation confused TinyLlama which tried to continue the pattern.
-    - Leading "Question: …" and "[SomeSource]: " artefacts that appear at
-      the top of many MedQuAD/MedMCQA chunks are stripped so the model
-      never sees them as in-context Q&A examples to imitate.
-    - Total character budget is strictly enforced.
-    """
-    import re
-
-    parts: list = []
-    used = 0
-
-    for i, doc in enumerate(docs, 1):
-        if hasattr(doc, "page_content"):
-            content = doc.page_content.strip()
-            source = doc.metadata.get("source", f"Document {i}")
-        elif isinstance(doc, dict):
-            content = doc.get("content", str(doc)).strip()
-            source = doc.get("source", f"Document {i}")
-        else:
-            content = str(doc).strip()
-            source = f"Document {i}"
-
-        # Strip leading "[SomeLabel]: " or "Question: " artefacts
-        content = re.sub(r"^\s*\[.*?\]\s*:\s*", "", content)
-        content = re.sub(r"^\s*Question\s*:\s*", "", content, flags=re.IGNORECASE)
-
-        block = f"[{i}] Source: {source}\n{content}"
-
-        if used + len(block) > max_chars:
-            remaining = max_chars - used
-            if remaining > 100:
-                block = block[:remaining] + "..."
-                parts.append(block)
-            break
-
-        parts.append(block)
-        used += len(block)
-
-    return "\n\n".join(parts)
-
+# ---------------------------------------------------------------------------
+# Shared context builder (single source of truth — eliminates duplication
+# between the LangChain and LangGraph pipelines).
+# ---------------------------------------------------------------------------
+from src.utils.context_builder import (
+    build_safe_context_lc as _build_safe_context_lc,  # noqa: E402
+)
 
 # ---------------------------------------------------------------------------
 

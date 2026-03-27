@@ -34,6 +34,9 @@ from langchain_core.documents import Document
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from src.langgraph.langgraph_state import HealthcareRAGState
+from src.utils.context_builder import (
+    build_safe_context_lg as _build_safe_context_shared,  # noqa: E402
+)
 
 # ---------------------------------------------------------------------------
 # Serialization helper
@@ -133,46 +136,17 @@ _MEDICAL_SYSTEM_INSTRUCTION = (
 
 def _build_safe_context(documents: List[Document], max_chars: int = 2000) -> str:
     """
-    Convert LangChain Documents into a context string that is safe to pass
-    directly to TinyLlama.
+    Thin wrapper delegating to the shared context-builder utility.
 
-    Key changes vs the old implementation:
-    - Source labels are placed on a plain line like  ``Source: MedQuAD``
-      rather than as a prefix of the content (``[MedQuAD]: Question: ...``).
-      The old format caused TinyLlama to treat the source line as a Q&A
-      template and continue generating in that style.
-    - Each document block is separated by a blank line so boundaries are
-      visually clear to the model.
-    - Total character budget is enforced so we stay within the 2 048-token
-      context window.
+    The full implementation now lives in ``src/utils/context_builder.py``
+    (``build_safe_context_lg``) to eliminate the near-identical duplicate
+    that previously existed in ``src/langchain/langchain_pipeline.py``.
+    This function is kept here for backward compatibility with existing
+    call sites inside this module.
+
+    See :func:`src.utils.context_builder.build_safe_context` for details.
     """
-    parts: List[str] = []
-    used = 0
-
-    for i, doc in enumerate(documents, 1):
-        source = doc.metadata.get("source", f"Document {i}")
-        content = doc.page_content.strip()
-
-        # Strip leading "Question: ..." or "[Source]: ..." artefacts that
-        # sometimes appear at the start of MedQuAD chunks.
-        import re
-
-        content = re.sub(r"^\s*\[.*?\]\s*:\s*", "", content)
-        content = re.sub(r"^\s*Question\s*:\s*", "", content, flags=re.IGNORECASE)
-
-        block = f"[{i}] Source: {source}\n{content}"
-        if used + len(block) > max_chars:
-            # Truncate this block to fit within budget
-            remaining = max_chars - used
-            if remaining > 100:
-                block = block[:remaining] + "..."
-                parts.append(block)
-            break
-
-        parts.append(block)
-        used += len(block)
-
-    return "\n\n".join(parts)
+    return _build_safe_context_shared(documents, max_chars=max_chars)
 
 
 # ---------------------------------------------------------------------------
@@ -216,6 +190,12 @@ class HealthcareRAGNodes:
         source_attributor=None,
         rationale_generator=None,
         k: int = 5,
+        # Threshold overrides — if None, values are read from config with
+        # module-level constants as the final fallback so the nodes work
+        # even when no global config is available.
+        min_relevance_score: Optional[float] = None,
+        adaptive_threshold_ratio: Optional[float] = None,
+        min_relevant_docs: Optional[int] = None,
     ):
         self.retriever = retriever
         self.llm = llm
@@ -223,6 +203,32 @@ class HealthcareRAGNodes:
         self.source_attributor = source_attributor
         self.rationale_generator = rationale_generator
         self.k = k
+
+        # ── Read thresholds: explicit arg > config > module constant ──────
+        try:
+            from config.settings import config as _cfg
+
+            _pipeline = getattr(_cfg, "pipeline", None)
+        except Exception:
+            _pipeline = None
+
+        self.min_relevance_score: float = (
+            min_relevance_score
+            if min_relevance_score is not None
+            else float(getattr(_pipeline, "absolute_score_floor", MIN_RELEVANCE_SCORE))
+        )
+        self.adaptive_threshold_ratio: float = (
+            adaptive_threshold_ratio
+            if adaptive_threshold_ratio is not None
+            else float(
+                getattr(_pipeline, "adaptive_threshold_ratio", ADAPTIVE_THRESHOLD_RATIO)
+            )
+        )
+        self.min_relevant_docs: int = (
+            min_relevant_docs
+            if min_relevant_docs is not None
+            else int(getattr(_pipeline, "min_relevant_docs", MIN_RELEVANT_DOCS))
+        )
 
     # ------------------------------------------------------------------
     # Node: retrieve_documents
@@ -276,6 +282,13 @@ class HealthcareRAGNodes:
 
         Uses an *adaptive* threshold so the grading works correctly for
         both cosine-similarity scores and RRF-fused scores.
+
+        Threshold values are read from ``self.min_relevance_score`` and
+        ``self.adaptive_threshold_ratio``, which are resolved at
+        construction time from (in priority order):
+        1. Explicit constructor arguments
+        2. ``config.pipeline`` settings
+        3. Module-level constants (``MIN_RELEVANCE_SCORE``, etc.)
         """
         documents = state.get("documents", [])
         question = state.get("question", "")
@@ -283,7 +296,15 @@ class HealthcareRAGNodes:
         if not documents:
             return {"doc_grades": [], "is_answerable": False}
 
-        threshold = _adaptive_threshold(documents)
+        # Compute adaptive threshold using instance values (not module globals)
+        if not documents:
+            threshold = self.min_relevance_score
+        else:
+            top_score = max(doc.metadata.get("score", 0.0) for doc in documents)
+            threshold = max(
+                self.min_relevance_score,
+                self.adaptive_threshold_ratio * top_score,
+            )
         query_terms = set(question.lower().split())
 
         grades: List[Dict[str, Any]] = []
@@ -321,9 +342,9 @@ class HealthcareRAGNodes:
         # Answerable if we have at least MIN_RELEVANT_DOCS relevant docs,
         # OR one relevant + one ambiguous (combined evidence is often enough).
         is_answerable = (
-            relevant_count >= MIN_RELEVANT_DOCS
+            relevant_count >= self.min_relevant_docs
             or (relevant_count >= 1 and ambiguous_count >= 1)
-            or (relevant_count == 0 and ambiguous_count >= MIN_RELEVANT_DOCS)
+            or (relevant_count == 0 and ambiguous_count >= self.min_relevant_docs)
         )
 
         return _sanitize_state(

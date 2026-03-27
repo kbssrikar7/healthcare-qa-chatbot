@@ -1,0 +1,202 @@
+"""
+Shared context builder utility for safe prompt construction.
+
+Eliminates duplication between the LangChain and LangGraph pipelines.
+Both ``_build_safe_context_lc`` (langchain_pipeline.py) and
+``_build_safe_context`` (langgraph_nodes.py) were functionally identical —
+this module is the single source of truth.
+
+Key design decisions
+--------------------
+* Source labels are placed on a numbered line (``[1] Source: MedQuAD``)
+  rather than as a content prefix.  The old ``[Source: MedQuAD (relevance: 0.02)]``
+  format confused TinyLlama, which tried to continue the pattern as a
+  Q&A template.
+* Leading "Question: …" and "[SomeSource]: " artefacts that appear at the
+  top of many MedQuAD / MedMCQA chunks are stripped before the content
+  is placed into the prompt.
+* A strict character budget is enforced so the assembled context stays
+  within the model's context window.
+
+Usage
+-----
+>>> from src.utils.context_builder import build_safe_context
+>>> context = build_safe_context(documents, max_chars=2000)
+"""
+
+from __future__ import annotations
+
+import re
+from typing import Any, List, Union
+
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
+
+
+def build_safe_context(
+    documents: List[Any],
+    max_chars: int = 2000,
+) -> str:
+    """
+    Convert a list of documents into a context string that is safe to pass
+    directly to a small-parameter LLM such as TinyLlama.
+
+    Accepted document types
+    -----------------------
+    * LangChain ``Document`` objects  — uses ``.page_content`` and ``.metadata``
+    * ``RetrievedDocument`` dataclass — uses ``.content`` and ``.source``
+    * Plain ``dict``                  — uses keys ``"content"`` / ``"source"``
+    * Any other object                — coerced to ``str()``
+
+    Parameters
+    ----------
+    documents : list
+        Retrieved documents in any of the formats listed above.
+    max_chars : int
+        Maximum total character budget for the assembled context string.
+        Blocks that would exceed this limit are truncated (with an ellipsis)
+        or skipped if the remaining budget is too small to be useful.
+
+    Returns
+    -------
+    str
+        A numbered, newline-separated context string ready for prompt
+        insertion.
+    """
+    parts: List[str] = []
+    used = 0
+
+    for i, doc in enumerate(documents, 1):
+        content, source = _extract_content_and_source(doc, i)
+
+        # Strip common MedQuAD / MedMCQA artefacts from the start of content
+        content = _strip_leading_artefacts(content)
+
+        block = f"[{i}] Source: {source}\n{content}"
+
+        if used + len(block) > max_chars:
+            remaining = max_chars - used
+            # Only include a truncated block if there is enough budget to be
+            # meaningful; otherwise stop adding blocks.
+            if remaining > 100:
+                block = block[:remaining] + "..."
+                parts.append(block)
+            break
+
+        parts.append(block)
+        used += len(block)
+
+    return "\n\n".join(parts)
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+
+def _extract_content_and_source(doc: Any, fallback_index: int) -> tuple[str, str]:
+    """
+    Extract (content, source) from any supported document type.
+
+    Parameters
+    ----------
+    doc            : Document object, dict, or any value.
+    fallback_index : Used to build a generic source label when no source
+                     metadata is available.
+
+    Returns
+    -------
+    tuple[str, str]
+        (content text, source label)
+    """
+    fallback_source = f"Document {fallback_index}"
+
+    # LangChain Document
+    if hasattr(doc, "page_content"):
+        content = str(doc.page_content).strip()
+        source = (
+            doc.metadata.get("source", fallback_source)
+            if hasattr(doc, "metadata") and isinstance(doc.metadata, dict)
+            else fallback_source
+        )
+        return content, source
+
+    # RetrievedDocument dataclass (src/retrieval/hybrid_retriever.py)
+    if hasattr(doc, "content") and hasattr(doc, "source"):
+        content = str(doc.content).strip()
+        source = str(doc.source) if doc.source else fallback_source
+        return content, source
+
+    # Plain dict
+    if isinstance(doc, dict):
+        content = str(doc.get("content", "")).strip()
+        source = str(doc.get("source", fallback_source))
+        return content, source
+
+    # Fallback: stringify the whole object
+    return str(doc).strip(), fallback_source
+
+
+def _strip_leading_artefacts(content: str) -> str:
+    """
+    Remove common MedQuAD / MedMCQA artefacts from the beginning of a
+    document chunk so that TinyLlama does not interpret them as in-context
+    Q&A examples to imitate.
+
+    Patterns removed
+    ----------------
+    * ``[SomeLabel]: …``   — source-label prefix sometimes prepended during
+                             ingestion
+    * ``Question: …``      — MedQuAD chunks often start with the question
+                             that was used to retrieve the chunk
+
+    Parameters
+    ----------
+    content : str
+        Raw chunk content.
+
+    Returns
+    -------
+    str
+        Cleaned content with leading artefacts stripped.
+    """
+    # Remove "[SomeLabel]: " prefix (non-greedy match inside brackets)
+    content = re.sub(r"^\s*\[.*?\]\s*:\s*", "", content)
+    # Remove "Question: " prefix (case-insensitive)
+    content = re.sub(r"^\s*Question\s*:\s*", "", content, flags=re.IGNORECASE)
+    return content.strip()
+
+
+# ---------------------------------------------------------------------------
+# Convenience wrapper that mirrors the old function signatures exactly,
+# so existing call sites can be updated with a one-line import change.
+# ---------------------------------------------------------------------------
+
+
+def build_safe_context_lc(
+    docs: List[Any],
+    max_chars: int = 2000,
+) -> str:
+    """
+    Alias kept for backward compatibility with the LangChain pipeline.
+
+    Previously defined as ``_build_safe_context_lc`` in
+    ``src/langchain/langchain_pipeline.py``.  New code should use
+    :func:`build_safe_context` directly.
+    """
+    return build_safe_context(docs, max_chars=max_chars)
+
+
+def build_safe_context_lg(
+    documents: List[Any],
+    max_chars: int = 2000,
+) -> str:
+    """
+    Alias kept for backward compatibility with the LangGraph node helpers.
+
+    Previously defined as ``_build_safe_context`` in
+    ``src/langgraph/langgraph_nodes.py``.  New code should use
+    :func:`build_safe_context` directly.
+    """
+    return build_safe_context(documents, max_chars=max_chars)
