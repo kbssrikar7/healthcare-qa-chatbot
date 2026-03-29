@@ -4,6 +4,7 @@ Uses TinyLlama as the sole model backend via Hugging Face transformers.
 """
 import re
 import torch
+from pathlib import Path
 from typing import List, Optional, Dict, Any
 from dataclasses import dataclass
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig

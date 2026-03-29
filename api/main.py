@@ -194,6 +194,7 @@ class AnswerResponse(BaseModel):
     latency_ms: Optional[float] = None
     confidence_breakdown: Optional[Dict[str, Any]] = None
     hallucination: Optional[Dict[str, Any]] = None
+    stage_latencies: Optional[Dict[str, float]] = None
 
 
 class HealthResponse(BaseModel):
@@ -846,6 +847,7 @@ async def _prepare_and_execute_pipeline(request: QuestionRequest, start_ts: floa
         latency_ms=latency,
         confidence_breakdown=getattr(response, "confidence_breakdown", None),
         hallucination=getattr(response, "hallucination", None),
+        stage_latencies=getattr(response, "stage_latencies", None),
     )
 
     _log_response_trajectory(
