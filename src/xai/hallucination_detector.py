@@ -306,13 +306,20 @@ class HallucinationDetector:
     # 5. Optional NLI entailment
     # ------------------------------------------------------------------
     def _nli_check(self, answer: str, context: str) -> float:
-        """Return average entailment probability (0..1) using DeBERTa NLI."""
+        """Return average entailment probability (0..1) using DeBERTa NLI.
+
+        Uses microsoft/deberta-base-mnli which is cached locally.
+        Input format: {"text": premise, "text_pair": hypothesis} for correct
+        NLI pair encoding (avoids manual [SEP] injection which deberta ignores).
+        """
         if self._nli_pipeline is None:
             try:
                 from transformers import pipeline as hf_pipeline
+                # microsoft/deberta-base-mnli is cached locally under ~/.cache/huggingface/hub/
+                # Labels: CONTRADICTION / NEUTRAL / ENTAILMENT
                 self._nli_pipeline = hf_pipeline(
                     "text-classification",
-                    model="cross-encoder/nli-deberta-v3-xsmall",
+                    model="microsoft/deberta-base-mnli",
                     device=-1,
                 )
             except Exception:
@@ -323,9 +330,11 @@ class HallucinationDetector:
             return 0.5
 
         entail_scores: List[float] = []
+        premise = context[:512]
         for sent in sentences[:5]:
             try:
-                result = self._nli_pipeline(f"{context[:512]} [SEP] {sent}")[0]
+                # Pass as a dict so the tokenizer uses proper pair encoding
+                result = self._nli_pipeline({"text": premise, "text_pair": sent})[0]
                 if "ENTAIL" in result["label"].upper():
                     entail_scores.append(result["score"])
                 else:

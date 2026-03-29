@@ -19,6 +19,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+# Use cached models without network round-trips (avoids 40s retry delays when offline)
+os.environ.setdefault("HF_HUB_OFFLINE", "1")
+os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
@@ -188,6 +192,8 @@ class AnswerResponse(BaseModel):
     session_id: Optional[str] = None
     safety: Optional[SafetyInfo] = None
     latency_ms: Optional[float] = None
+    confidence_breakdown: Optional[Dict[str, Any]] = None
+    hallucination: Optional[Dict[str, Any]] = None
 
 
 class HealthResponse(BaseModel):
@@ -835,6 +841,8 @@ async def _prepare_and_execute_pipeline(request: QuestionRequest, start_ts: floa
         session_id=session_id,
         safety=safety_info,
         latency_ms=latency,
+        confidence_breakdown=getattr(response, "confidence_breakdown", None),
+        hallucination=getattr(response, "hallucination", None),
     )
 
     _log_response_trajectory(
@@ -1059,10 +1067,11 @@ def _get_langchain_pipeline():
         from src.langchain import create_langchain_pipeline
 
         adapter_path = Path("models/fine_tuned/medical_adapter")
+        import torch as _torch
         llm = MedicalLLM(
             model_name="tinyllama",
             adapter_path=str(adapter_path) if adapter_path.exists() else None,
-            load_in_4bit=adapter_path.exists(),
+            load_in_4bit=adapter_path.exists() and _torch.cuda.is_available(),
         )
         pipeline = create_langchain_pipeline(
             retriever=shared["retriever"],
@@ -1090,10 +1099,11 @@ def _get_langgraph_pipeline():
         from src.langgraph import create_langgraph_pipeline
 
         adapter_path = Path("models/fine_tuned/medical_adapter")
+        import torch as _torch
         llm = MedicalLLM(
             model_name="tinyllama",
             adapter_path=str(adapter_path) if adapter_path.exists() else None,
-            load_in_4bit=adapter_path.exists(),
+            load_in_4bit=adapter_path.exists() and _torch.cuda.is_available(),
         )
         pipeline = create_langgraph_pipeline(
             retriever=shared["retriever"],

@@ -36,6 +36,16 @@ try:
 except ImportError:
     RationaleGenerator = None
 
+try:
+    from src.xai.multi_signal_confidence import MultiSignalConfidenceScorer
+except ImportError:
+    MultiSignalConfidenceScorer = None
+
+try:
+    from src.xai.hallucination_detector import HallucinationDetector
+except ImportError:
+    HallucinationDetector = None
+
 
 @dataclass
 class QAResponse:
@@ -49,7 +59,9 @@ class QAResponse:
     rationale: Optional[str] = None
     is_answerable: bool = True
     from_cache: bool = False
-    factual_consistency: Optional[Dict] = None  # NEW: factual check result
+    factual_consistency: Optional[Dict] = None
+    confidence_breakdown: Optional[Dict] = None  # 5-signal XAI breakdown
+    hallucination: Optional[Dict] = None          # NLI-based hallucination result
 
 
 class HealthcareQAPipeline:
@@ -120,6 +132,12 @@ class HealthcareQAPipeline:
         # Initialize rationale generator if not provided but class is available
         if self.rationale_generator is None and RationaleGenerator is not None and self.llm:
             self.rationale_generator = RationaleGenerator(self.llm)
+
+        # Multi-signal confidence scorer (5-signal XAI breakdown)
+        self.multi_signal_scorer = MultiSignalConfidenceScorer() if MultiSignalConfidenceScorer else None
+
+        # Hallucination detector with DeBERTa NLI enabled (model cached locally)
+        self.hallucination_detector = HallucinationDetector(use_nli=True) if HallucinationDetector else None
 
         # Load from config with fallbacks
         pipeline_config = getattr(config, 'pipeline', None) if config else None
@@ -351,25 +369,89 @@ class HealthcareQAPipeline:
             except Exception as e:
                 logger.warning(f" Factual consistency check failed: {e}")
         
-        # 8. CONFIDENCE SCORING
-        if self.confidence_scorer and include_explanation:
-            retrieval_scores = [doc.score for doc in documents]
-            confidence_result = self.confidence_scorer.calculate_confidence(
-                generation_probs=generation_result.probabilities,
-                retrieval_scores=retrieval_scores,
-                num_sources=len(documents)
-            )
-            confidence = {
-                "score": confidence_result.calibrated_score,
-                "level": confidence_result.level,
-                "explanation": confidence_result.explanation
-            }
-        else:
-            confidence = {
-                "score": 0.7,
-                "level": "medium",
-                "explanation": "Confidence scoring not available"
-            }
+        # 7b. HALLUCINATION DETECTION (DeBERTa NLI + rule-based)
+        hallucination_result = None
+        if self.hallucination_detector and include_explanation and answer:
+            try:
+                doc_dicts_for_hal = [
+                    {"content": doc.content} for doc in documents
+                ]
+                hal = self.hallucination_detector.detect(
+                    answer=answer,
+                    retrieved_documents=doc_dicts_for_hal,
+                    query=question,
+                )
+                hallucination_result = {
+                    "has_hallucination": hal.has_hallucination,
+                    "type": hal.hallucination_type.value,
+                    "score": hal.hallucination_score,
+                    "flagged_claims": hal.flagged_claims,
+                    "medical_accuracy_flags": hal.medical_accuracy_flags,
+                    "explanation": hal.explanation,
+                }
+            except Exception as e:
+                logger.warning(f"Hallucination detection failed: {e}")
+
+        # 8. CONFIDENCE SCORING — multi-signal (5-signal XAI breakdown)
+        confidence_breakdown = None
+        if self.multi_signal_scorer and include_explanation:
+            try:
+                # RRF scores live in 0.01–0.04 range but MultiSignalConfidenceScorer
+                # expects cosine-similarity-like 0–1 values.  Normalize by max score
+                # so the top doc always maps to 1.0 and others scale proportionally.
+                raw_scores = [doc.score for doc in documents]
+                max_score = max(raw_scores) if raw_scores else 1.0
+                if max_score > 0:
+                    for doc in documents:
+                        doc.score = doc.score / max_score
+
+                bd = self.multi_signal_scorer.compute_confidence(
+                    query=question,
+                    answer=answer,
+                    retrieved_documents=documents,
+                    generation_probabilities=generation_result.probabilities,
+                )
+
+                # Restore original scores so source list stays accurate
+                for doc, orig in zip(documents, raw_scores):
+                    doc.score = orig
+                confidence = {
+                    "score": bd.calibrated_confidence,
+                    "level": bd.confidence_level,
+                    "explanation": bd.explanation,
+                }
+                confidence_breakdown = {
+                    "retrieval_confidence": bd.retrieval_confidence,
+                    "generation_confidence": bd.generation_confidence,
+                    "consistency_score": bd.consistency_score,
+                    "source_agreement": bd.source_agreement,
+                    "medical_entity_coverage": bd.medical_entity_coverage,
+                    "signal_weights": bd.signal_weights,
+                }
+            except Exception as e:
+                logger.warning(f"Multi-signal confidence scoring failed: {e}")
+                confidence_breakdown = None
+
+        # Fallback to basic confidence scorer if multi-signal failed or unavailable
+        if confidence_breakdown is None:
+            if self.confidence_scorer and include_explanation:
+                retrieval_scores = [doc.score for doc in documents]
+                confidence_result = self.confidence_scorer.calculate_confidence(
+                    generation_probs=generation_result.probabilities,
+                    retrieval_scores=retrieval_scores,
+                    num_sources=len(documents)
+                )
+                confidence = {
+                    "score": confidence_result.calibrated_score,
+                    "level": confidence_result.level,
+                    "explanation": confidence_result.explanation,
+                }
+            else:
+                confidence = {
+                    "score": 0.7,
+                    "level": "medium",
+                    "explanation": "Confidence scoring not available",
+                }
         
         # 9. SOURCE ATTRIBUTION
         if self.source_attributor and include_explanation:
@@ -424,6 +506,8 @@ class HealthcareQAPipeline:
             is_answerable=True,
             from_cache=False,
             factual_consistency=factual_result,
+            confidence_breakdown=confidence_breakdown,
+            hallucination=hallucination_result,
         )
         
         # 12. CACHE THE RESPONSE (with context key)
@@ -440,6 +524,8 @@ class HealthcareQAPipeline:
                     'rationale': rationale,
                     'is_answerable': True,
                     'factual_consistency': factual_result,
+                    'confidence_breakdown': confidence_breakdown,
+                    'hallucination': hallucination_result,
                 },
                 context_key=dynamic_context_key,
             )
