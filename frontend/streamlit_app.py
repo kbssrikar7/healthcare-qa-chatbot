@@ -928,10 +928,15 @@ def fetch_available_models() -> dict:
             return resp.json()
     except Exception:
         pass
-    # Fallback — TinyLlama only
-    return {
+    # Fallback — include BioMistral if the GGUF file exists locally
+    from pathlib import Path as _Path
+    models = {
         "tinyllama": {"display_name": "TinyLlama 1.1B", "description": "Lightweight, fast responses", "parameters": "1.1B", "requires_gpu": False, "loaded": False},
     }
+    biomistral_path = _Path(__file__).parent.parent / "models" / "biomistral" / "ggml-model-Q4_K_M.gguf"
+    if biomistral_path.exists():
+        models["biomistral"] = {"display_name": "BioMistral 7B (Q4_K_M)", "description": "Medical-domain Mistral 7B, CPU inference", "parameters": "7B", "requires_gpu": False, "loaded": False}
+    return models
 
 
 def ask_question(
@@ -1442,11 +1447,26 @@ def main():
         
         st.markdown('<div class="sidebar-section">Model</div>', unsafe_allow_html=True)
 
-        # Single model — show info instead of selector
+        # Model selector (TinyLlama + BioMistral when available)
         available_models = fetch_available_models()
-        model_choice = "tinyllama"
-        model_info = available_models.get(model_choice, {})
-        st.caption(f"{model_info.get('display_name', 'TinyLlama 1.1B')} ({model_info.get('parameters', '1.1B')})")
+        model_display_names = {
+            k: f"{v.get('display_name', k)} ({v.get('parameters', '?')})"
+            for k, v in available_models.items()
+        }
+        if len(available_models) > 1:
+            selected_label = st.selectbox(
+                "LLM Model",
+                options=list(model_display_names.values()),
+                index=0,
+                help="TinyLlama is fast; BioMistral-7B is slower but medically specialised",
+            )
+            model_choice = next(
+                k for k, v in model_display_names.items() if v == selected_label
+            )
+        else:
+            model_choice = list(available_models.keys())[0]
+            model_info = available_models.get(model_choice, {})
+            st.caption(f"{model_info.get('display_name', 'TinyLlama 1.1B')} ({model_info.get('parameters', '1.1B')})")
 
         # Pipeline selector
         pipeline_choice = st.radio(
@@ -1466,6 +1486,31 @@ def main():
             help="More sources = slower but more thorough analysis"
         )
         
+        st.markdown('---')
+        st.markdown('<div class="sidebar-section">Evaluation results</div>', unsafe_allow_html=True)
+        _eval_dir = Path(__file__).parent.parent / "evaluation" / "results"
+        _metrics_file = _eval_dir / "metrics.json"
+        _calib_file = _eval_dir / "calibration.json"
+        if _metrics_file.exists():
+            try:
+                _metrics = json.loads(_metrics_file.read_text())
+                for _m in _metrics:
+                    with st.expander(f"{_m.get('variant','?').title()} pipeline"):
+                        st.write(f"**ROUGE-L:** {_m.get('rougeL_mean',0):.3f}")
+                        st.write(f"**BERTScore F1:** {_m.get('bertscore_f1_mean',0):.3f}")
+                        st.write(f"**KW Coverage:** {_m.get('keyword_coverage_mean',0):.1%}")
+                        st.write(f"**Answerable:** {_m.get('answerable_pct',0):.1%}")
+            except Exception:
+                pass
+        if _calib_file.exists():
+            try:
+                _calib = json.loads(_calib_file.read_text())
+                st.caption(f"Confidence ECE: {_calib.get('ece', 'N/A')}")
+            except Exception:
+                pass
+        if not _metrics_file.exists():
+            st.caption("Run evaluation/run_paper_eval.py to populate")
+
         st.markdown('---')
         st.markdown('<div class="sidebar-section">Appearance</div>', unsafe_allow_html=True)
         st.toggle(

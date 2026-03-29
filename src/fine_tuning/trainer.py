@@ -120,10 +120,17 @@ class QLoRATrainer:
     
     def setup_model(self):
         """Load and prepare model for QLoRA training."""
-        print(f"🔄 Loading base model: {self.config.base_model}")
-        
+        print(f"Loading base model: {self.config.base_model}")
+
+        use_cuda = torch.cuda.is_available()
+
+        # 4-bit quantization requires CUDA (bitsandbytes constraint)
+        use_4bit = self.config.load_in_4bit and use_cuda
+        if self.config.load_in_4bit and not use_cuda:
+            print("  Note: 4-bit quantization disabled (CPU-only mode)")
+
         # Quantization config
-        if self.config.load_in_4bit:
+        if use_4bit:
             bnb_config = BitsAndBytesConfig(
                 load_in_4bit=True,
                 bnb_4bit_compute_dtype=getattr(torch, self.config.bnb_4bit_compute_dtype),
@@ -132,7 +139,7 @@ class QLoRATrainer:
             )
         else:
             bnb_config = None
-        
+
         # Load tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(
             self.config.base_model,
@@ -140,17 +147,25 @@ class QLoRATrainer:
         )
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
-        
-        # Load model
+
+        # Load model — CPU uses bfloat16 if available else float32
+        dtype = (
+            torch.float16 if use_cuda
+            else getattr(torch, "bfloat16", torch.float32)
+        )
         self.model = AutoModelForCausalLM.from_pretrained(
             self.config.base_model,
             quantization_config=bnb_config,
-            device_map="auto",
-            trust_remote_code=True
+            device_map="auto" if use_cuda else None,
+            torch_dtype=dtype,
+            trust_remote_code=True,
+            low_cpu_mem_usage=True,
         )
-        
-        # Prepare for k-bit training
-        if self.config.load_in_4bit:
+        if not use_cuda:
+            self.model = self.model.to("cpu")
+
+        # Prepare for k-bit training (CUDA only)
+        if use_4bit:
             self.model = prepare_model_for_kbit_training(self.model)
         
         # LoRA config
@@ -176,8 +191,9 @@ class QLoRATrainer:
         """Run QLoRA fine-tuning."""
         if self.peft_model is None:
             self.setup_model()
-        
-        # Training arguments
+
+        # CPU/GPU-safe training arguments
+        use_cuda = torch.cuda.is_available()
         training_args = TrainingArguments(
             output_dir=self.config.output_dir,
             num_train_epochs=self.config.num_epochs,
@@ -189,10 +205,12 @@ class QLoRATrainer:
             logging_steps=10,
             save_strategy="epoch",
             eval_strategy="epoch" if eval_dataset else "no",
-            fp16=True,
-            optim="paged_adamw_8bit",
-            report_to="none",  # or "wandb"
-            remove_unused_columns=False
+            fp16=use_cuda,               # fp16 training only on GPU
+            bf16=False,
+            optim="paged_adamw_8bit" if use_cuda else "adamw_torch",
+            use_cpu=not use_cuda,
+            report_to="none",
+            remove_unused_columns=False,
         )
         
         # Data collator
@@ -297,13 +315,13 @@ def main():
     )
     train_dataset = dataset_builder.prepare_dataset(sample_qa)
     
-    print(f"\n📊 Training dataset: {len(train_dataset)} examples")
-    
-    # Train (uncomment to actually train)
-    # trainer.train(train_dataset)
-    
-    print("\n✅ Fine-tuning setup complete!")
-    print("To train, uncomment trainer.train(train_dataset)")
+    print(f"\nTraining dataset: {len(train_dataset)} examples")
+
+    # Run training
+    trainer.train(train_dataset)
+
+    print("\nFine-tuning complete!")
+    print(f"Adapter saved to: {config.output_dir}")
 
 
 if __name__ == "__main__":

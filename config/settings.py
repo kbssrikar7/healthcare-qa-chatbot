@@ -20,6 +20,7 @@ OUTPUTS_DIR = PROJECT_ROOT / "outputs"
 class ModelChoice(str, Enum):
     """Available LLM model choices."""
     TINYLLAMA = "tinyllama"
+    BIOMISTRAL = "biomistral"
 
 
 # Model registry with metadata
@@ -33,6 +34,16 @@ AVAILABLE_MODELS: Dict[str, Dict[str, Any]] = {
         "requires_gpu": False,
         "load_in_4bit": False,
         "backend": "transformers",
+    },
+    "biomistral": {
+        "model_name": str(MODELS_DIR / "biomistral" / "ggml-model-Q4_K_M.gguf"),
+        "display_name": "BioMistral 7B (Q4_K_M)",
+        "description": "Medical-domain Mistral 7B, quantised for CPU inference",
+        "parameters": "7B",
+        "max_new_tokens": 512,
+        "requires_gpu": False,
+        "load_in_4bit": False,
+        "backend": "gguf",
     },
 }
 

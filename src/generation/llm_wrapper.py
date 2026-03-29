@@ -41,11 +41,13 @@ class GenerationResult:
 class MedicalLLM:
     """
     Medical domain LLM wrapper.
-    Uses TinyLlama 1.1B via Hugging Face transformers.
+    Supports TinyLlama (transformers) and BioMistral-7B (GGUF via llama-cpp-python).
     """
 
     SUPPORTED_MODELS = {
         "tinyllama": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+        # BioMistral uses the local GGUF path set in config/settings.py
+        "biomistral": None,  # resolved via AVAILABLE_MODELS at runtime
     }
 
     # Patterns that indicate the model has leaked training data
@@ -81,24 +83,71 @@ class MedicalLLM:
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.adapter_path = adapter_path
         self.hf_token = hf_token
+        self.backend = "transformers"
         _ = max_memory  # kept for backward compat
 
         model_path = self._resolve_model_path(model_name)
         self.model_name = model_name
         logger.info("Loading LLM: {} on {}", model_path, self.device)
 
-        self._init_transformers_model(
-            model_path=model_path,
-            load_in_4bit=load_in_4bit,
-            adapter_path=adapter_path,
-        )
+        # Route to the correct backend
+        if self._is_gguf(model_name, model_path):
+            self.backend = "gguf"
+            self._init_gguf_model(model_path)
+        else:
+            self._init_transformers_model(
+                model_path=model_path,
+                load_in_4bit=load_in_4bit,
+                adapter_path=adapter_path,
+            )
 
     # ------------------------------------------------------------------
     def _resolve_model_path(self, model_name: str) -> str:
         """Resolve a shorthand model key to a full model path."""
-        if model_name in self.SUPPORTED_MODELS:
+        if model_name == "biomistral":
+            # Resolve via AVAILABLE_MODELS config
+            try:
+                from config.settings import AVAILABLE_MODELS
+                return AVAILABLE_MODELS["biomistral"]["model_name"]
+            except Exception:
+                pass
+        if model_name in self.SUPPORTED_MODELS and self.SUPPORTED_MODELS[model_name]:
             return self.SUPPORTED_MODELS[model_name]
         return model_name
+
+    @staticmethod
+    def _is_gguf(model_name: str, model_path: str) -> bool:
+        """Return True if this model should use the GGUF/llama-cpp backend."""
+        return model_name == "biomistral" or (model_path and str(model_path).endswith(".gguf"))
+
+    # ------------------------------------------------------------------
+    def _init_gguf_model(self, model_path: str) -> None:
+        """Initialize llama-cpp-python backend for GGUF models."""
+        try:
+            from llama_cpp import Llama
+        except ImportError as e:
+            raise ImportError(
+                "llama-cpp-python is required for GGUF models. "
+                "Install with: CC=/usr/bin/gcc CXX=/usr/bin/g++ pip install llama-cpp-python"
+            ) from e
+
+        if not Path(model_path).exists():
+            raise ModelNotFoundError(
+                f"GGUF model not found at '{model_path}'. "
+                "Run the BioMistral download script first."
+            )
+
+        logger.info("Loading GGUF model from {} (n_ctx=2048, n_threads=4)", model_path)
+        import os
+        n_threads = min(4, os.cpu_count() or 4)
+        self._gguf_llm = Llama(
+            model_path=str(model_path),
+            n_ctx=2048,
+            n_threads=n_threads,
+            n_gpu_layers=0,    # CPU-only
+            verbose=False,
+        )
+        logger.info("GGUF model loaded successfully")
 
     # ------------------------------------------------------------------
     def _init_transformers_model(
@@ -206,7 +255,58 @@ class MedicalLLM:
         do_sample: bool = True,
         return_probabilities: bool = False,
     ) -> GenerationResult:
-        """Generate response from the LLM."""
+        """Generate response from the LLM (routes to correct backend)."""
+        if self.backend == "gguf":
+            return self._generate_gguf(
+                prompt, max_new_tokens=max_new_tokens,
+                temperature=temperature, top_p=top_p,
+            )
+        return self._generate_transformers(
+            prompt, max_new_tokens=max_new_tokens,
+            temperature=temperature, top_p=top_p,
+            do_sample=do_sample, return_probabilities=return_probabilities,
+        )
+
+    # ------------------------------------------------------------------
+    def _generate_gguf(
+        self,
+        prompt: str,
+        max_new_tokens: int = 256,
+        temperature: float = 0.3,
+        top_p: float = 0.85,
+    ) -> GenerationResult:
+        """Generate using llama-cpp-python (GGUF backend)."""
+        # BioMistral uses Mistral instruction format
+        formatted = f"[INST] {prompt.strip()} [/INST]"
+        output = self._gguf_llm(
+            formatted,
+            max_tokens=max_new_tokens,
+            temperature=max(temperature, 0.01),  # llama-cpp requires > 0
+            top_p=top_p,
+            echo=False,
+        )
+        text = output["choices"][0]["text"]
+        text = self._clean_response(text)
+        n_prompt = output["usage"]["prompt_tokens"]
+        n_gen = output["usage"]["completion_tokens"]
+        return GenerationResult(
+            response=text.strip(),
+            input_tokens=n_prompt,
+            generated_tokens=n_gen,
+            probabilities=None,  # llama-cpp doesn't easily expose token probs
+        )
+
+    # ------------------------------------------------------------------
+    def _generate_transformers(
+        self,
+        prompt: str,
+        max_new_tokens: int = 256,
+        temperature: float = 0.3,
+        top_p: float = 0.85,
+        do_sample: bool = True,
+        return_probabilities: bool = False,
+    ) -> GenerationResult:
+        """Generate using HuggingFace transformers backend."""
         inputs = self.tokenizer(
             prompt, return_tensors="pt", truncation=True, max_length=2048
         ).to(self.model.device)
@@ -285,11 +385,15 @@ class MedicalLLM:
 
     # ------------------------------------------------------------------
     def cleanup(self):
-        """Free GPU memory."""
-        if hasattr(self, "model"):
-            del self.model
-        if hasattr(self, "tokenizer"):
-            del self.tokenizer
+        """Free memory for all backends."""
+        if self.backend == "gguf":
+            if hasattr(self, "_gguf_llm"):
+                del self._gguf_llm
+        else:
+            if hasattr(self, "model"):
+                del self.model
+            if hasattr(self, "tokenizer"):
+                del self.tokenizer
         gc.collect()
         if torch.cuda.is_available():
             torch.cuda.empty_cache()

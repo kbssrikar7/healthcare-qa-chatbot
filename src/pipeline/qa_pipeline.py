@@ -16,8 +16,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from typing import List, Dict, Optional
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import asyncio
+import time
 
 # Import configuration
 try:
@@ -62,6 +63,7 @@ class QAResponse:
     factual_consistency: Optional[Dict] = None
     confidence_breakdown: Optional[Dict] = None  # 5-signal XAI breakdown
     hallucination: Optional[Dict] = None          # NLI-based hallucination result
+    stage_latencies: Optional[Dict[str, float]] = None  # per-stage wall-clock ms
 
 
 class HealthcareQAPipeline:
@@ -187,7 +189,11 @@ class HealthcareQAPipeline:
         """
         # Build dynamic context key for cache (combining static pipeline info + per-request flags)
         dynamic_context_key = f"{self.cache_context_key}_srcs{num_documents}_expl{include_explanation}_{template_name}"
-        
+
+        # Latency tracking dict (wall-clock milliseconds per stage)
+        _t = {}
+        _t0 = time.perf_counter()
+
         # 0. Check cache first (with context key for model/pipeline awareness)
         if self.cache_manager:
             cached = self.cache_manager.get_cached_response(
@@ -208,12 +214,13 @@ class HealthcareQAPipeline:
                 )
         
         # 1. QUERY ENHANCEMENT (pre-retrieval)
+        _s = time.perf_counter()
         retrieval_query = question
-        
+
         # Augment with conversation context for follow-ups
         if conversation_context:
             retrieval_query = f"{conversation_context}\n\nCurrent question: {question}"
-        
+
         if self.query_enhancer:
             try:
                 enhanced = self.query_enhancer.enhance(question)
@@ -224,14 +231,18 @@ class HealthcareQAPipeline:
                     retrieval_query = enhanced
             except Exception as e:
                 logger.warning(f"Query enhancement failed, using original: {e}")
-        
+        _t["query_enhancement_ms"] = (time.perf_counter() - _s) * 1000
+
         # 2. RETRIEVE relevant documents
+        _s = time.perf_counter()
         documents, context = self.retriever.retrieve_with_context(
             retrieval_query,
             k=num_documents
         )
+        _t["retrieval_ms"] = (time.perf_counter() - _s) * 1000
         
         # 3. CORRECTIVE RAG (post-retrieval quality check)
+        _s = time.perf_counter()
         if self.corrective_rag and documents:
             try:
                 corrected_result = self.corrective_rag.retrieve_with_correction(
@@ -253,7 +264,8 @@ class HealthcareQAPipeline:
                     context = "\n\n".join(context_parts)
             except Exception as e:
                 logger.warning(f"Corrective RAG failed, using original retrieval: {e}")
-        
+        _t["corrective_rag_ms"] = (time.perf_counter() - _s) * 1000
+
         # 4. GROUNDING GATE: adaptive check
         is_answerable = True
         if self.enable_grounding_gate:
@@ -339,6 +351,7 @@ class HealthcareQAPipeline:
                 logger.warning(f"Context compression failed, using full context: {e}")
         
         # 6. BUILD PROMPT & GENERATE ANSWER
+        _s = time.perf_counter()
         prompt = self.prompt_manager.build_prompt(
             question=question,
             context=generation_context,
@@ -352,7 +365,8 @@ class HealthcareQAPipeline:
         )
         
         answer = self._clean_answer(generation_result.response)
-        
+        _t["generation_ms"] = (time.perf_counter() - _s) * 1000
+
         # 7. FACTUAL CONSISTENCY CHECK (post-generation)
         factual_result = None
         if self.factual_consistency_checker and answer:
@@ -370,6 +384,7 @@ class HealthcareQAPipeline:
                 logger.warning(f" Factual consistency check failed: {e}")
         
         # 7b. HALLUCINATION DETECTION (DeBERTa NLI + rule-based)
+        _s = time.perf_counter()
         hallucination_result = None
         if self.hallucination_detector and include_explanation and answer:
             try:
@@ -391,8 +406,10 @@ class HealthcareQAPipeline:
                 }
             except Exception as e:
                 logger.warning(f"Hallucination detection failed: {e}")
+        _t["hallucination_ms"] = (time.perf_counter() - _s) * 1000
 
         # 8. CONFIDENCE SCORING — multi-signal (5-signal XAI breakdown)
+        _s = time.perf_counter()
         confidence_breakdown = None
         if self.multi_signal_scorer and include_explanation:
             try:
@@ -453,6 +470,8 @@ class HealthcareQAPipeline:
                     "explanation": "Confidence scoring not available",
                 }
         
+        _t["confidence_ms"] = (time.perf_counter() - _s) * 1000
+
         # 9. SOURCE ATTRIBUTION
         if self.source_attributor and include_explanation:
             doc_dicts = [
@@ -494,7 +513,9 @@ class HealthcareQAPipeline:
         ]
         
         disclaimer = self.prompt_manager.get_medical_disclaimer()
-        
+
+        _t["total_ms"] = (time.perf_counter() - _t0) * 1000
+
         response = QAResponse(
             question=question,
             answer=answer,
@@ -508,6 +529,7 @@ class HealthcareQAPipeline:
             factual_consistency=factual_result,
             confidence_breakdown=confidence_breakdown,
             hallucination=hallucination_result,
+            stage_latencies=_t,
         )
         
         # 12. CACHE THE RESPONSE (with context key)

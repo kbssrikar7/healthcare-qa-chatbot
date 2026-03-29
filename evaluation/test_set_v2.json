@@ -1,0 +1,1695 @@
+{
+  "version": "2.0",
+  "description": "Expanded evaluation test set (100+ Q&A with reference answers)",
+  "created": "2026-03-29",
+  "sources": [
+    "MedQA-USMLE",
+    "PubMedQA",
+    "ChatDoctor-HealthCareMagic"
+  ],
+  "total": 97,
+  "test_cases": [
+    {
+      "id": "chatdoc_014",
+      "query": "So I playing a game at my church last weekend and the game involved running and I ended up tripping and falling down on my right knee and it hurt really bad and the next day my knee was swollen and bruised and it hurts to kneel on or when I put pressure on it and it has been like this for about a we",
+      "reference_answer": "Welcome to Chat Doctor . I have gone through your query and can understand your concern. As per your complaint it seems that due to traumatic injury there has been inflammation of the soft tissues and there is accumulation of inflammatory exudate and cells in the area leading to swelling. The bruising is due to ruptured blood vessels leading to Hematoma formation. I would suggest you to do alternate warm and cool compresses over the swelling. Take anti-inflammatory painkiller like Ibuprofen. App",
+      "expected_keywords": [
+        "your",
+        "chat",
+        "there",
+        "leading",
+        "swelling"
+      ],
+      "category": "clinical",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_014_src"
+      ]
+    },
+    {
+      "id": "pubmed_028",
+      "query": "Do supervised colorectal trainees differ from consultants in terms of quality of TME surgery?",
+      "reference_answer": "No. We conclude that the quality of rectal cancer excision, as defined by mesorectal grades, achieved by supervised colorectal trainees is comparable with that achieved by consultants.",
+      "expected_keywords": [
+        "achieved",
+        "conclude",
+        "quality",
+        "rectal",
+        "cancer",
+        "excision"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_028_src"
+      ]
+    },
+    {
+      "id": "pubmed_031",
+      "query": "Characterization of the gender dimorphism after injury and hemorrhagic shock: are hormonal differences responsible?",
+      "reference_answer": "No. The independent protective effect of female gender on multiple organ failure and nosocomial infection rates remains significant in both premenopausal and postmenopausal women when compared with similarly aged men. This is contrary to previous experimental studies and the known physiologic sex hormone changes that occur after menopause in women. These results suggest that factors other than sex hormones may be responsible for gender-based differences after injury.",
+      "expected_keywords": [
+        "women",
+        "after",
+        "independent",
+        "protective",
+        "effect",
+        "female"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_031_src"
+      ]
+    },
+    {
+      "id": "medqa_010",
+      "query": "A 3rd year resident in good standing with his residency training program would like to work more hours outside his residency obligations to gain more experience and pay for his medical school loans. He currently works and trains 60 hours per week as a resident and has a 10-hour shift external to his residency program on Saturdays. He is free of any educational and work obligations on Sundays. Based on the most recent standards set by the Accreditation Council for Graduate Medical Education (ACGME), which of the following is the most accurate statement regarding this resident\u2019s moonlighting and patient safety?",
+      "reference_answer": "He may work longer shifts",
+      "expected_keywords": [
+        "work",
+        "longer",
+        "shifts"
+      ],
+      "category": "clinical",
+      "source": "MedQA-USMLE-step2&3",
+      "relevant_ids": [
+        "medqa_010_src"
+      ]
+    },
+    {
+      "id": "pubmed_002",
+      "query": "Is horizontal semicircular canal ocular reflex influenced by otolith organs input?",
+      "reference_answer": "Yes. Otolith organs input influences the axis of horizontal semicircular canal ocular reflex; therefore, the plane of compensatory eye movements induced by the horizontal canal stimulation is not always parallel to the canal.",
+      "expected_keywords": [
+        "canal",
+        "horizontal",
+        "otolith",
+        "organs",
+        "input",
+        "influences"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_002_src"
+      ]
+    },
+    {
+      "id": "medqa_027",
+      "query": "A researcher wants to perform an experiment to detect HIF-1a in RCC under normoxic conditions with blotting techniques. Which of the following statements are most likely to be true regarding her experiment?",
+      "reference_answer": "A Western blot will show increased HIF-1\u03b1 compared to a normoxic control.",
+      "expected_keywords": [
+        "western",
+        "blot",
+        "show",
+        "increased",
+        "hif-",
+        "compared"
+      ],
+      "category": "diagnosis",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_027_src"
+      ]
+    },
+    {
+      "id": "medqa_002",
+      "query": "He has a bronze discoloration to his skin, but he denies being outside in the sun or any history of laying in tanning beds. What is the next best step in the management of this patient?",
+      "reference_answer": "Start him on both hydrocortisone and fludrocortisone therapy",
+      "expected_keywords": [
+        "start",
+        "both",
+        "hydrocortisone",
+        "fludrocortisone",
+        "therapy"
+      ],
+      "category": "treatment",
+      "source": "MedQA-USMLE-step2&3",
+      "relevant_ids": [
+        "medqa_002_src"
+      ]
+    },
+    {
+      "id": "pubmed_037",
+      "query": "Did the call for boycott by the Catholic bishops affect the polio vaccination coverage in Kenya in 2015?",
+      "reference_answer": "No. The call for boycott did not affect the campaign significantly. However, if the call for boycott is repeated in future it could have some significant negative implication to polio eradication. It is therefore important to ensure that any vaccine safety issues are addressed accordingly.",
+      "expected_keywords": [
+        "call",
+        "boycott",
+        "affect",
+        "campaign",
+        "significantly",
+        "however"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_037_src"
+      ]
+    },
+    {
+      "id": "medqa_016",
+      "query": "The dermatologist suspects a malignancy and orders a biopsy. Which of the following is the most accurate description of this condition?",
+      "reference_answer": "Tumor arising from cutaneous T cells",
+      "expected_keywords": [
+        "tumor",
+        "arising",
+        "cutaneous",
+        "cells"
+      ],
+      "category": "treatment",
+      "source": "MedQA-USMLE-step2&3",
+      "relevant_ids": [
+        "medqa_016_src"
+      ]
+    },
+    {
+      "id": "pubmed_029",
+      "query": "Does quilting suture prevent seroma in abdominoplasty?",
+      "reference_answer": "Yes. The quilting suture seems to be an efficient technique with which to prevent seroma formation.",
+      "expected_keywords": [
+        "quilting",
+        "suture",
+        "seems",
+        "efficient",
+        "technique",
+        "prevent"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_029_src"
+      ]
+    },
+    {
+      "id": "pubmed_032",
+      "query": "Staging laparoscopy in patients with hepatocellular carcinoma: is it useful?",
+      "reference_answer": "No. The overall yield of SL for HCC was 7 %, and the accuracy was 27 %. When accurate imaging methods are available and additional percutaneous liver biopsy is implemented as a standard procedure in the preoperative workup of patients with HCC, the benefit of SL will become even less.",
+      "expected_keywords": [
+        "overall",
+        "yield",
+        "accuracy",
+        "accurate",
+        "imaging",
+        "methods"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_032_src"
+      ]
+    },
+    {
+      "id": "medqa_011",
+      "query": "Hypercalcemia and hyperglycemia are also noted. Which of the following is the most likely diagnosis?",
+      "reference_answer": "Multiple endocrine neoplasia (MEN) 2A",
+      "expected_keywords": [
+        "multiple",
+        "endocrine",
+        "neoplasia"
+      ],
+      "category": "treatment",
+      "source": "MedQA-USMLE-step2&3",
+      "relevant_ids": [
+        "medqa_011_src"
+      ]
+    },
+    {
+      "id": "pubmed_021",
+      "query": "Search engine as a diagnostic tool in difficult immunological and allergologic cases: is Google useful?",
+      "reference_answer": "Yes. This Google-based search was useful to identify an appropriate diagnosis in complex immunological and allergic cases. Computing skills may help to get better results.",
+      "expected_keywords": [
+        "google-based",
+        "search",
+        "useful",
+        "identify",
+        "appropriate",
+        "diagnosis"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_021_src"
+      ]
+    },
+    {
+      "id": "chatdoc_003",
+      "query": "why do doctors  do ex rays or ct scan  for one thing and discover a dark spot on the kidney by accident and say dont worry its nothing and 2 years of bleeding pain pullups and other stuff then just to discover that when the patient questioned the doctor before was ignored and now diagnose with kidne",
+      "reference_answer": "Thanks for writing in. At times, features of a disease on an X-ray and CT scan is not characteristic and obvious to the eyes years before it manifests in to a disease that could be hurting. I guess unfortunately such an incident has occurred with you. The dark spot which you questioned was probably looking more normal and acceptable on the X-ray and CT scan earlier. Many doctors choose to follow up such findings and this is subjective. Therefore, any such normal findings might be passed as harml",
+      "expected_keywords": [
+        "disease",
+        "before",
+        "many",
+        "medicine",
+        "x-ray"
+      ],
+      "category": "treatment",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_003_src"
+      ]
+    },
+    {
+      "id": "pubmed_020",
+      "query": "The effect of an intracerebroventricular injection of metformin or AICAR on the plasma concentrations of melatonin in the ewe: potential involvement of AMPK?",
+      "reference_answer": "Yes. Taken together, these results suggest a potential role for AMPK on the secretion of melatonin probably acting trough the paraventricular nucleus and/or directly in the pineal gland. We conclude that AMPK may act as a metabolic cue to modulate the rhythm of melatonin secretion.",
+      "expected_keywords": [
+        "ampk",
+        "secretion",
+        "melatonin",
+        "taken",
+        "together",
+        "these"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_020_src"
+      ]
+    },
+    {
+      "id": "chatdoc_019",
+      "query": "if i do any physical activities my body  experiences burning feeling with rashes all over the body and severe itches. I referred several doctors they said it is because of some allergy but cannot be diagnosed, they prescribed me with cetrizine tablets, I am taking it for nearly 10 years so became ad",
+      "reference_answer": "Thank you for asking at Chat Doctor. I went through your history. I would like to ask you about your symptoms in great detail, like - what are the activities that precipitate itching & rashes, whether they occur without any activity as well, whether you have any other medical conditions, whether you are taking any other medicines on regular basis, whether you have any other allergies, etc. etc. However, from your history, I would first think of what we call \\\"Cholinergic urticaria\\\". It is not e",
+      "expected_keywords": [
+        "whether",
+        "your",
+        "other",
+        "history",
+        "like"
+      ],
+      "category": "treatment",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_019_src"
+      ]
+    },
+    {
+      "id": "pubmed_018",
+      "query": "Is Acupuncture Efficacious for Treating Phonotraumatic Vocal Pathologies?",
+      "reference_answer": "Yes. The findings showed that acupuncture of voice-related acupoints could bring about improvement in vocal function and healing of vocal fold lesions.",
+      "expected_keywords": [
+        "vocal",
+        "findings",
+        "showed",
+        "acupuncture",
+        "voice-related",
+        "acupoints"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_018_src"
+      ]
+    },
+    {
+      "id": "pubmed_010",
+      "query": "Are women with major depression in pregnancy identifiable in population health data?",
+      "reference_answer": "No. No single data source is likely to provide a complete health profile for an individual. For women with depression in pregnancy and dispensed antidepressants, the hospital admission data do not adequately capture all cases.",
+      "expected_keywords": [
+        "data",
+        "single",
+        "source",
+        "likely",
+        "provide",
+        "complete"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_010_src"
+      ]
+    },
+    {
+      "id": "pubmed_034",
+      "query": "Juvenile osteochondritis dissecans: is it a growth disturbance of the secondary physis of the epiphysis?",
+      "reference_answer": "Yes. MRI of children with OCD consistently showed secondary physis disruption, overlying chondroepiphysial widening, and subchondral bone edema. We suggest that disruption of normal endochondral ossification may be associated with juvenile OCD.",
+      "expected_keywords": [
+        "disruption",
+        "children",
+        "consistently",
+        "showed",
+        "secondary",
+        "physis"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_034_src"
+      ]
+    },
+    {
+      "id": "medqa_031",
+      "query": "A CT scan of the chest shows clustered air spaces and reticular opacities in the basal parts of the lung. Which of the following is the most likely underlying mechanism of this patient's dyspnea?",
+      "reference_answer": "Excess collagen deposition in the extracellular matrix of the lung",
+      "expected_keywords": [
+        "excess",
+        "collagen",
+        "deposition",
+        "extracellular",
+        "matrix",
+        "lung"
+      ],
+      "category": "treatment",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_031_src"
+      ]
+    },
+    {
+      "id": "pubmed_024",
+      "query": "Visceral adipose tissue area measurement at a single level: can it represent visceral adipose tissue volume?",
+      "reference_answer": "Yes. VAT area measurement at a single level 3 cm above the lower margin of the L3 vertebra is feasible and can reflect changes in VAT volume and body weight. Advances in knowledge: As VAT area at a CT slice 3cm above the lower margin of L3 can best reflect interval changes in VAT volume and body weight, VAT area measurement should be selected at this location.",
+      "expected_keywords": [
+        "area",
+        "measurement",
+        "above",
+        "lower",
+        "margin",
+        "reflect"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_024_src"
+      ]
+    },
+    {
+      "id": "chatdoc_001",
+      "query": "Three years ago I was diagnosed with a very small carcinoid tumor which was found accidentally near the end of my small intestine duriing a colonoscopy. Sugery was reccommended, but I passed. About three weeks ago I had a very bad cold, and a little sinus infection. After the cold got better I notic",
+      "reference_answer": "and welcome to Chat Doctor. Thank you for your query. I am Chat Doctor, I understand your concerns and I will try to help you as much as I can. In most cases these spots are benign growths such as cysts or hematomas. Hematoma is very small and this can't cause such symptoms unless larger than 10\\u00a0cm. You should do MRI scan or liver biopsy to find what type of lesion it is.  Less common this may be malignant issues such as hepatocellular carcinoma. This abdominal pain may not be related to li",
+      "expected_keywords": [
+        "liver",
+        "chat",
+        "your",
+        "query",
+        "these"
+      ],
+      "category": "diagnosis",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_001_src"
+      ]
+    },
+    {
+      "id": "pubmed_014",
+      "query": "Department of Transportation vs self-reported data on motor vehicle collisions and driving convictions for stroke survivors: do they agree?",
+      "reference_answer": "No. In our population of stroke survivors, self-reports of motor vehicle collisions and driving convictions differed from government records. In future studies, the use of both government and self-reported data would ensure a more accurate picture of driving safety post-stroke.",
+      "expected_keywords": [
+        "driving",
+        "government",
+        "population",
+        "stroke",
+        "survivors",
+        "self-reports"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_014_src"
+      ]
+    },
+    {
+      "id": "pubmed_001",
+      "query": "Bony defects in chronic anterior posttraumatic dislocation of the shoulder: Is there a correlation between humeral and glenoidal lesions?",
+      "reference_answer": "No. Humeral and glenoid bone defects were not correlated. Inter-observer reliability was excellent for the D/R ratio and good for the D1/D2 ratio.",
+      "expected_keywords": [
+        "ratio",
+        "humeral",
+        "glenoid",
+        "bone",
+        "defects",
+        "correlated"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_001_src"
+      ]
+    },
+    {
+      "id": "chatdoc_025",
+      "query": "I have an elderly parent with glaucoma and  asthma problems.  The Meds are outrageously expensive.  She has been taking Pilocarpine 4% Eye Drops  for a few years now.  With the rising cost of her other drugs she is in need of assistance.  Does Alcon have any program that would help?  Is there an app",
+      "reference_answer": "If your elderly parent is having problems with the glaucoma medication, his/her ophthalmologist is the only one who can decide in changing medications and their dose according to the current health situation of the patient. If you are worried about the price, you can discuss with your parent doctor about the possibility of disbursement. According to my knowledge and my practice, many countries do apply insurance policies in treating patients with various diagnosis, including glaucoma. In fact, I",
+      "expected_keywords": [
+        "your",
+        "glaucoma",
+        "parent",
+        "medications",
+        "according"
+      ],
+      "category": "treatment",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_025_src"
+      ]
+    },
+    {
+      "id": "pubmed_036",
+      "query": "Is adjustment for reporting heterogeneity necessary in sleep disorders?",
+      "reference_answer": "No. Sleep disorders are common in the general adult population of Japan. Correction for reporting heterogeneity using anchoring vignettes is not a necessary tool for proper management of sleep and energy related problems among Japanese adults. Older age, gender differences in communicating sleep-related problems, the presence of multiple morbidities, and regular exercise should be the focus of policies and clinical practice to improve sleep and energy management in Japan.",
+      "expected_keywords": [
+        "sleep",
+        "japan",
+        "management",
+        "energy",
+        "problems",
+        "disorders"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_036_src"
+      ]
+    },
+    {
+      "id": "chatdoc_021",
+      "query": "Hi, may I answer your health queries right now ? Please type your query here...hie my name is Leonorah, i recently went to see a doctor and she told me i most probably have kidney infection .this problem has been there since 2008.i experiance pain both sides (were the kidneys are (that s what the do",
+      "reference_answer": "Thanks for writing to us. The pain on both the sides with a normal ultrasound scan could be due to a myofascial syn Chat Doctor. You can take mild painkillers like ibuprofen along with a good muscle relaxant for symptomatic relief after consulting your physician. Since the pain is persistent, it is less likely to be related to a renal infection. I hope this information has been both informative and helpful for you.",
+      "expected_keywords": [
+        "pain",
+        "both",
+        "thanks",
+        "writing",
+        "sides"
+      ],
+      "category": "treatment",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_021_src"
+      ]
+    },
+    {
+      "id": "medqa_009",
+      "query": "His neurological examination is normal, and he has no symptoms. Which of the following is the most appropriate next step in management:",
+      "reference_answer": "Treat with three weekly injections of penicillin, obtain titers in 6 months",
+      "expected_keywords": [
+        "treat",
+        "weekly",
+        "injections",
+        "penicillin",
+        "obtain",
+        "titers"
+      ],
+      "category": "treatment",
+      "source": "MedQA-USMLE-step2&3",
+      "relevant_ids": [
+        "medqa_009_src"
+      ]
+    },
+    {
+      "id": "pubmed_006",
+      "query": "The use of audit to identify maternal mortality in different settings: is it just a difference between the rich and the poor?",
+      "reference_answer": "No. Differences in maternal mortality are more than just differences between the rich and poor. Acknowledging the magnitude of maternal mortality and harnessing a strong political will to tackle the issues are important factors. However, there is no single, general solution to reduce maternal mortality, and identification of problems needs to be promoted through audit, both national and local.",
+      "expected_keywords": [
+        "maternal",
+        "mortality",
+        "differences",
+        "just",
+        "between",
+        "rich"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_006_src"
+      ]
+    },
+    {
+      "id": "chatdoc_005",
+      "query": "This might be weirdly specific but I haven t been able to get a solid answer from two different professionals. So let s say you did something involving a lot of movement, like cleaning a room for a couple of hours, or marching band practice for a while. You feel fine. You get home or get to a stoppi",
+      "reference_answer": "The symptoms in your message are highly suggestive of an ankylosing spondylitis. This is a condition that comes in 2nd to 3rd decade of life and progresses gradually.  The pain typically presents at rest or in the morning and improves with the mobility initially. As the condition progresses, the pain becomes constant.  I would recommend testing serum HLA B27. Let us know the reports, and we may be able to help you further. Hope I have answered your query. Let me know if I can assist you further.",
+      "expected_keywords": [
+        "your",
+        "condition",
+        "progresses",
+        "pain",
+        "know"
+      ],
+      "category": "treatment",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_005_src"
+      ]
+    },
+    {
+      "id": "chatdoc_009",
+      "query": "i am renal transplant patient since 08-07-2004. presently having low grade fever(last 9 days). takinng livoflox 500 once daily i have to take one paracetamol almost daily then temp is range bound 99.00 to 99.6 now doctors have prescribed suftum500 tds. should i shift or try for few more days.",
+      "reference_answer": "Yes it may be useful in reducing the temperature. Ceftum-500 is an antibiotic commonly prescribed to treat infections caused by susceptible bacteria like respiratory tract infections, urine infections and other conditions.  By killing the bacteria septum helps in reducing the raised body temperature. Continue to take septum along with paracetamol as prescribed. Hope I have answered your query. Let me know if I can assist you further. Take care",
+      "expected_keywords": [
+        "infections",
+        "reducing",
+        "temperature",
+        "prescribed",
+        "bacteria"
+      ],
+      "category": "treatment",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_009_src"
+      ]
+    },
+    {
+      "id": "pubmed_016",
+      "query": "Must early postoperative oral intake be limited to laparoscopy?",
+      "reference_answer": "No. Early oral intake is possible after laparotomy and colorectal resection. Thus, the laparoscopic surgeon's claim of early tolerated oral intake may not be unique to laparoscopy.",
+      "expected_keywords": [
+        "early",
+        "oral",
+        "intake",
+        "possible",
+        "after",
+        "laparotomy"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_016_src"
+      ]
+    },
+    {
+      "id": "pubmed_013",
+      "query": "Do overweight children necessarily make overweight adults?",
+      "reference_answer": "No. An overweight birth cohort in childhood does not necessarily continue to be overweight in young adulthood. Not only secular trends in body mass index at fixed ages but also growth curves for wide age ranges by birth cohorts should be considered to study obesity and thinness. Growth curves by birth cohorts were produced by a repeated cross sectional annual survey over nearly six decades.",
+      "expected_keywords": [
+        "birth",
+        "overweight",
+        "growth",
+        "curves",
+        "cohorts",
+        "cohort"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_013_src"
+      ]
+    },
+    {
+      "id": "pubmed_011",
+      "query": "Proliferative index obtained by DNA image cytometry. Does it add prognostic information in Auer IV breast cancer?",
+      "reference_answer": "Yes. According to ICM-DNA values corresponding to the S + G2/M region, patients with breast cancers classified as Auer IV can be divided into subgroups with different tumor characteristics and prognoses.",
+      "expected_keywords": [
+        "according",
+        "icm-dna",
+        "values",
+        "corresponding",
+        "region",
+        "breast"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_011_src"
+      ]
+    },
+    {
+      "id": "chatdoc_024",
+      "query": "Every now and then when I eat foods or take in drinks with high sugar concentration, I get blood in my stool . The blood colour is always pure red, just like the blood you get when you have a cut. As indicated, this happens once a while and sometimes 60 days can elapse without this experience. The l",
+      "reference_answer": "thanks for writing to Chat Doctor. Your condition is called rectal bleeding/hematochezia. This bleeding can happen if there is any bleeding in the intestinal tract. Since you say the color is bright, it is possible there is internal bleeding towards the lower intestinal tract i.e. rectum or anus. But, you should also be concerned if there is possible cancerous cells. In regard to diet, I am glad you have noticed that sweets do not work well with you. It may be because your Gastrointestinal tract",
+      "expected_keywords": [
+        "bleeding",
+        "tract",
+        "there",
+        "possible",
+        "your"
+      ],
+      "category": "clinical",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_024_src"
+      ]
+    },
+    {
+      "id": "pubmed_019",
+      "query": "Are physician estimates of asthma severity less accurate in black than in white patients?",
+      "reference_answer": "Yes. Biased estimates of asthma severity may contribute to racially disparate asthma care. Interventions to improve physicians' assessments of asthma severity and patient-physician communication may minimize racial disparities in asthma care.",
+      "expected_keywords": [
+        "asthma",
+        "severity",
+        "care",
+        "biased",
+        "estimates",
+        "contribute"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_019_src"
+      ]
+    },
+    {
+      "id": "chatdoc_012",
+      "query": "Hello, for the past few weeks I have been experiencing dizzy spells. This is accompanied by a numb, almost cold feeling, in my hands, feet and face. My vision goes a bit blurry too. It happens after I ve had chocolate or a fizzy drink. I am on an antidepressant too.",
+      "reference_answer": "Thanks for choosing Chat Doctor for posting your query. I have gone through your question in detail and I can understand what you are going through. It could be due to interaction with an antidepressant. You need to state which antidepressant you are on. Is it MAO Inhibitors? Hope I am able to answer your concerns. If you have any further query, I would be glad to help you. In future if you wish to contact me directly, you can use the below-mentioned link",
+      "expected_keywords": [
+        "your",
+        "query",
+        "through",
+        "antidepressant",
+        "thanks"
+      ],
+      "category": "symptoms",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_012_src"
+      ]
+    },
+    {
+      "id": "medqa_013",
+      "query": "A medical student decides to join an immunology research center, which specifically works on capsular polysaccharide vaccine development against bacteria, such as Haemophilus influenzae type b (Hib), Neisseria meningitidis, and Streptococcus pneumoniae. As a member of a research team working on the Hib vaccine, he asks his senior colleague why capsular polysaccharides are conjugated to protein carriers like tetanus toxoid during vaccine development. Which of the following is the best response to this question?",
+      "reference_answer": "Conjugation with a protein carrier provides effective protection to infants",
+      "expected_keywords": [
+        "conjugation",
+        "protein",
+        "carrier",
+        "provides",
+        "effective",
+        "protection"
+      ],
+      "category": "prevention",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_013_src"
+      ]
+    },
+    {
+      "id": "pubmed_005",
+      "query": "Does stress increase imitation of drinking behavior?",
+      "reference_answer": "No. Generally, it appears that among young male adults, imitation of alcohol consumption is a robust phenomenon not dependent on individual stress levels.",
+      "expected_keywords": [
+        "generally",
+        "appears",
+        "among",
+        "young",
+        "male",
+        "adults"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_005_src"
+      ]
+    },
+    {
+      "id": "medqa_024",
+      "query": "A laboratory primarily involved with studying cellular proofreading mechanisms is investigating the question of whether the ribosome can recognize a mischarged amino acid and still be incorporated into the growing peptide. In order to do so, they biochemically charge a Lys-tRNA with valine instead of lysine and insert the tRNA into the cell. They design an mRNA sequence that contains only codons for lysine. Which of the following will most likely occur?",
+      "reference_answer": "The mischarged tRNA with valine will be incorporated in the codons that specificy for lysine",
+      "expected_keywords": [
+        "mischarged",
+        "trna",
+        "valine",
+        "incorporated",
+        "codons",
+        "specificy"
+      ],
+      "category": "diagnosis",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_024_src"
+      ]
+    },
+    {
+      "id": "pubmed_008",
+      "query": "Quality of life in lung cancer patients: does socioeconomic status matter?",
+      "reference_answer": "Yes. At baseline assessment patients of lower socioeconomic status showed lower health related quality of life. Since there was no clear trend at follow-up assessment this suggests that patients from different socioeconomic status responded to treatment similarly. In general, the findings suggest that quality of life is not only the outcome of the disease and its treatment, but is also highly dependent on each patients' socioeconomic characteristics.",
+      "expected_keywords": [
+        "socioeconomic",
+        "assessment",
+        "lower",
+        "status",
+        "quality",
+        "life"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_008_src"
+      ]
+    },
+    {
+      "id": "pubmed_009",
+      "query": "Do family physicians make good sentinels for influenza?",
+      "reference_answer": "Yes. Family physicians provide sensitive, timely, and accurate community influenza morbidity data that complement data from other surveillance systems. This information enables monitoring of the type, timing, and intensity of influenza activity and can help health care workers implement prevention or control measures.",
+      "expected_keywords": [
+        "influenza",
+        "data",
+        "family",
+        "physicians",
+        "provide",
+        "sensitive"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_009_src"
+      ]
+    },
+    {
+      "id": "medqa_019",
+      "query": "His chest radiograph shows pulmonary infiltrates and mediastinal lymphadenopathy, sputum smear is negative, Mantoux test is 12 mm \u00d7 14 mm, CD4+ T cell count is 370/\u03bcL, and HIV RNA is 2,900 copies/mL. What is the most appropriate initial step in treatment?",
+      "reference_answer": "Continue antitubercular therapy and antiretroviral therapy without any change",
+      "expected_keywords": [
+        "therapy",
+        "continue",
+        "antitubercular",
+        "antiretroviral",
+        "without",
+        "change"
+      ],
+      "category": "treatment",
+      "source": "MedQA-USMLE-step2&3",
+      "relevant_ids": [
+        "medqa_019_src"
+      ]
+    },
+    {
+      "id": "chatdoc_007",
+      "query": "hi docs!i am Saugat from Nepal.My father is of 53 yrs.From last 3 yrs he has been suffering from high rate palpation about 120 per minute.My father does have Br. asthma too.He has visited many doctors but none of them and none of their medicine can cure palpation.At beginning of this,my father first",
+      "reference_answer": "First do u have any ECG report. Is it showing any abnormalities. What I can suggest, first get one thyroid test done. Secondly is he inhaler on regular basis if yes then one content in inhaler is albuterol or formoterol or levosalbutamol, this content causes palpitations tremors and other complaints. So you asked your physician to remove this content from inhaler. Or sometimes if bronchial asthma is not controlled then it causes low oxygen level in blood and palpitations.",
+      "expected_keywords": [
+        "inhaler",
+        "content",
+        "first",
+        "then",
+        "causes"
+      ],
+      "category": "treatment",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_007_src"
+      ]
+    },
+    {
+      "id": "pubmed_039",
+      "query": "Transesophageal echocardiographic assessment of left ventricular function in brain-dead patients: are marginally acceptable hearts suitable for transplantation?",
+      "reference_answer": "Yes. TEE is useful to assess left ventricular function in potential brain-dead donors. An FAC less than 50% is present in 36% of potential heart donors. Because left ventricular dysfunction is often reversible shortly after transplantation, an FAC below 50% may not necessarily preclude the use of hearts for transplantation.",
+      "expected_keywords": [
+        "left",
+        "ventricular",
+        "potential",
+        "donors",
+        "transplantation",
+        "useful"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_039_src"
+      ]
+    },
+    {
+      "id": "pubmed_025",
+      "query": "Does the treatment of amblyopia normalise subfoveal choroidal thickness in amblyopic children?",
+      "reference_answer": "No. Although a six-month treatment of amblyopia increased the visual acuity of the anisometropic hyperopic amblyopic eyes, it could not significantly change choroidal thickness. Our results were in accordance with the conventional explanation, which suggests visual cortex and lateral geniculate nucleus abnormalities in the pathophysiology of amblyopia.",
+      "expected_keywords": [
+        "amblyopia",
+        "visual",
+        "although",
+        "six-month",
+        "treatment",
+        "increased"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_025_src"
+      ]
+    },
+    {
+      "id": "medqa_008",
+      "query": "The remainder of the physical examination shows no abnormalities. Which of the following is the most appropriate initial therapy?",
+      "reference_answer": "Squeezing the nostrils manually for 10 minutes with the head elevated",
+      "expected_keywords": [
+        "squeezing",
+        "nostrils",
+        "manually",
+        "minutes",
+        "head",
+        "elevated"
+      ],
+      "category": "treatment",
+      "source": "MedQA-USMLE-step2&3",
+      "relevant_ids": [
+        "medqa_008_src"
+      ]
+    },
+    {
+      "id": "pubmed_003",
+      "query": "Implementation of epidural analgesia for labor: is the standard of effective analgesia reachable in all women?",
+      "reference_answer": "Yes. Present audit shows that the process of implementation of labor analgesia was quick, successful and safe, notwithstanding the identification of one cluster of women with suboptimal response to epidural analgesia that need to be further studies, overall pregnant womens'adhesion to labor analgesia was satisfactory.",
+      "expected_keywords": [
+        "analgesia",
+        "labor",
+        "present",
+        "audit",
+        "shows",
+        "process"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_003_src"
+      ]
+    },
+    {
+      "id": "chatdoc_008",
+      "query": "Hello sir We are leaving in kashipur (Uttarakhand). My father suffering from leg pain (Thai) He is diabetic patient from last 2 year. Need your guidance for the treatment ... What is your recommendations over this Is there any treatment available at haldwani / Moradabad / bareily etc Waiting for you",
+      "reference_answer": "have gone through your question and understood your concern. Pain in the legs can occur as a result of conditions that affect bones, joints, muscles, tendons, ligaments, blood vessels, nerves, or skin. Leg pain can occur at night, while lying down, or while running or exercising, depending upon the cause(an in jury or a chronic disease.) Since the leg contains a number of different structures and tissue types, a wide variety of conditions and injuries can cause leg pain. In your fathers case, in",
+      "expected_keywords": [
+        "pain",
+        "cause",
+        "your",
+        "occur",
+        "conditions"
+      ],
+      "category": "treatment",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_008_src"
+      ]
+    },
+    {
+      "id": "pubmed_015",
+      "query": "The colour of pain: can patients use colour to describe osteoarthritis pain?",
+      "reference_answer": "Yes. For some patients, using colour to describe their pain experience may be a useful tool to improve doctor-patient communication.",
+      "expected_keywords": [
+        "some",
+        "using",
+        "colour",
+        "describe",
+        "their",
+        "pain"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_015_src"
+      ]
+    },
+    {
+      "id": "medqa_003",
+      "query": "Physical exam was unremarkable except for some point tenderness along the lumbosacral area. What is the most likely imaging finding in this patient?",
+      "reference_answer": "Lytic lesions of the lumbar spine",
+      "expected_keywords": [
+        "lytic",
+        "lesions",
+        "lumbar",
+        "spine"
+      ],
+      "category": "treatment",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_003_src"
+      ]
+    },
+    {
+      "id": "medqa_017",
+      "query": "The uvula is deviated to the left. Laboratory studies show:\nHemoglobin 13.0 g/dL\nHematocrit 39%\nLeukocyte count 12,000/mm3\nPlatelet Count 200,000/mm3\nSerum\nNa+ 138 mEq/L\nCl- 100 mEq/L\nK+ 4.5 mEq/L\nHCO3- 24 mEq/L\nUrea nitrogen 14.0 mg/dL\nCreatinine 1.1 mg/dL\nWhich of the following is the most appropriate next step in management?\"",
+      "reference_answer": "Incision and drainage with intravenous ampicillin-sulbactam therapy",
+      "expected_keywords": [
+        "incision",
+        "drainage",
+        "intravenous",
+        "ampicillin-sulbactam",
+        "therapy"
+      ],
+      "category": "treatment",
+      "source": "MedQA-USMLE-step2&3",
+      "relevant_ids": [
+        "medqa_017_src"
+      ]
+    },
+    {
+      "id": "pubmed_007",
+      "query": "Are increased carotid artery pulsatility and resistance indexes early signs of vascular abnormalities in young obese males?",
+      "reference_answer": "Yes. Our results suggest that depressed vessel compliance and increased vascular resistance are features of young, obese, normotensive subjects independently of and in addition to cardiovascular risk factors. As changes in arterial wall properties may be incipient in young obese subjects, future studies will be required to demonstrate whether early intervention such as diet and exercise in this population can improve vascular functions.",
+      "expected_keywords": [
+        "vascular",
+        "young",
+        "obese",
+        "subjects",
+        "results",
+        "suggest"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_007_src"
+      ]
+    },
+    {
+      "id": "pubmed_035",
+      "query": "Is serum total bilirubin useful to differentiate cardioembolic stroke from other stroke subtypes?",
+      "reference_answer": "Yes. Serum TB level was independently associated with cardioembolic stroke. The combination of clinical data and serum TB may be a feasible strategy to diagnose cardioembolic stroke in the acute phase.",
+      "expected_keywords": [
+        "serum",
+        "cardioembolic",
+        "stroke",
+        "level",
+        "independently",
+        "associated"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_035_src"
+      ]
+    },
+    {
+      "id": "medqa_023",
+      "query": "Physical examination is significant for left-sided, tender, ulcerative lymph nodes with a dark discoloration. Which of the following is most likely to be seen in this patient's condition?",
+      "reference_answer": "PCR positive for Chlamydia trachomatis",
+      "expected_keywords": [
+        "positive",
+        "chlamydia",
+        "trachomatis"
+      ],
+      "category": "diagnosis",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_023_src"
+      ]
+    },
+    {
+      "id": "pubmed_027",
+      "query": "Are head and neck specific quality of life measures necessary?",
+      "reference_answer": "Yes. Head and neck-specific QOL measures are necessary and should include domains that reflect ES, SC, and AP.",
+      "expected_keywords": [
+        "head",
+        "neck-specific",
+        "measures",
+        "necessary",
+        "include",
+        "domains"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_027_src"
+      ]
+    },
+    {
+      "id": "medqa_025",
+      "query": "Autopsy of brain tissue suggests a viral infection. The likely causal virus spreads to the central nervous system (CNS) in the following manner:",
+      "reference_answer": "Retrograde migration up peripheral nerve axons",
+      "expected_keywords": [
+        "retrograde",
+        "migration",
+        "peripheral",
+        "nerve",
+        "axons"
+      ],
+      "category": "symptoms",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_025_src"
+      ]
+    },
+    {
+      "id": "medqa_006",
+      "query": "The agent exerts its effect by releasing nitric oxide as a metabolite, which subsequently activates guanylate cyclase and increases production of cGMP in vascular smooth muscle. Which of the following clinical effects would be expected from administration of this medication?",
+      "reference_answer": "Decreased pulmonary capillary wedge pressure",
+      "expected_keywords": [
+        "decreased",
+        "pulmonary",
+        "capillary",
+        "wedge",
+        "pressure"
+      ],
+      "category": "treatment",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_006_src"
+      ]
+    },
+    {
+      "id": "medqa_007",
+      "query": "A 47-year-old executive schedules an appointment his physician for a routine medical check-up. He currently has no complaints and claims to be \u201cas fit as a fiddle.\u201d The physical examination findings are unremarkable, except for a mid-systolic murmur heard in the 2nd left intercostal space that radiates to the carotids on auscultation. The physician instructs the patient to stand from a supine position with the stethoscope still placed on his chest. Which of the following changes would occur with this maneuver?",
+      "reference_answer": "A reduction in diastolic filling time",
+      "expected_keywords": [
+        "reduction",
+        "diastolic",
+        "filling",
+        "time"
+      ],
+      "category": "symptoms",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_007_src"
+      ]
+    },
+    {
+      "id": "medqa_022",
+      "query": "A multi-specialty physician practice is meeting to determine which compensation scheme would best serve the practice and its patient population. Which of the following are true in regards to physician compensation?",
+      "reference_answer": "Fee-for-service may incentivize physicians to increase healthcare utilization irrespective of quality",
+      "expected_keywords": [
+        "fee-for-service",
+        "incentivize",
+        "physicians",
+        "increase",
+        "healthcare",
+        "utilization"
+      ],
+      "category": "clinical",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_022_src"
+      ]
+    },
+    {
+      "id": "pubmed_017",
+      "query": "Do general practice characteristics influence uptake of an information technology (IT) innovation in primary care?",
+      "reference_answer": "No. The analyses show that structural characteristics of a practice are not associated with uptake of a new IT facility, but that its use may be influenced by post-graduate education in the relevant clinical condition. For this diabetes system at least, practice nurse use was critical in spreading uptake beyond initial GP enthusiasts and for sustained and rising use in subsequent years.",
+      "expected_keywords": [
+        "practice",
+        "uptake",
+        "analyses",
+        "show",
+        "structural",
+        "characteristics"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_017_src"
+      ]
+    },
+    {
+      "id": "pubmed_030",
+      "query": "Is non-HDL-cholesterol a better predictor of long-term outcome in patients after acute myocardial infarction compared to LDL-cholesterol?",
+      "reference_answer": "Yes. Non-attaining non-HDL-C goal predicted MACE at long-term follow-up after AMI whereas non-attaining LDL-C goal was not associated with the higher risk. Therefore, non-HDL-C may be a more suitable target of dyslipidemia treatment than LDL-C in patients after AMI.",
+      "expected_keywords": [
+        "non-attaining",
+        "non-hdl-c",
+        "goal",
+        "after",
+        "ldl-c",
+        "predicted"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_030_src"
+      ]
+    },
+    {
+      "id": "chatdoc_018",
+      "query": "Hi, i am 22 year old trying to get pregnant. It has been 45 days since my last cycle and wanted to check with doctor for pregnancy. The urine report has come negative and doctor advised to take Susten 100 for 5 days. What could be the reason for doctor to advise this medication. Does it mean am I no",
+      "reference_answer": "I think you should take this medicine. This Austen is generally given to support the pregnancy and also to induce the period if the periods get delayed. What you can do is to repeat a urine pregnancy test after 1 week. She.  Sometimes ovulation is delayed and thus pregnancy can happen. So you can confirm your pregnancy status after 1 week. She.  Austen has no negative effects on pregnancy. So if you are pregnant it will support this. If you are not pregnant it will induce your periods. Hope I ha",
+      "expected_keywords": [
+        "pregnancy",
+        "your",
+        "austen",
+        "support",
+        "induce"
+      ],
+      "category": "treatment",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_018_src"
+      ]
+    },
+    {
+      "id": "medqa_020",
+      "query": "He identifies a protein bound to CD8 that is composed of two chains from an adjacent cell. Which of the following best describes the primary function of the protein that was most likely identified?",
+      "reference_answer": "Binds endogenous peptides that have been transported by the TAP channel",
+      "expected_keywords": [
+        "binds",
+        "endogenous",
+        "peptides",
+        "transported",
+        "channel"
+      ],
+      "category": "diagnosis",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_020_src"
+      ]
+    },
+    {
+      "id": "chatdoc_002",
+      "query": "Hi I recently received the depo-provera shot on October 9th. By the 12th I started feeling tired and now I can t even go to school with out feeling sick and very very tired. I used to workout (run and strength train) at least 4 times a week and now I can t even get through a 20 minute run which used",
+      "reference_answer": "CassctiexxThanks for writing in to Chat Doctor ! The change of mood, depression, lack of concentration can be expected with Depot Proverb, but the other things like feeling red and unwell and fast heart rate are unexpected sequela. I think yours nurse is right you may be having some viral syn Chat Doctor.  Infection or infectious mononucleosis etc. If you have any further query please let me know I would try to answer it for you. Wish you a great health!",
+      "expected_keywords": [
+        "chat",
+        "cassctiexxthanks",
+        "writing",
+        "change",
+        "mood"
+      ],
+      "category": "treatment",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_002_src"
+      ]
+    },
+    {
+      "id": "pubmed_012",
+      "query": "Is severe macrosomia manifested at 11-14 weeks of gestation?",
+      "reference_answer": "Yes. Severe macrosomia apparently manifests as early as 11-14 weeks' gestation.",
+      "expected_keywords": [
+        "severe",
+        "macrosomia",
+        "apparently",
+        "manifests",
+        "early",
+        "weeks"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_012_src"
+      ]
+    },
+    {
+      "id": "chatdoc_013",
+      "query": "Hi, my baby is one year 9months old. She is suffering with vomiting and dark green loo. Seems like motions with foul smell. Suggested by doctor to use ofloxacin ,metronidazole. Is it safe to use the drug as there is a warning on the carton as CARCINOGENIC",
+      "reference_answer": ".. Thank you for consulting in Chat Doctor. PLEASE STOP ANTIBIOTICS (OFLOXACIN AND METRONIDAZOLE). It seems your kid is having viral diarrhea. Once it starts it will take 5-7 days to completely get better. Unless the kids having low urine output or very dull or excessively sleepy or blood in motion or green bilious vomiting...you need not worry. There is no need to use antibiotics (OFLOXACIN AND METRONIDAZOLE) unless there is blood in the motion. Antibiotics might worsen if unnecessarily used ca",
+      "expected_keywords": [
+        "antibiotics",
+        "chat",
+        "ofloxacin",
+        "metronidazole",
+        "having"
+      ],
+      "category": "treatment",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_013_src"
+      ]
+    },
+    {
+      "id": "medqa_021",
+      "query": "An investigator is studying the effects of different gastrointestinal regulatory substances. A healthy subject is asked to eat a meal at hour 0, and the pH of stomach contents and rate of stomach acid secretions are measured over the next 4 hours. Results of the study are shown. Which of the following mechanisms most likely contributes to the changes seen at point D in the graph?",
+      "reference_answer": "Increased activity of D cells",
+      "expected_keywords": [
+        "increased",
+        "activity",
+        "cells"
+      ],
+      "category": "diagnosis",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_021_src"
+      ]
+    },
+    {
+      "id": "medqa_001",
+      "query": "Neurological examination reveals asterixis, and his stool is guaiac-positive. Liver function test are shown below:\nTotal albumin 2 g/dL\nProthrombin time 9 seconds\nTotal bilirubin 5 mg/dL\nAlanine aminotransferase (ALT) 100 U/L\nAspartate aminotransferase (AST) 220 U/L\nWhich of the following is a feature of this patient condition?",
+      "reference_answer": "It is a diagnosis of exclusion",
+      "expected_keywords": [
+        "diagnosis",
+        "exclusion"
+      ],
+      "category": "symptoms",
+      "source": "MedQA-USMLE-step2&3",
+      "relevant_ids": [
+        "medqa_001_src"
+      ]
+    },
+    {
+      "id": "chatdoc_022",
+      "query": "am 27 yrs , 5 .3 feet and 52 kg.am suffering from irregular periods from 13 yrs onwards. am having treatment of this. also thyriod for which am taking thyronorm 50 mcg , for PCOD am taking ChromiNACA. I got married and wants to be pregnant . can I.",
+      "reference_answer": "Sure. PCs is completely treatable and patients do conceive n deliver healthy babies. Your BMI is average. Continue with chroming A. ASK YOUR CONSULTANT TO START TAB OVA CET TWICE A DAY. It has got Chat Doctor.  Get your ovulation study done to see whether you are ovulating or not. If ovulation is occurring on time with the regime you can conceive or else you might need induction of ovulation by tabs or in. In both cases valet is good.",
+      "expected_keywords": [
+        "your",
+        "ovulation",
+        "conceive",
+        "sure",
+        "completely"
+      ],
+      "category": "treatment",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_022_src"
+      ]
+    },
+    {
+      "id": "pubmed_026",
+      "query": "Multidisciplinary breast cancer clinics. Do they work?",
+      "reference_answer": "Yes. Although planning and operating a multidisciplinary clinic is not a new venture, to the best of the authors' knowledge, they have provided the first report demonstrating the benefits described above.",
+      "expected_keywords": [
+        "although",
+        "planning",
+        "operating",
+        "multidisciplinary",
+        "clinic",
+        "venture"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_026_src"
+      ]
+    },
+    {
+      "id": "chatdoc_020",
+      "query": "My boyfriend is almost always hard and I want to know if it is unhealthy for him and could possibly prevent us from having children? We have had a couple of miscarriages I m not sure if it is me because I have had one before him but Iconstantly worry about him. We have talked about it and he becomes",
+      "reference_answer": "Hallow Dear, At the outset, let me assure you that frequent erecting dos not cause abortions nor does it affect conception. Erection is possible without sexual arousal (libido) even with tight underclothes or position. If you find him still erected even after ejaculation, you may not terminate the intercourse; continue to have the penis still in the vagina. After some time you will again start getting orgasm, this time within the vagina from what is called as G point. This is called as vaginal o",
+      "expected_keywords": [
+        "orgasm",
+        "frequent",
+        "erection",
+        "libido",
+        "even"
+      ],
+      "category": "diagnosis",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_020_src"
+      ]
+    },
+    {
+      "id": "pubmed_022",
+      "query": "Follow-up of patients with new cardiovascular implantable electronic devices: are experts' recommendations implemented in routine clinical practice?",
+      "reference_answer": "Yes. Although most Medicare beneficiaries who received a new CIED between 2005 and 2009 did not have an initial in-person CIED follow-up visit within 2 to 12 weeks after device implantation, the rate of initial follow-up improved appreciably over time. This CIED follow-up visit was significantly more common in white patients than in patients of other races.",
+      "expected_keywords": [
+        "cied",
+        "follow-up",
+        "initial",
+        "visit",
+        "although",
+        "medicare"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_022_src"
+      ]
+    },
+    {
+      "id": "chatdoc_016",
+      "query": "Hi Doctor, My baby is suffering from cough and cold. Last two days he vomitted the mucus also couple of times...But he is taking food and all and not vomitting the same. I have consulted a doctor yday and he adviced for Zyrtec only. I am giving 9 drops for him...But since i noticed some kitch kitch ",
+      "reference_answer": "Your child is suffering from a respiratory tract infection which is likely to be caused by a virus. As he is trying to cough out the thick mucus, the gag is triggering a vomiting but not otherwise. Zyrtec (cetirizine) is an antiallergic which relieves the allergic component of such infections and should be given for a few days to relieve the khitch. Give him steam inhalation or nebulization if possible. The water in the form of vapor or fine particles will reach deep into the lungs and help in d",
+      "expected_keywords": [
+        "child",
+        "cough",
+        "given",
+        "give",
+        "nebulization"
+      ],
+      "category": "treatment",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_016_src"
+      ]
+    },
+    {
+      "id": "medqa_026",
+      "query": "A 22-year-old man from Nepal presents to the emergency department complaining of swelling and pain in his right testicle. The patient states that he just arrived in the United States to live with his wife, with whom he is monogamous. The patient denies painful urination or urethral discharge, but admits that 10 days ago he \u201cfelt like he had a fever\u201d and the right side of his face was swollen and painful. Which of the following is characteristic of the most likely diagnosis?",
+      "reference_answer": "Preventable by a live attenuated vaccine",
+      "expected_keywords": [
+        "preventable",
+        "live",
+        "attenuated",
+        "vaccine"
+      ],
+      "category": "diagnosis",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_026_src"
+      ]
+    },
+    {
+      "id": "pubmed_040",
+      "query": "Is diffusion-weighted imaging a significant indicator of the development of vascularization in hypovascular hepatocellular lesions?",
+      "reference_answer": "No. The signal intensity on DWI showed no significant difference in the development of vascularization.",
+      "expected_keywords": [
+        "signal",
+        "intensity",
+        "showed",
+        "significant",
+        "difference",
+        "development"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_040_src"
+      ]
+    },
+    {
+      "id": "chatdoc_011",
+      "query": "We have received the following semen analysis and are slightly confused by what we are reading online v what we have been told.  Can you advise if it is normal or if you think we may need asssistance as we have been trying for 18 months.  Appearance - NormalConsistancy - Abnormal Volume - 3.2 mlLiqu",
+      "reference_answer": "welcome to Chat Doctor.I have gone through your question. As semen analysis shows liquefaction time 1 hour is abnormal, motility is normal, morphology is below normal. Count 53 million/ml ? Then is normal (20 million/ml) should be at least. I would advise going for ultrasound color Doppler to see vascularity of testes and to rule out varicocele. Consult urologist with these reports. Hope I answered your question. Would be happy to help you further. Take care.",
+      "expected_keywords": [
+        "normal",
+        "your",
+        "question",
+        "million",
+        "welcome"
+      ],
+      "category": "clinical",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_011_src"
+      ]
+    },
+    {
+      "id": "chatdoc_006",
+      "query": "I lacerated my liver over 2 months ago, i was in the hospital for a week but did not need surgery. I followed my doctors orders and still have some discomfort. today is my 21st birthday and i want to have a beer, would that significantly slow my healing progress?",
+      "reference_answer": "I understand your concern about recovery. Single time consumption of beer has no effect on healing process of liver laceration. But you must be careful not to fall down under effect of alcohol as this is the bigger risk factor for not healing liver laceration. Alcohol consumption on regular basis is surely compromising liver function and over the time it may lead to end-stage of liver disease.",
+      "expected_keywords": [
+        "liver",
+        "time",
+        "consumption",
+        "effect",
+        "healing"
+      ],
+      "category": "clinical",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_006_src"
+      ]
+    },
+    {
+      "id": "pubmed_033",
+      "query": "Is transurethral catheterisation the ideal method of bladder drainage?",
+      "reference_answer": "No. Our study emphasised the discomfort of transurethral urinary catheters, especially in male patients, and the high incidence of urinary tract infections in both sexes. Consideration should be given to the utilisation of alternative methods of bladder drainage, such as suprapubic catheterisation, which can be performed with ease during laparotomy.",
+      "expected_keywords": [
+        "urinary",
+        "study",
+        "emphasised",
+        "discomfort",
+        "transurethral",
+        "catheters"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_033_src"
+      ]
+    },
+    {
+      "id": "medqa_030",
+      "query": "A lymph node biopsy shows granuloma formation and large CD15-positive, CD30-positive cells with bilobed nuclei. Which of the following is the most likely explanation for this patient's laboratory findings?",
+      "reference_answer": "Secretion of \u03b3-interferon by activated T-lymphocytes",
+      "expected_keywords": [
+        "secretion",
+        "interferon",
+        "activated",
+        "t-lymphocytes"
+      ],
+      "category": "treatment",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_030_src"
+      ]
+    },
+    {
+      "id": "medqa_028",
+      "query": "A fundoscopic examination shows small red dots in the superficial retinal layers suggestive of microaneurysms. The HbA1c is 9% and the urinalysis shows the following:\nColor Pale yellow (light/pale-to-dark/deep amber)\nClarity Cloudy\npH 6.6\nSpecific gravity 1.010\nGlucose 199 mg/dl\nKetones None\nNitrites Negative\nLeukocyte esterase Negative\nBilirubin Negative\nUrinary bilirubin Traces\nRed blood cells 3 RBCs\nProtein 120 mg/d\nRBCs \u2264 2 RBCs/hpf\nWBCs 22 WBCs/hpf\nEpithelial cells 27 squamous epithelial cells/hpf\nCasts 5 hyaline casts/lpf\nCrystals Occasional\nBacteria None\nYeast Present\nWhich of the following statements best describes the cause of this patient\u2019s glucosuria?",
+      "reference_answer": "Secondary active transporters fail to completely reabsorb glucose in the renal tubules",
+      "expected_keywords": [
+        "secondary",
+        "active",
+        "transporters",
+        "fail",
+        "completely",
+        "reabsorb"
+      ],
+      "category": "diagnosis",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_028_src"
+      ]
+    },
+    {
+      "id": "chatdoc_017",
+      "query": "Dear Dr. Matthew MintzI have a very sore tongue. It looks like blotches of raw tongue where it looks like the skin came off. It is constant and very painful with a large degree of burning. I also have little ulcers (white dots) which also are extremely sore. It hurts to eat anything with salt or som",
+      "reference_answer": "Welcome Thanks for consulting Chat Doctor, I have gone through your query, as you have mentioned that you have sore painful tongue, don't worry it can be due to National deficiency, or decapitation of papillae.  You do is take one capsule vitamin B complex supplement, twice daily for 5 days.  You can apply ointment McCoppin or colonel twice daily for 5\\u00a0days.  If then you won't get relief then go to dentist for examination and if necessary investigations.  Hope this will help you.",
+      "expected_keywords": [
+        "twice",
+        "daily",
+        "then",
+        "welcome",
+        "thanks"
+      ],
+      "category": "symptoms",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_017_src"
+      ]
+    },
+    {
+      "id": "chatdoc_023",
+      "query": "Hello! About a year ago I had pannik attack and the doctor prescribe Zoloft and Tafil. I did the treatment for 6 months and felt good. Now I feel like sometimes I can not swallow, I am eating less and I tray tio eat only soft food. am I having panik attacks again?",
+      "reference_answer": "and welcome to Chat Doctor, In your query you have not mentioned whether you are still continuing medication or not. I hope you eye on medications which can be tapered slowly before stopping with regular follow up from a qualified psychiatrist. Experiencing mild difficulty in swallowing once in a while do not appear to be a part of panic attack. Maintain good food, adequate HY Chat Doctor. So as far as I can see, there is nothing in you that you should be worried of. Hope I have answered your qu",
+      "expected_keywords": [
+        "chat",
+        "your",
+        "hope",
+        "welcome",
+        "query"
+      ],
+      "category": "treatment",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_023_src"
+      ]
+    },
+    {
+      "id": "medqa_005",
+      "query": "Conclusions:\nMepolizumab administered either intravenously or subcutaneously significantly reduced asthma exacerbations and was associated with improvements in markers of asthma control. Given the original research abstract above, which of the following would be true if the authors had inadvertently encountered a type 1 error?",
+      "reference_answer": "A type 1 error occurs when the null hypothesis is true but is rejected in error.",
+      "expected_keywords": [
+        "error",
+        "type",
+        "occurs",
+        "null",
+        "hypothesis",
+        "true"
+      ],
+      "category": "treatment",
+      "source": "MedQA-USMLE-step2&3",
+      "relevant_ids": [
+        "medqa_005_src"
+      ]
+    },
+    {
+      "id": "pubmed_023",
+      "query": "Fast foods - are they a risk factor for asthma?",
+      "reference_answer": "Yes. Frequent consumption of hamburgers showed a dose-dependent association with asthma symptoms, and frequent takeaway consumption showed a similar association with BHR.",
+      "expected_keywords": [
+        "frequent",
+        "consumption",
+        "showed",
+        "association",
+        "hamburgers",
+        "dose-dependent"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_023_src"
+      ]
+    },
+    {
+      "id": "chatdoc_004",
+      "query": "i start have pain my back last nite then i woke up this moring  i couldnt move it hurt so badly i would cry my arm hurts for while then my arm stop hurting now my boob on side my back is hurt and my back still hurting i cant move or lay down on stomach or side and now  im have pain in my chest i can",
+      "reference_answer": "I have studied your case. According to your symptoms this looks as acute lumbar muscle sprain in your lower back. Most probably due to bad posture or sudden jerk. Another differential diagnosis can be lumbar disc bulge leading to sudden onset of pain. Intervertebral disc compresses spinal cord and leads to lower back pain. When such patient comes to our hospital we usually do x-ray to rule out any nerve compression. MRI spine will show any disc bulge is there or not. And when muscle sprain is co",
+      "expected_keywords": [
+        "your",
+        "muscle",
+        "back",
+        "disc",
+        "answer"
+      ],
+      "category": "symptoms",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_004_src"
+      ]
+    },
+    {
+      "id": "medqa_012",
+      "query": "A chi-square test is performed to test the significance of the relationship, and an odds ratio of 2.1 was computed for the association between low education and the risk of MI, with a confidence interval of 0.9\u20139.7. What inference can be made on the association between young age MI and educational status from this study?",
+      "reference_answer": "The association is not statistically significant, and low education is not a risk factor.",
+      "expected_keywords": [
+        "association",
+        "statistically",
+        "significant",
+        "education",
+        "risk",
+        "factor"
+      ],
+      "category": "clinical",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_012_src"
+      ]
+    },
+    {
+      "id": "pubmed_038",
+      "query": "Do \"America's Best Hospitals\" perform better for acute myocardial infarction?",
+      "reference_answer": "Yes. Admission to a hospital ranked high on the list of \"America's Best Hospitals\" was associated with lower 30-day mortality among elderly patients with acute myocardial infarction. A substantial portion of the survival advantage may be associated with these hospitals' higher rates of use of aspirin and beta-blocker therapy.",
+      "expected_keywords": [
+        "hospitals",
+        "associated",
+        "admission",
+        "hospital",
+        "ranked",
+        "high"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_038_src"
+      ]
+    },
+    {
+      "id": "chatdoc_015",
+      "query": "I have a hard lump on my upper back and its been there for over 2 years with no pain and the only reason i know its there is my wife asked me about it one night and asked me what it was and if it hurt at all at the time no it did not hurt but i had a doctor look at it anyway they said it was nothing",
+      "reference_answer": "Dear,Thanks for your query to Chat Doctor. Studied your query in full depth of its details. Reviewed it in context of your health concerns. Based On the facts, You seem to suffer from-Lipoma on the Back with Drums Disease Type-A painful version of the Benign Lipoma.or/ it could be a -Sebaceous Cyst with Hematoma and infection-due to excessive handling lately. Or / could be due to Chronic burnt out-Boil with Abscess, increasing lately USG of the lump and FNAC Biopsy if need be, after Surgeons Sec",
+      "expected_keywords": [
+        "your",
+        "query",
+        "chat",
+        "back",
+        "lately"
+      ],
+      "category": "symptoms",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_015_src"
+      ]
+    },
+    {
+      "id": "medqa_014",
+      "query": "There are no other visible defects. Which of the following is the most appropriate next step in management?",
+      "reference_answer": "Wrap the intestines in a sterile bowel bag",
+      "expected_keywords": [
+        "wrap",
+        "intestines",
+        "sterile",
+        "bowel"
+      ],
+      "category": "treatment",
+      "source": "MedQA-USMLE-step2&3",
+      "relevant_ids": [
+        "medqa_014_src"
+      ]
+    },
+    {
+      "id": "medqa_018",
+      "query": "A 51-year-old woman was recently diagnosed with type II diabetes. Due to the cumulative effects of diabetes, various health screenings and vaccinations are routinely recommended. Which of the following vaccinations or screening measures are recommended in patients with diabetes?",
+      "reference_answer": "Comprehensive foot exam every year",
+      "expected_keywords": [
+        "comprehensive",
+        "foot",
+        "exam",
+        "every",
+        "year"
+      ],
+      "category": "diagnosis",
+      "source": "MedQA-USMLE-step2&3",
+      "relevant_ids": [
+        "medqa_018_src"
+      ]
+    },
+    {
+      "id": "medqa_029",
+      "query": "He has been sexually active in the past with multiple female partners. In addition to an influenza vaccine, which vaccine should be administered to this patient during this visit?",
+      "reference_answer": "Tetanus, diphtheria, and acellular pertussis booster (Tdap) vaccine",
+      "expected_keywords": [
+        "tetanus",
+        "diphtheria",
+        "acellular",
+        "pertussis",
+        "booster",
+        "tdap"
+      ],
+      "category": "treatment",
+      "source": "MedQA-USMLE-step2&3",
+      "relevant_ids": [
+        "medqa_029_src"
+      ]
+    },
+    {
+      "id": "medqa_032",
+      "query": "On anoscopy, a non-tender, dilated vascular protrusion is noted superior to the pectinate line. Which of the following is most likely true about this patient\u2019s current symptoms?",
+      "reference_answer": "The vascular protrusion drains into the superior rectal vein.",
+      "expected_keywords": [
+        "vascular",
+        "protrusion",
+        "drains",
+        "into",
+        "superior",
+        "rectal"
+      ],
+      "category": "diagnosis",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_032_src"
+      ]
+    },
+    {
+      "id": "pubmed_004",
+      "query": "Do older adults with cancer fall more often?",
+      "reference_answer": "Yes. The fall rate was higher in older adults with cancer than in older adults without cancer.",
+      "expected_keywords": [
+        "older",
+        "adults",
+        "cancer",
+        "fall",
+        "rate",
+        "higher"
+      ],
+      "category": "research",
+      "source": "PubMedQA",
+      "relevant_ids": [
+        "pubmed_004_src"
+      ]
+    },
+    {
+      "id": "medqa_004",
+      "query": "A 34-year-old woman presents to the plastic surgery office 3 months following a rhinoplasty procedure. The patient has been recovering well. However, she has noticed a small whistling noise when she respires through her nose, which you appreciate on physical exam. Which of the following is the most likely cause of this phenomenon?",
+      "reference_answer": "A septal hematoma causing a perforation",
+      "expected_keywords": [
+        "septal",
+        "hematoma",
+        "causing",
+        "perforation"
+      ],
+      "category": "diagnosis",
+      "source": "MedQA-USMLE-step2&3",
+      "relevant_ids": [
+        "medqa_004_src"
+      ]
+    },
+    {
+      "id": "medqa_015",
+      "query": "A photomicrograph of the resected specimen is shown. Further histopathological examination is most likely to show which of the following findings?",
+      "reference_answer": "Cells staining positive for CD15 and CD30",
+      "expected_keywords": [
+        "cells",
+        "staining",
+        "positive"
+      ],
+      "category": "diagnosis",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_015_src"
+      ]
+    },
+    {
+      "id": "chatdoc_010",
+      "query": "i sprained my ankle 5 weeks ago. I try to stay off it and my job is a sitting one. I also wear a wrap to secure the ankle and help with the swelling. I originally had an xray that showed no break and I iced it and kept off the foot for a week. However, the ankle swells quite a bit each day and if I ",
+      "reference_answer": "Thanks for writing to us, I have studied your case with diligence. As per your history and injury pattern there can be tear in ankle ligament leading to pain and swelling. Instability may increase due to laxity of ligament. I will advise doing MRI ankle for soft tissue involvement. Till time, you can continue use supportive splint or brace. Physiotherapy like ultrasound and TENS will help in early healing. Persistent pain after ankle injury is common and may take 6 months to heal. Hope this answ",
+      "expected_keywords": [
+        "your",
+        "ankle",
+        "writing",
+        "injury",
+        "ligament"
+      ],
+      "category": "symptoms",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_010_src"
+      ]
+    }
+  ]
+}

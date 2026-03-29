@@ -403,10 +403,13 @@ def get_pipeline(model_choice: str = "tinyllama"):
         backend = model_info.get("backend", "transformers")
         resolved_model_name = model_info.get("model_name") or model_choice
 
-        # Check for fine-tuned adapter
+        # For GGUF models pass the shorthand key — MedicalLLM._resolve_model_path handles it
+        llm_model_arg = model_choice if backend == "gguf" else resolved_model_name
+
+        # Check for fine-tuned adapter (transformers only)
         adapter_path = Path("models/fine_tuned/medical_adapter")
         llm_kwargs = {
-            "model_name": resolved_model_name,
+            "model_name": llm_model_arg,
             "load_in_4bit": model_info.get("load_in_4bit", False),
             "hf_token": os.getenv("HUGGINGFACE_TOKEN"),
         }
