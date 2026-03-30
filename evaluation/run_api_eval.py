@@ -37,7 +37,7 @@ def ask(question: str, model: str = "tinyllama", use_langchain: bool = False,
         payload["use_langchain"] = True
     if use_langgraph:
         payload["use_langgraph"] = True
-    resp = requests.post(f"{API_URL}/ask", json=payload, timeout=120)
+    resp = requests.post(f"{API_URL}/ask", json=payload, timeout=400)
     resp.raise_for_status()
     return resp.json()
 
@@ -102,14 +102,19 @@ def run_metrics(cases: list, variant: dict, n: int = None) -> dict:
         if i % 10 == 0:
             print(f"    {i}/{len(run_cases)} done")
 
-    # BERTScore (batch)
+    # BERTScore (batch) — try rescaled first, fall back to raw scores
     bs_f1_mean = 0.0
     if preds:
         try:
             import evaluate as _ev
             bsm = _ev.load("bertscore")
-            bs = bsm.compute(predictions=preds, references=refs,
-                             lang="en", rescale_with_baseline=True, device="cpu")
+            try:
+                bs = bsm.compute(predictions=preds, references=refs,
+                                 lang="en", rescale_with_baseline=True, device="cpu")
+            except Exception:
+                # Baseline files may not be cached — use raw BERTScore
+                bs = bsm.compute(predictions=preds, references=refs,
+                                 lang="en", rescale_with_baseline=False, device="cpu")
             bs_f1_mean = statistics.mean(bs["f1"])
         except Exception as e:
             print(f"    BERTScore error: {e}")

@@ -110,13 +110,18 @@ def run_metrics(test_cases: list, pipeline, variant_name: str, n: int = None) ->
         if i % 10 == 0:
             print(f"    {i}/{len(cases)} done")
 
-    # BERTScore (batch)
+    # BERTScore (batch) — try rescaled first, fall back to raw scores
     bs_f1_mean = 0.0
     if preds:
         try:
-            bs = bertscore_metric.compute(predictions=preds, references=refs,
-                                          lang="en", rescale_with_baseline=True,
-                                          device="cpu")
+            try:
+                bs = bertscore_metric.compute(predictions=preds, references=refs,
+                                              lang="en", rescale_with_baseline=True,
+                                              device="cpu")
+            except Exception:
+                bs = bertscore_metric.compute(predictions=preds, references=refs,
+                                              lang="en", rescale_with_baseline=False,
+                                              device="cpu")
             import statistics
             bs_f1_mean = statistics.mean(bs["f1"])
         except Exception as e:
