@@ -1,0 +1,44 @@
+[
+  {
+    "variant": "all_signals",
+    "n": 15,
+    "mean_confidence": 0.45,
+    "mean_kw_coverage": 0.4044,
+    "ece": 0.2417
+  },
+  {
+    "variant": "ablate_retrieval",
+    "n": 15,
+    "mean_confidence": 0.3781,
+    "mean_kw_coverage": 0.4044,
+    "ece": 0.2593
+  },
+  {
+    "variant": "ablate_generation",
+    "n": 15,
+    "mean_confidence": 0.3505,
+    "mean_kw_coverage": 0.4044,
+    "ece": 0.2438
+  },
+  {
+    "variant": "ablate_consistency",
+    "n": 15,
+    "mean_confidence": 0.4375,
+    "mean_kw_coverage": 0.4044,
+    "ece": 0.2272
+  },
+  {
+    "variant": "ablate_source_agr",
+    "n": 15,
+    "mean_confidence": 0.5425,
+    "mean_kw_coverage": 0.4044,
+    "ece": 0.2563
+  },
+  {
+    "variant": "ablate_entity_cov",
+    "n": 15,
+    "mean_confidence": 0.5413,
+    "mean_kw_coverage": 0.4044,
+    "ece": 0.2079
+  }
+]
