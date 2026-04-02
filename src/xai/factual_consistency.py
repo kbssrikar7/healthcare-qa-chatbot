@@ -174,7 +174,8 @@ class FactualConsistencyChecker:
             # Premise = context (what we know)
             # Hypothesis = claim (what we're checking)
             # Pass as dict to ensure tokenizer uses correct pair encoding
-            result = self.pipeline({"text": context[:1024], "text_pair": claim})[0]
+            raw = self.pipeline({"text": context[:1024], "text_pair": claim})
+            result = raw[0] if isinstance(raw, list) else raw
             label = result['label'].upper()
             score = result['score']
             
