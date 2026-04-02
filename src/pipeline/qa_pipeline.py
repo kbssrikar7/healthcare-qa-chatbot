@@ -383,7 +383,7 @@ class HealthcareQAPipeline:
                 factual_result = {
                     "is_consistent": fc.is_consistent if hasattr(fc, 'is_consistent') else True,
                     "score": fc.consistency_score if hasattr(fc, 'consistency_score') else 1.0,
-                    "details": fc.claim_results if hasattr(fc, 'claim_results') else [],
+                    "details": [vars(c) if hasattr(c, '__dict__') else c for c in fc.claim_results] if hasattr(fc, 'claim_results') else [],
                 }
             except Exception as e:
                 logger.warning(f" Factual consistency check failed: {e}")

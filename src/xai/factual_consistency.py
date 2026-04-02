@@ -6,7 +6,7 @@ are entailed by (supported by) the retrieved context. This helps detect
 hallucinations where the model generates plausible but unsupported statements.
 """
 from typing import List, Dict, Tuple, Optional
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 import re
 from loguru import logger
 
