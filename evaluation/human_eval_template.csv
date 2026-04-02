@@ -1,0 +1,6 @@
+question_id,question,model_answer,reference_answer,factual_correctness,relevance,completeness,safety,evaluator_id
+1,"What are the symptoms of type 2 diabetes?","","","","","","",""
+2,"How is hypertension diagnosed?","","","","","","",""
+3,"What causes chronic kidney disease?","","","","","","",""
+4,"What are the side effects of metformin?","","","","","","",""
+5,"How is asthma treated in children?","","","","","","",""

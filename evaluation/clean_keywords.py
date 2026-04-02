@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+"""Clean generic stop words from test_set_v2.json keywords."""
+import json
+
+STOP_WORDS = {"a","an","the","is","are","was","were","be","been","being","have","has","had","do","does","did","will","would","could","should","may","might","can","shall","must","and","but","or","nor","not","so","yet","in","on","at","to","for","of","with","by","from","as","into","through","during","before","after","above","below","between","under","over","it","its","this","that","these","those","i","me","my","we","our","you","your","he","she","they","his","her","their","them","us","what","which","who","whom","when","where","why","how","all","each","every","both","few","more","most","some","any","no","than","too","very","just","also","about","up","out","if","then","there","here","such","only","own","same","other","now","well","like","even","back","still","way","much","many","get","go","make","see","know","take","come","think","look","want","give","use","find","tell","ask","work","call","try","need","feel","become","leave","put","mean","keep","let","begin","seem","help","show","hear","play","run","move","live","believe","bring","happen","write","provide","sit","stand","lose","pay","meet","include","continue","set","learn","change","lead","chat","leading","cause","causes","causing","caused","common","often","usually","including","however","although","because","since","while","whether","though"}
+
+path = "/home/kbs/Documents/final_project/evaluation/test_set_v2.json"
+with open(path) as f:
+    data = json.load(f)
+
+cleaned = 0
+total_removed = 0
+for case in data["test_cases"]:
+    kws = case.get("expected_keywords", [])
+    orig = len(kws)
+    filtered = [k for k in kws if len(k.strip()) >= 3 and k.lower().strip() not in STOP_WORDS]
+    removed = orig - len(filtered)
+    if removed > 0:
+        cleaned += 1
+        total_removed += removed
+        case["expected_keywords"] = filtered
+
+print(f"Cleaned {cleaned} entries, removed {total_removed} generic keywords")
+too_few = sum(1 for c in data["test_cases"] if len(c.get("expected_keywords", [])) < 2)
+print(f"Entries with <2 keywords: {too_few}")
+
+with open(path, "w") as f:
+    json.dump(data, f, indent=2)
+print("Saved.")

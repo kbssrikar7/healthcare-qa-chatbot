@@ -52,11 +52,7 @@ def check_api() -> bool:
 
 
 # ── Metric helpers ───────────────────────────────────────────────────────────
-def keyword_coverage(answer: str, keywords: list) -> float:
-    if not keywords:
-        return 1.0
-    a = answer.lower()
-    return sum(1 for k in keywords if k.lower() in a) / len(keywords)
+from evaluation.eval_utils import keyword_coverage, is_correct, bootstrap_ci
 
 
 def rouge_l(hyp: str, ref: str) -> float:
@@ -111,13 +107,13 @@ def run_metrics(cases: list, variant: dict, n: int = None) -> dict:
             try:
                 bs = bsm.compute(predictions=preds, references=refs,
                                  lang="en", rescale_with_baseline=True, device="cpu")
-            except Exception:
-                # Baseline files may not be cached — use raw BERTScore
+            except Exception as baseline_err:
+                print(f"    BERTScore baseline not cached, using unscaled: {baseline_err}")
                 bs = bsm.compute(predictions=preds, references=refs,
                                  lang="en", rescale_with_baseline=False, device="cpu")
             bs_f1_mean = statistics.mean(bs["f1"])
         except Exception as e:
-            print(f"    BERTScore error: {e}")
+            print(f"    BERTScore error (scores will be 0): {e}")
 
     n_total = len(run_cases)
     return {
@@ -171,7 +167,7 @@ def run_calibration(cases: list, variant: dict, n: int = None) -> dict:
             r = ask(case["query"], model=variant.get("model", "tinyllama"))
             conf = r.get("confidence", {}).get("score", 0.5)
             kw = case.get("expected_keywords", [])
-            label = 1 if keyword_coverage(r.get("answer", ""), kw) >= 0.5 else 0
+            label = 1 if is_correct(keyword_coverage(r.get("answer", ""), kw)) else 0
             confidences.append(conf)
             labels.append(label)
         except Exception:

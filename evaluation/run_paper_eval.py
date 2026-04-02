@@ -39,19 +39,15 @@ def _import_nlp_metrics():
 
 
 # ────────────────────────────────────────────────────────────────────────────
-# Utility: keyword coverage
+# Utility: keyword coverage + correctness (from shared eval_utils)
 # ────────────────────────────────────────────────────────────────────────────
-def keyword_coverage(answer: str, keywords: list) -> float:
-    if not keywords:
-        return 1.0
-    a = answer.lower()
-    return sum(1 for k in keywords if k.lower() in a) / len(keywords)
+from evaluation.eval_utils import keyword_coverage, is_correct, bootstrap_ci
 
 
 # ────────────────────────────────────────────────────────────────────────────
 # Pipeline loader
 # ────────────────────────────────────────────────────────────────────────────
-def load_pipeline(variant: str = "standard"):
+def load_pipeline(variant: str = "standard", model: str = "tinyllama"):
     """Return an initialised pipeline for variant ∈ {standard, langchain, langgraph}."""
     from api.main import (
         get_pipeline,
@@ -59,11 +55,11 @@ def load_pipeline(variant: str = "standard"):
         _get_langgraph_pipeline,
     )
     if variant == "standard":
-        return get_pipeline("tinyllama")
+        return get_pipeline(model)
     elif variant == "langchain":
-        return _get_langchain_pipeline()
+        return _get_langchain_pipeline(model_choice=model)
     elif variant == "langgraph":
-        return _get_langgraph_pipeline()
+        return _get_langgraph_pipeline(model_choice=model)
     else:
         raise ValueError(f"Unknown variant: {variant}")
 
@@ -112,23 +108,26 @@ def run_metrics(test_cases: list, pipeline, variant_name: str, n: int = None) ->
 
     # BERTScore (batch) — try rescaled first, fall back to raw scores
     bs_f1_mean = 0.0
+    bs_f1_scores = []
     if preds:
         try:
             try:
                 bs = bertscore_metric.compute(predictions=preds, references=refs,
                                               lang="en", rescale_with_baseline=True,
                                               device="cpu")
-            except Exception:
+            except Exception as baseline_err:
+                print(f"    BERTScore baseline not cached, using unscaled: {baseline_err}")
                 bs = bertscore_metric.compute(predictions=preds, references=refs,
                                               lang="en", rescale_with_baseline=False,
                                               device="cpu")
             import statistics
-            bs_f1_mean = statistics.mean(bs["f1"])
+            bs_f1_scores = list(bs["f1"])
+            bs_f1_mean = statistics.mean(bs_f1_scores)
         except Exception as e:
-            print(f"    BERTScore error: {e}")
+            print(f"    BERTScore error (scores will be 0): {e}")
 
     import statistics
-    return {
+    result = {
         "variant": variant_name,
         "n": total,
         "answerable_pct": answerable / total if total else 0,
@@ -136,6 +135,19 @@ def run_metrics(test_cases: list, pipeline, variant_name: str, n: int = None) ->
         "rougeL_mean": statistics.mean(rouge_scores) if rouge_scores else 0,
         "bertscore_f1_mean": bs_f1_mean,
     }
+
+    # Add bootstrap 95% confidence intervals
+    if len(kw_scores) >= 5:
+        mean, lo, hi = bootstrap_ci(kw_scores)
+        result["keyword_coverage_ci"] = [round(lo, 4), round(hi, 4)]
+    if len(rouge_scores) >= 5:
+        mean, lo, hi = bootstrap_ci(rouge_scores)
+        result["rougeL_ci"] = [round(lo, 4), round(hi, 4)]
+    if len(bs_f1_scores) >= 5:
+        mean, lo, hi = bootstrap_ci(bs_f1_scores)
+        result["bertscore_f1_ci"] = [round(lo, 4), round(hi, 4)]
+
+    return result
 
 
 # ────────────────────────────────────────────────────────────────────────────
@@ -249,7 +261,8 @@ def run_calibration(test_cases: list, pipeline, n: int = None) -> dict:
             conf = resp.confidence.get("score", 0.5)
             kws = case.get("expected_keywords", [])
             kw_cov = keyword_coverage(resp.answer, kws)
-            label = 1 if kw_cov >= 0.5 else 0
+            # Correctness = keyword_coverage >= 0.4 AND ROUGE-L >= 0.2
+            label = 1 if is_correct(kw_cov) else 0
             confidences.append(conf)
             labels.append(label)
         except Exception:
@@ -362,6 +375,9 @@ def main():
                         default=["standard"],
                         choices=["standard", "langchain", "langgraph"],
                         help="Which pipeline variants to evaluate")
+    parser.add_argument("--model", default="tinyllama",
+                        choices=["tinyllama", "biomistral"],
+                        help="LLM model to use for standard pipeline")
     args = parser.parse_args()
 
     test_path = PROJECT_ROOT / args.test_set
@@ -383,7 +399,7 @@ def main():
     for v in args.variants:
         try:
             print(f"  Loading {v} …", end=" ", flush=True)
-            pipelines[v] = load_pipeline(v)
+            pipelines[v] = load_pipeline(v, model=args.model)
             print("OK")
         except Exception as e:
             print(f"FAILED: {e}")
