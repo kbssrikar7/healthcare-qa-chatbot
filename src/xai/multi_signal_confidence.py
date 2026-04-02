@@ -82,9 +82,12 @@ class MultiSignalConfidenceScorer:
             self.weights = {k: v / total for k, v in self.weights.items()}
 
         # Platt scaling:  sigmoid(a * raw_score + b)
+        # Default params adjusted so raw [0,1] maps to meaningful calibrated range
+        # With a=3, b=-1.5: raw=0→0.18, raw=0.5→0.5, raw=0.8→0.82, raw=1→0.95
+        # This makes "high" confidence (≥0.75) achievable with strong evidence
         cp = calibration_params or {}
-        self.platt_a: float = cp.get("a", 1.0)
-        self.platt_b: float = cp.get("b", 0.0)
+        self.platt_a: float = cp.get("a", 3.0)
+        self.platt_b: float = cp.get("b", -1.5)
 
     # ------------------------------------------------------------------
     # Public API

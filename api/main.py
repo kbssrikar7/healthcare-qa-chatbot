@@ -23,14 +23,37 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 os.environ.setdefault("HF_HUB_OFFLINE", "1")
 os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Depends, Security
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, Field
 from typing import List, Dict, Optional, Any
 import uvicorn
 
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
 from config.settings import AVAILABLE_MODELS
+
+# ── Rate limiter ─────────────────────────────────────────────────────────────
+
+limiter = Limiter(key_func=get_remote_address)
+
+# ── API key auth ─────────────────────────────────────────────────────────────
+
+_API_KEY = os.getenv("API_KEY", "")
+_api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+
+async def verify_api_key(api_key: str = Security(_api_key_header)):
+    """Verify API key. If API_KEY env var is unset, auth is disabled (dev mode)."""
+    if not _API_KEY:
+        return  # No key configured — open access (dev)
+    if api_key != _API_KEY:
+        raise HTTPException(status_code=401, detail="Invalid or missing API key")
+
 
 # ── App setup ────────────────────────────────────────────────────────────────
 
@@ -49,6 +72,12 @@ app = FastAPI(
 
 # Record startup time
 app.state.start_time = time.time()
+app.state.limiter = limiter
+
+
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    return JSONResponse(status_code=429, content={"detail": "Rate limit exceeded — please slow down."})
 
 # CORS
 cors_origins_env = os.getenv("CORS_ORIGINS", "*")
@@ -736,10 +765,10 @@ async def _prepare_and_execute_pipeline(request: QuestionRequest, start_ts: floa
 
     if request.use_langgraph:
         pipeline_name = "LangGraph"
-        qa_pipeline = _get_langgraph_pipeline()
+        qa_pipeline = _get_langgraph_pipeline(model_choice)
     elif request.use_langchain:
         pipeline_name = "LangChain"
-        qa_pipeline = _get_langchain_pipeline()
+        qa_pipeline = _get_langchain_pipeline(model_choice)
     else:
         qa_pipeline = get_pipeline(model_choice=model_choice)
 
@@ -790,6 +819,12 @@ async def _prepare_and_execute_pipeline(request: QuestionRequest, start_ts: floa
         output_check = guardrails.check_output(response.answer)
         if output_check.flags:
             safety_info.flags.extend(output_check.flags)
+        
+        # If output is blocked, return redirect message instead of raw answer
+        if not output_check.passed:
+            response.answer = output_check.redirect_message or "I cannot provide that information. Please consult a healthcare professional."
+            response.confidence = {"score": 0.0, "level": "blocked", "explanation": output_check.message}
+            safety_info.level = output_check.level
 
     if drug_checker:
         warnings = drug_checker.check_interaction_risk(response.answer)
@@ -897,8 +932,10 @@ async def _prepare_and_execute_pipeline(request: QuestionRequest, start_ts: floa
     return answer_response
 
 
-@app.post("/ask", response_model=AnswerResponse, tags=["QA"])
-async def ask_question(request: QuestionRequest):
+@app.post("/ask", response_model=AnswerResponse, tags=["QA"],
+          dependencies=[Depends(verify_api_key)])
+@limiter.limit("60/minute")
+async def ask_question(http_request: Request, request: QuestionRequest):
     """
     Ask a medical question and get an explainable answer.
 
@@ -1060,10 +1097,15 @@ async def clear_cache():
 
 # ── Alternative pipeline loaders ─────────────────────────────────────────────
 
-def _get_langchain_pipeline():
-    """Lazy load LangChain pipeline."""
-    if "langchain" in pipelines:
-        return pipelines["langchain"]
+def _get_langchain_pipeline(model_choice: str = "tinyllama"):
+    """Lazy load LangChain pipeline with specified model.
+    
+    Args:
+        model_choice: Model to use (tinyllama or biomistral)
+    """
+    cache_key = f"langchain_{model_choice}"
+    if cache_key in pipelines:
+        return pipelines[cache_key]
     try:
         shared = _get_shared_components()
         if not shared:
@@ -1074,7 +1116,7 @@ def _get_langchain_pipeline():
         adapter_path = Path("models/fine_tuned/medical_adapter")
         import torch as _torch
         llm = MedicalLLM(
-            model_name="tinyllama",
+            model_name=model_choice,  # Use requested model instead of hardcoded tinyllama
             adapter_path=str(adapter_path) if adapter_path.exists() else None,
             load_in_4bit=adapter_path.exists() and _torch.cuda.is_available(),
         )
@@ -1084,18 +1126,23 @@ def _get_langchain_pipeline():
             confidence_scorer=shared["confidence_scorer"],
             source_attributor=shared["source_attributor"],
         )
-        pipelines["langchain"] = pipeline
-        logger.info(" LangChain pipeline loaded")
+        pipelines[cache_key] = pipeline
+        logger.info(f" LangChain pipeline loaded with {model_choice}")
         return pipeline
     except Exception as e:
         logger.error(f" Failed to load LangChain pipeline: {e}")
         return None
 
 
-def _get_langgraph_pipeline():
-    """Lazy load LangGraph pipeline."""
-    if "langgraph" in pipelines:
-        return pipelines["langgraph"]
+def _get_langgraph_pipeline(model_choice: str = "tinyllama"):
+    """Lazy load LangGraph pipeline with specified model.
+    
+    Args:
+        model_choice: Model to use (tinyllama or biomistral)
+    """
+    cache_key = f"langgraph_{model_choice}"
+    if cache_key in pipelines:
+        return pipelines[cache_key]
     try:
         shared = _get_shared_components()
         if not shared:
@@ -1106,7 +1153,7 @@ def _get_langgraph_pipeline():
         adapter_path = Path("models/fine_tuned/medical_adapter")
         import torch as _torch
         llm = MedicalLLM(
-            model_name="tinyllama",
+            model_name=model_choice,  # Use requested model instead of hardcoded tinyllama
             adapter_path=str(adapter_path) if adapter_path.exists() else None,
             load_in_4bit=adapter_path.exists() and _torch.cuda.is_available(),
         )
@@ -1116,8 +1163,8 @@ def _get_langgraph_pipeline():
             confidence_scorer=shared["confidence_scorer"],
             source_attributor=shared["source_attributor"],
         )
-        pipelines["langgraph"] = pipeline
-        logger.info(" LangGraph pipeline loaded")
+        pipelines[cache_key] = pipeline
+        logger.info(f" LangGraph pipeline loaded with {model_choice}")
         return pipeline
     except Exception as e:
         logger.error(f" Failed to load LangGraph pipeline: {e}")
@@ -1127,7 +1174,17 @@ def _get_langgraph_pipeline():
 # ── Startup ──────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    # Pre-load default pipeline + guardrails
+    # Pre-load shared components and default pipeline
+    shared = _get_shared_components()
+
+    # Pre-initialize BM25 index to avoid first-query delay
+    if shared and "retriever" in shared:
+        retriever = shared["retriever"]
+        if hasattr(retriever, "initialize"):
+            logger.info("Pre-initializing BM25 index...")
+            retriever.initialize()
+            logger.info("BM25 index ready")
+
     get_pipeline("tinyllama")
     _init_guardrails()
     _init_conversation_manager()

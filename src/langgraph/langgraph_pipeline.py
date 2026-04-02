@@ -273,13 +273,16 @@ class LangGraphHealthcareQAPipeline:
             QAResponse compatible with existing API
         """
         original_k = self.k
+        original_nodes_k = self.nodes.k
         if num_documents is not None:
             self.k = num_documents
+            self.nodes.k = num_documents  # Propagate to nodes
         try:
             result = self.invoke(question)
             return self.to_qa_response(result)
         finally:
             self.k = original_k
+            self.nodes.k = original_nodes_k  # Restore nodes k
     
     def get_graph_visualization(self) -> str:
         """

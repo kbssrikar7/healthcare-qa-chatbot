@@ -125,7 +125,7 @@ class HybridRetriever:
 
         for i, doc in enumerate(corpus):
             content = doc.get("content", "")
-            tokenized_corpus.append(content.lower().split())
+            tokenized_corpus.append(self._medical_tokenize(content))
             doc_id = doc.get("id", _stable_doc_id(content, doc.get("source", "")))
             self.corpus_map[doc_id] = i
 
@@ -186,6 +186,20 @@ class HybridRetriever:
         except Exception as e:
             logger.warning(f" BM25 lazy-init failed: {e}")
 
+    def initialize(self) -> None:
+        """Pre-initialize BM25 index. Call at startup to avoid first-query delay."""
+        self._lazy_init_bm25_from_store()
+
+    @staticmethod
+    def _medical_tokenize(text: str) -> list:
+        """Tokenize text for BM25, handling medical terms and punctuation."""
+        import re
+        text = text.lower()
+        # Keep hyphens in compounds (e.g. "non-insulin") but remove other punctuation
+        text = re.sub(r'[^\w\s\-]', ' ', text)
+        tokens = text.split()
+        return [t for t in tokens if len(t) >= 2]
+
     def _dense_retrieve(self, query: str, k: int) -> List[Tuple[str, float, Dict, str]]:
         """
         Perform dense vector retrieval.
@@ -224,7 +238,7 @@ class HybridRetriever:
         if self.bm25 is None or self.corpus is None:
             return []
 
-        tokenized_query = query.lower().split()
+        tokenized_query = self._medical_tokenize(query)
         scores = self.bm25.get_scores(tokenized_query)
 
         top_indices = np.argsort(scores)[::-1][:k]

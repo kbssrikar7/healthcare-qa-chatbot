@@ -55,7 +55,7 @@ class EmbeddingConfig:
     model_name_article: str = "ncbi/MedCPT-Article-Encoder"
     dimension: int = 768
     batch_size: int = 32
-    device: str = "cuda" if os.getenv("USE_GPU", "true").lower() == "true" else "cpu"
+    device: str = "cuda" if os.getenv("USE_GPU", "true").lower() in ("true", "1", "yes") else "cpu"
     cache_dir: str = str(DATA_DIR / "embeddings")
 
 @dataclass

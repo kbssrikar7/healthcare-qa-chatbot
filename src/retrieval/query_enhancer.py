@@ -63,16 +63,32 @@ class QueryEnhancer:
         self.enable_llm_expansion = enable_llm_expansion and llm is not None
         self.max_expansions = max_expansions
     
+    @staticmethod
+    def _sanitize_query(query: str) -> str:
+        """Remove potential prompt injection patterns from user query."""
+        import re
+        injection_patterns = [
+            r"ignore\s+(previous|above|all)\s+instructions",
+            r"disregard\s+(previous|above|all)",
+            r"you\s+are\s+now\s+",
+            r"system\s*:\s*",
+        ]
+        sanitized = query
+        for pattern in injection_patterns:
+            sanitized = re.sub(pattern, "", sanitized, flags=re.IGNORECASE)
+        return sanitized.strip()
+
     def enhance(self, query: str) -> EnhancedQuery:
         """
         Enhance a query with multiple formulations.
-        
+
         Args:
             query: Original user query
-            
+
         Returns:
             EnhancedQuery with original and expanded queries
         """
+        query = self._sanitize_query(query)
         expansions = []
         
         # 1. Medical abbreviation expansion
@@ -240,8 +256,8 @@ Return only the questions, one per line:"""
                 sub_queries = [line.strip() for line in lines if line.strip()]
                 if len(sub_queries) > 1:
                     return sub_queries[:3]  # Max 3 sub-queries
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Query decomposition failed: {e}")
         
         # Return original if no decomposition possible
         return [query]

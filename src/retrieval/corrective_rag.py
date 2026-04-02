@@ -28,9 +28,10 @@ class CorrectiveRAG:
     - Supports multiple retrieval strategies
     """
     
-    # Relevance thresholds
-    HIGH_RELEVANCE_THRESHOLD = 0.7
-    LOW_RELEVANCE_THRESHOLD = 0.3
+    # Relevance thresholds calibrated for RRF-scale scores (~0.01-0.04)
+    # RRF combines dense + sparse retrieval; typical top scores: 0.016-0.040
+    HIGH_RELEVANCE_THRESHOLD = 0.025  # Strong RRF fusion score
+    LOW_RELEVANCE_THRESHOLD = 0.012   # Minimum acceptable RRF score
     
     def __init__(
         self,
@@ -174,8 +175,8 @@ Return only the refined query, nothing else."""
             try:
                 response = self.llm.generate(prompt, max_new_tokens=50)
                 return response.response.strip()
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"LLM-based query reformulation failed: {e}")
         
         # Fallback: extract key terms from partially relevant docs
         relevant_docs = [

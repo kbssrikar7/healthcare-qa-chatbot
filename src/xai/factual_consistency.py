@@ -170,12 +170,11 @@ class FactualConsistencyChecker:
             return self._fallback_check(claim, context)
         
         try:
-            # NLI format: premise [SEP] hypothesis
+            # NLI format: Use proper pair encoding for MNLI models
             # Premise = context (what we know)
             # Hypothesis = claim (what we're checking)
-            input_text = f"{context[:1024]} [SEP] {claim}"
-            
-            result = self.pipeline(input_text)[0]
+            # Pass as dict to ensure tokenizer uses correct pair encoding
+            result = self.pipeline({"text": context[:1024], "text_pair": claim})[0]
             label = result['label'].upper()
             score = result['score']
             

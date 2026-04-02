@@ -158,6 +158,8 @@ This chatbot cannot provide emergency medical assistance.
     
     def check_output(self, text: str) -> SafetyCheckResult:
         """Check generated output for dangerous content."""
+        # Normalize text to prevent Unicode bypass attacks (same as check_input)
+        text = self._normalize_text(text)
         text_lower = text.lower()
         flags = []
         
@@ -170,7 +172,7 @@ This chatbot cannot provide emergency medical assistance.
         # Check for diagnosis-like statements
         if self.enable_diagnosis_prevention:
             diagnosis_patterns = [
-                r"you\s+have\s+\w+",
+                r"you\s+have\s+(?!options|several|many|a\s+few|the\s+|some\s+|to\s+|been\s+asked|been\s+referred)\w+",
                 r"this\s+is\s+(definitely|clearly)\s+\w+",
                 r"my\s+diagnosis\s+is"
             ]

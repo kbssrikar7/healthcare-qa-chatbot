@@ -187,8 +187,13 @@ class HealthcareQAPipeline:
             template_name: Prompt template name.
             conversation_context: Optional previous conversation context for follow-ups.
         """
-        # Build dynamic context key for cache (combining static pipeline info + per-request flags)
-        dynamic_context_key = f"{self.cache_context_key}_srcs{num_documents}_expl{include_explanation}_{template_name}"
+        # Build dynamic context key for cache (combining static pipeline info + per-request flags + conversation context)
+        # Include conversation context to prevent stale answers across sessions
+        context_hash = ""
+        if conversation_context:
+            import hashlib
+            context_hash = "_ctx" + hashlib.md5(conversation_context.encode()).hexdigest()[:8]
+        dynamic_context_key = f"{self.cache_context_key}_srcs{num_documents}_expl{include_explanation}_{template_name}{context_hash}"
 
         # Latency tracking dict (wall-clock milliseconds per stage)
         _t = {}

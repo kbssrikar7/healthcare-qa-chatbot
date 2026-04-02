@@ -10,6 +10,7 @@ from typing import Any, Optional, Dict
 from functools import lru_cache
 from pathlib import Path
 import json
+from loguru import logger
 
 
 class CacheManager:
@@ -85,9 +86,9 @@ class CacheManager:
                 else:
                     # Expired
                     cache_file.unlink()
-            except Exception:
-                pass
-        
+            except Exception as e:
+                logger.warning(f"Cache read failed for {cache_file}: {e}")
+
         return None
     
     def cache_response(self, query: str, response: Dict, context_key: str = "") -> None:
@@ -122,8 +123,8 @@ class CacheManager:
         try:
             with open(cache_file, 'w') as f:
                 json.dump(entry, f)
-        except Exception:
-            pass  # Fail silently for cache writes
+        except Exception as e:
+            logger.warning(f"Cache write failed for {cache_file}: {e}")
     
     def get_cached_embedding(self, text: str) -> Optional[Any]:
         """
@@ -165,8 +166,8 @@ class CacheManager:
         for cache_file in self.cache_dir.glob("qa_*.json"):
             try:
                 cache_file.unlink()
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to delete cache file {cache_file}: {e}")
     
     def get_cache_stats(self) -> Dict:
         """Get cache statistics."""

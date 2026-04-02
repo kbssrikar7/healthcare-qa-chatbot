@@ -110,8 +110,8 @@ class MedicalLLM:
             try:
                 from config.settings import AVAILABLE_MODELS
                 return AVAILABLE_MODELS["biomistral"]["model_name"]
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Could not resolve biomistral model path from config: {e}")
         if model_name in self.SUPPORTED_MODELS and self.SUPPORTED_MODELS[model_name]:
             return self.SUPPORTED_MODELS[model_name]
         return model_name
@@ -331,12 +331,16 @@ class MedicalLLM:
         response = self.tokenizer.decode(generated_ids, skip_special_tokens=True)
 
         probabilities = None
-        if return_probabilities and hasattr(outputs, "scores"):
-            probs = []
-            for score in outputs.scores:
-                prob = torch.softmax(score[0], dim=-1)
-                probs.append(prob.max().item())
-            probabilities = probs
+        if return_probabilities and hasattr(outputs, "scores") and outputs.scores:
+            import math
+            log_probs = []
+            for i, score in enumerate(outputs.scores):
+                probs = torch.softmax(score[0], dim=-1)
+                token_id = generated_ids[i].item()
+                log_probs.append(torch.log(probs[token_id] + 1e-10).item())
+            if log_probs:
+                mean_log_prob = sum(log_probs) / len(log_probs)
+                probabilities = [math.exp(mean_log_prob)]
 
         response = self._clean_response(response)
 

@@ -38,11 +38,8 @@ def route_after_grading(state: HealthcareRAGState) -> Literal["generate", "refin
     if retry_count < MAX_RETRY_COUNT:
         return "refine"
     
-    # Exhausted retries, try to generate with what we have
-    # if we have at least one document
-    if len(documents) >= 1:
-        return "generate"
-    
+    # Exhausted retries and question not answerable
+    # For medical QA, respect the grounding gate - don't generate if not answerable
     return "unanswerable"
 
 

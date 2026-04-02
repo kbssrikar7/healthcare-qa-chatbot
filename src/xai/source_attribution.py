@@ -90,7 +90,8 @@ class SourceAttributor:
         """
         # Protect common medical abbreviations from sentence splitting
         protected = text
-        abbrevs = [
+        # (pattern, placeholder) pairs — placeholders must not contain periods
+        abbrev_protections = [
             (r'\bDr\.', 'DR_ABBR'),
             (r'\bMr\.', 'MR_ABBR'),
             (r'\bMs\.', 'MS_ABBR'),
@@ -98,23 +99,35 @@ class SourceAttributor:
             (r'\bi\.e\.', 'IE_ABBR'),
             (r'\be\.g\.', 'EG_ABBR'),
             (r'\betc\.', 'ETC_ABBR'),
-            (r'(\d+)\s*mg\.', r'\1_MG_ABBR'),
-            (r'(\d+)\s*ml\.', r'\1_ML_ABBR'),
+            (r'(\d+)\s*mg\.', r'\1 MG_ABBR'),
+            (r'(\d+)\s*ml\.', r'\1 ML_ABBR'),
         ]
         
-        for pattern, replacement in abbrevs:
+        for pattern, replacement in abbrev_protections:
             protected = re.sub(pattern, replacement, protected, flags=re.IGNORECASE)
         
         # Split by sentences
         sentences = re.split(r'(?<=[.!?])\s+', protected)
         
         # Restore abbreviations and filter
+        # (placeholder, restored_text) pairs
+        restore_map = [
+            ('DR_ABBR', 'Dr.'),
+            ('MR_ABBR', 'Mr.'),
+            ('MS_ABBR', 'Ms.'),
+            ('VS_ABBR', 'vs.'),
+            ('IE_ABBR', 'i.e.'),
+            ('EG_ABBR', 'e.g.'),
+            ('ETC_ABBR', 'etc.'),
+            ('MG_ABBR', 'mg.'),
+            ('ML_ABBR', 'ml.'),
+        ]
+        
         claims = []
         for sent in sentences:
-            # Restore abbreviations
             restored = sent
-            for pattern, replacement in abbrevs:
-                restored = restored.replace(replacement.replace(r'\1', ''), pattern.replace(r'\b', '').replace('\\', ''))
+            for placeholder, original in restore_map:
+                restored = restored.replace(placeholder, original)
             
             restored = restored.strip()
             if self._is_factual_claim(restored):

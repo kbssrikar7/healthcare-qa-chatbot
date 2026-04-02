@@ -178,7 +178,9 @@ class LangChainHealthcareQAPipeline:
         return chain
 
     def _retrieve_documents(self, question: str) -> Dict[str, Any]:
-        """Retrieve relevant documents."""
+        """Retrieve relevant documents using current k setting."""
+        # Update the retriever's k to match pipeline's current k
+        self.lc_retriever.k = self.k
         docs = self.lc_retriever.invoke(question)
         return {"question": question, "documents": docs}
 
