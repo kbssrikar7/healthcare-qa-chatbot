@@ -10,7 +10,19 @@ from typing import Any, Optional, Dict
 from functools import lru_cache
 from pathlib import Path
 import json
+import dataclasses
 from loguru import logger
+
+
+class _SafeEncoder(json.JSONEncoder):
+    """JSON encoder that handles dataclasses and other non-serializable objects."""
+    def default(self, obj):
+        if dataclasses.is_dataclass(obj) and not isinstance(obj, type):
+            return dataclasses.asdict(obj)
+        try:
+            return super().default(obj)
+        except TypeError:
+            return str(obj)
 
 
 class CacheManager:
@@ -122,7 +134,7 @@ class CacheManager:
         cache_file = self.cache_dir / f"qa_{key}.json"
         try:
             with open(cache_file, 'w') as f:
-                json.dump(entry, f)
+                json.dump(entry, f, cls=_SafeEncoder)
         except Exception as e:
             logger.warning(f"Cache write failed for {cache_file}: {e}")
     
