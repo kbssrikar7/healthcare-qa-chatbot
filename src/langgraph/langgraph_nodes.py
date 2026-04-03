@@ -30,6 +30,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from langchain_core.documents import Document
+from loguru import logger
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
@@ -209,7 +210,8 @@ class HealthcareRAGNodes:
             from config.settings import config as _cfg
 
             _pipeline = getattr(_cfg, "pipeline", None)
-        except Exception:
+        except Exception as e:
+            logger.warning(f"Failed to load pipeline config from settings: {e}")
             _pipeline = None
 
         self.min_relevance_score: float = (
@@ -395,7 +397,8 @@ class HealthcareRAGNodes:
                 # Accept only if it's actually different and non-empty
                 if candidate and candidate.lower() != original_query.lower():
                     refined_query = candidate
-            except Exception:
+            except Exception as e:
+                logger.warning(f"Failed to refine query using LLM: {e}")
                 pass
 
         # --- Strategy 2: keyword extraction from partially-relevant docs ---
@@ -724,7 +727,8 @@ class HealthcareRAGNodes:
                     "level": conf.level,
                     "explanation": conf.explanation,
                 }
-            except Exception:
+            except Exception as e:
+                logger.warning(f"Confidence scoring failed, using default: {e}")
                 result["confidence"] = {
                     "score": 0.7,
                     "level": "medium",
@@ -762,7 +766,8 @@ class HealthcareRAGNodes:
                     }
                     for a in attrs
                 ]
-            except Exception:
+            except Exception as e:
+                logger.warning(f"Source attribution failed, returning empty list: {e}")
                 result["attributions"] = []
         else:
             result["attributions"] = []
@@ -788,7 +793,8 @@ class HealthcareRAGNodes:
                     answer=answer,
                     context=context,
                 )
-            except Exception:
+            except Exception as e:
+                logger.warning(f"Rationale generation failed, skipping: {e}")
                 result["rationale"] = None
         else:
             result["rationale"] = None

@@ -172,7 +172,8 @@ Return only the alternative questions, one per line, without numbering."""
             lines = response.response.strip().split('\n')
             expansions = [line.strip() for line in lines if line.strip()]
             return expansions[:self.max_expansions]
-        except Exception:
+        except Exception as e:
+            logger.warning(f"LLM query expansion failed: {e}")
             return []
     
     def generate_hypothetical_answer(self, query: str) -> Optional[str]:
@@ -194,7 +195,8 @@ Answer (2-3 sentences):"""
         try:
             response = self.llm.generate(prompt, max_new_tokens=100)
             return response.response.strip()
-        except Exception:
+        except Exception as e:
+            logger.warning(f"HyDE hypothetical answer generation failed: {e}")
             return None
     
     def decompose_query(self, query: str) -> List[str]:

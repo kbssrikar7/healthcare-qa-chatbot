@@ -330,7 +330,8 @@ Respond with only a number between 0 and 1."""
             response = self.llm_judge.generate(prompt, max_new_tokens=10)
             score = float(response.response.strip())
             return max(0.0, min(1.0, score))
-        except Exception:
+        except Exception as e:
+            logger.warning(f"LLM judge scoring failed: {e}")
             return 0.5  # Default fallback
     
     def print_summary(

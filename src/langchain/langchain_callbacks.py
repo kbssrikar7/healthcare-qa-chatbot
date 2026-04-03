@@ -294,7 +294,8 @@ class MetricsAggregator:
                     elif event == "retrieval_complete":
                         retrieval_counts.append(data.get("num_documents", 0))
                         
-                except Exception:
+                except Exception as e:
+                    logger.warning(f"Failed to parse log entry during analytics aggregation: {e}")
                     continue
         
         return {

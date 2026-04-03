@@ -1,0 +1,22 @@
+{
+  "variant": "dense_only",
+  "n": 97,
+  "answerable_pct": 1.0,
+  "keyword_coverage_mean": 0.4189,
+  "keyword_coverage_ci_95": [
+    0.3501,
+    0.4938
+  ],
+  "rougeL_mean": 0.2335,
+  "rougeL_ci_95": [
+    0.1919,
+    0.2779
+  ],
+  "bertscore_f1_mean": 0.1836,
+  "bertscore_ci_95": [
+    0.1243,
+    0.2417
+  ],
+  "latency_mean_ms": 35604.6,
+  "latency_p90_ms": 56630.9
+}

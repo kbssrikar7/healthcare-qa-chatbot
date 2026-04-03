@@ -9,6 +9,7 @@ Builds a self-correcting RAG graph using StateGraph with:
 """
 from typing import Optional, Any
 from dataclasses import dataclass
+from loguru import logger
 from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
 from langchain_core.documents import Document
@@ -290,7 +291,8 @@ class LangGraphHealthcareQAPipeline:
         """
         try:
             return self._graph.get_graph().draw_mermaid()
-        except Exception:
+        except Exception as e:
+            logger.warning(f"Failed to render graph visualization: {e}")
             return "Graph visualization not available"
 
 

@@ -215,5 +215,6 @@ Provide a concise summary focusing on information relevant to the question."""
         try:
             response = self.llm.generate(prompt, max_new_tokens=500)
             return response.response.strip()
-        except Exception:
+        except Exception as e:
+            logger.warning(f"LLM context compression failed, returning original context: {e}")
             return context

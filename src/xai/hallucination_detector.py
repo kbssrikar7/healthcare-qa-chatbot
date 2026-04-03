@@ -322,7 +322,8 @@ class HallucinationDetector:
                     model="microsoft/deberta-base-mnli",
                     device=-1,
                 )
-            except Exception:
+            except Exception as e:
+                logger.warning(f"NLI pipeline load failed, returning neutral score: {e}")
                 return 0.5  # neutral fallback
 
         sentences = [s.strip() for s in re.split(r'(?<=[.!?])\s+', answer) if len(s.strip()) > 15]
@@ -339,7 +340,8 @@ class HallucinationDetector:
                     entail_scores.append(result["score"])
                 else:
                     entail_scores.append(0.0)
-            except Exception:
+            except Exception as e:
+                logger.warning(f"NLI sentence check failed: {e}")
                 entail_scores.append(0.5)
 
         return sum(entail_scores) / len(entail_scores) if entail_scores else 0.5

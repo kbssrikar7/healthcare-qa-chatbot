@@ -174,7 +174,8 @@ class SourceAttributor:
             if self.embedder:
                 try:
                     score = self._embedding_similarity(claim, content)
-                except Exception:
+                except Exception as e:
+                    logger.warning(f"Embedding similarity failed, falling back to text overlap: {e}")
                     score = self._text_overlap(claim, content)
             else:
                 score = self._text_overlap(claim, content)

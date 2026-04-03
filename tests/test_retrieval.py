@@ -129,3 +129,57 @@ class TestHybridRetriever:
         )
         assert doc.content == "Test content"
         assert doc.score == 0.85
+
+
+class TestRRF:
+    """Tests for Reciprocal Rank Fusion utility."""
+
+    def test_rrf_single_source_empty(self):
+        """RRF should work even if one retriever returns nothing."""
+        from src.retrieval.hybrid_retriever import reciprocal_rank_fusion
+        results = reciprocal_rank_fusion([
+            [("doc1", 0.9), ("doc2", 0.8)],
+            [],  # BM25 returned nothing
+        ])
+        assert len(results) > 0
+        assert "doc1" in results
+
+    def test_rrf_equal_rank(self):
+        """Documents appearing in both lists should have higher RRF score."""
+        from src.retrieval.hybrid_retriever import reciprocal_rank_fusion
+        results = reciprocal_rank_fusion([
+            [("doc_shared", 0.9), ("doc_a", 0.8)],
+            [("doc_shared", 0.7), ("doc_b", 0.6)],
+        ])
+        assert results["doc_shared"] > results["doc_a"]
+        assert results["doc_shared"] > results["doc_b"]
+
+    def test_rrf_empty_all(self):
+        """RRF with all empty lists should return empty dict."""
+        from src.retrieval.hybrid_retriever import reciprocal_rank_fusion
+        results = reciprocal_rank_fusion([[], []])
+        assert results == {}
+
+
+class TestMedicalTokenize:
+    """Tests for BM25 medical tokenizer."""
+
+    def test_punctuation_removed(self):
+        from src.retrieval.hybrid_retriever import HybridRetriever
+        tokens = HybridRetriever._medical_tokenize("diabetes, hypertension; fever.")
+        assert "diabetes" in tokens
+        assert "hypertension" in tokens
+        assert "fever" in tokens
+        # Punctuation should be removed
+        assert not any("," in t or ";" in t or "." in t for t in tokens)
+
+    def test_hyphenated_compound_preserved(self):
+        from src.retrieval.hybrid_retriever import HybridRetriever
+        tokens = HybridRetriever._medical_tokenize("non-insulin dependent")
+        assert "non-insulin" in tokens
+
+    def test_short_tokens_filtered(self):
+        from src.retrieval.hybrid_retriever import HybridRetriever
+        tokens = HybridRetriever._medical_tokenize("a T2DM and HTN")
+        # Single-char tokens filtered, "T2DM" and "HTN" kept
+        assert all(len(t) >= 2 for t in tokens)

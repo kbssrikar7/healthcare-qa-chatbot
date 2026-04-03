@@ -166,9 +166,9 @@ class MedicalLLM:
                     bnb_4bit_use_double_quant=True,
                     bnb_4bit_quant_type="nf4",
                 )
-            except Exception:
+            except Exception as e:
                 quantization_config = None
-                logger.warning("BitsAndBytes not available, loading without quantization")
+                logger.warning(f"BitsAndBytes quantization config failed, loading without quantization: {e}")
         else:
             quantization_config = None
 

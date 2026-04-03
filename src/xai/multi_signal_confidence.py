@@ -214,14 +214,12 @@ class MultiSignalConfidenceScorer:
         """Score based on medical entity overlap between query, answer, and sources."""
 
         def _extract(text: str) -> set:
-            patterns = [
-                r"\b[A-Z][a-z]+(?:\s[A-Z][a-z]+)+\b",  # multi-word proper nouns
-                r"\b\d+\s*(?:mg|ml|mcg|units|mmol|g)\b",  # dosages
-                r"\b(?:type\s*[12]\s*diabetes|hypertension|cancer|infection)\b",
-            ]
             entities: set = set()
-            for p in patterns:
-                entities.update(re.findall(p, text, re.IGNORECASE))
+            # Proper nouns: case-sensitive (capital letters identify entities)
+            entities.update(re.findall(r"\b[A-Z][a-z]+(?:\s[A-Z][a-z]+)+\b", text))
+            # Dosages and conditions: case-insensitive
+            entities.update(re.findall(r"\b\d+\s*(?:mg|ml|mcg|units|mmol|g)\b", text, re.IGNORECASE))
+            entities.update(re.findall(r"\b(?:type\s*[12]\s*diabetes|hypertension|cancer|infection)\b", text, re.IGNORECASE))
             return {e.lower() for e in entities}
 
         query_ent = _extract(query)

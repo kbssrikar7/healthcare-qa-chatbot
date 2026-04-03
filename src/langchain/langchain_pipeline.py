@@ -21,6 +21,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from loguru import logger
 
 from langchain_core.documents import Document
 from langchain_core.runnables import (
@@ -314,7 +315,8 @@ class LangChainHealthcareQAPipeline:
                         "level": confidence_result.level,
                         "explanation": confidence_result.explanation,
                     }
-                except Exception:
+                except Exception as e:
+                    logger.warning(f"Confidence scoring failed, using default: {e}")
                     confidence = {
                         "score": 0.7,
                         "level": "medium",
@@ -344,7 +346,8 @@ class LangChainHealthcareQAPipeline:
                         }
                         for a in attributions_list
                     ]
-                except Exception:
+                except Exception as e:
+                    logger.warning(f"Source attribution failed, returning empty list: {e}")
                     attributions = []
 
             # Generate rationale
@@ -358,7 +361,8 @@ class LangChainHealthcareQAPipeline:
                     rationale = self.rationale_generator.generate_rationale(
                         question=question, answer=answer, context=context
                     )
-                except Exception:
+                except Exception as e:
+                    logger.warning(f"Rationale generation failed, skipping: {e}")
                     rationale = None
 
         if not is_answerable:

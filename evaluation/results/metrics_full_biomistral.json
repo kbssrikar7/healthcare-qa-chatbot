@@ -1,0 +1,22 @@
+{
+  "variant": "standard_biomistral",
+  "n": 97,
+  "answerable_pct": 1.0,
+  "keyword_coverage_mean": 0.2105,
+  "keyword_coverage_ci_95": [
+    0.1428,
+    0.2871
+  ],
+  "rougeL_mean": 0.1716,
+  "rougeL_ci_95": [
+    0.1191,
+    0.2314
+  ],
+  "bertscore_f1_mean": 0.1072,
+  "bertscore_ci_95": [
+    0.0502,
+    0.176
+  ],
+  "latency_mean_ms": 143148.8,
+  "latency_p90_ms": 228021.1
+}

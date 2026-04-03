@@ -447,9 +447,9 @@ class TestMultiSignalConfidenceScorer:
     # ------------------------------------------------------------------ calibration
 
     def test_platt_calibrate_midpoint(self, scorer):
-        """Default params (a=1, b=0): sigmoid(0.5) ≈ 0.622."""
+        """Default params (a=3.0, b=-1.5): sigmoid(3*0.5 + -1.5) = sigmoid(0) = 0.5."""
         result = scorer._platt_calibrate(0.5)
-        assert result == pytest.approx(1 / (1 + (2.718281828**-0.5)), abs=0.01)
+        assert result == pytest.approx(0.5, abs=0.01)
 
     def test_platt_calibrate_output_range(self, scorer):
         """Calibrated output must always stay within [0, 1]."""
