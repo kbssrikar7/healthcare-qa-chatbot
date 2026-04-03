@@ -1489,26 +1489,32 @@ def main():
         st.markdown('---')
         st.markdown('<div class="sidebar-section">Evaluation results</div>', unsafe_allow_html=True)
         _eval_dir = Path(__file__).parent.parent / "evaluation" / "results"
-        _metrics_file = _eval_dir / "metrics.json"
         _calib_file = _eval_dir / "calibration.json"
-        if _metrics_file.exists():
-            try:
-                _metrics = json.loads(_metrics_file.read_text())
-                for _m in _metrics:
-                    with st.expander(f"{_m.get('variant','?').title()} pipeline"):
-                        st.write(f"**ROUGE-L:** {_m.get('rougeL_mean',0):.3f}")
-                        st.write(f"**BERTScore F1:** {_m.get('bertscore_f1_mean',0):.3f}")
-                        st.write(f"**KW Coverage:** {_m.get('keyword_coverage_mean',0):.1%}")
-                        st.write(f"**Answerable:** {_m.get('answerable_pct',0):.1%}")
-            except Exception:
-                pass
+        _model_files = [
+            ("TinyLlama", _eval_dir / "metrics_full_tinyllama.json"),
+            ("BioMistral", _eval_dir / "metrics_full_biomistral.json"),
+            ("QLoRA", _eval_dir / "metrics_full_qlora.json"),
+        ]
+        _any_shown = False
+        for _label, _mfile in _model_files:
+            if _mfile.exists():
+                try:
+                    _m = json.loads(_mfile.read_text())
+                    with st.expander(_label):
+                        st.write(f"**KW Coverage:** {_m.get('keyword_coverage_mean', _m.get('kw_coverage_mean', 0)):.1%}")
+                        st.write(f"**Answerable:** {_m.get('answerable_pct', 0):.1%}")
+                        if _m.get('rougeL_mean'):
+                            st.write(f"**ROUGE-L:** {_m['rougeL_mean']:.3f}")
+                    _any_shown = True
+                except Exception:
+                    pass
         if _calib_file.exists():
             try:
                 _calib = json.loads(_calib_file.read_text())
                 st.caption(f"Confidence ECE: {_calib.get('ece', 'N/A')}")
             except Exception:
                 pass
-        if not _metrics_file.exists():
+        if not _any_shown:
             st.caption("Run evaluation/run_paper_eval.py to populate")
 
         st.markdown('---')
@@ -1622,7 +1628,7 @@ def main():
                     pause_threshold=2.5,
                     key="mic_recorder",
                 )
-            except ImportError:
+            except Exception:
                 audio_bytes = None
 
         # ── Text input + send button ────────────────────────────────────────
@@ -1645,6 +1651,7 @@ def main():
     # ── Handle audio transcription ──────────────────────────────────────────
     if audio_bytes and audio_bytes != st.session_state.get("_last_audio"):
         st.session_state["_last_audio"] = audio_bytes
+        st.session_state.pop("_voice_toast", None)
         with st.spinner("Transcribing..."):
             transcribed = transcribe_audio(audio_bytes)
         if transcribed:
