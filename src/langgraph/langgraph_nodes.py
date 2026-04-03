@@ -27,7 +27,7 @@ Fixes applied (v2):
 
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from langchain_core.documents import Document
 from loguru import logger
