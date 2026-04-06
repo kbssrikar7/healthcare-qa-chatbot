@@ -935,7 +935,7 @@ async def _prepare_and_execute_pipeline(request: QuestionRequest, start_ts: floa
 @app.post("/ask", response_model=AnswerResponse, tags=["QA"],
           dependencies=[Depends(verify_api_key)])
 @limiter.limit("60/minute")
-async def ask_question(http_request: Request, request: QuestionRequest):
+async def ask_question(request: Request, body: QuestionRequest):
     """
     Ask a medical question and get an explainable answer.
 
@@ -944,7 +944,7 @@ async def ask_question(http_request: Request, request: QuestionRequest):
     - Set use_langchain/use_langgraph for alternative pipelines.
     """
     start_ts = time.time()
-    return await _prepare_and_execute_pipeline(request, start_ts)
+    return await _prepare_and_execute_pipeline(body, start_ts)
 
 
 @app.post("/feedback", response_model=FeedbackResponse, tags=["Feedback"])
