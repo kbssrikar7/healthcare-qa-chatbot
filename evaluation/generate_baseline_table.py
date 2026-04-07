@@ -67,8 +67,15 @@ def _fmt(val, fmt: str | None) -> str:
 
 
 def _ci_str(d: dict, key: str, fmt: str | None) -> str:
+    # Support _ci_lo/_ci_hi, _ci_95: [lo, hi], and bare prefix (strip _mean)
     lo = d.get(key + "_ci_lo")
     hi = d.get(key + "_ci_hi")
+    if lo is None or hi is None:
+        # Try with key as-is, then strip trailing _mean
+        bare = key[:-5] if key.endswith("_mean") else key
+        ci95 = d.get(key + "_ci_95") or d.get(bare + "_ci_95")
+        if ci95 and len(ci95) == 2:
+            lo, hi = ci95[0], ci95[1]
     if lo is None or hi is None:
         return ""
     lo_s = _fmt(lo, fmt)
