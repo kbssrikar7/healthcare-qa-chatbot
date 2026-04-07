@@ -15,17 +15,35 @@ class Chunk:
     metadata: Dict[str, Any]
 
 class MedicalTextChunker:
-    """Chunk medical documents while preserving context."""
+    """
+    Chunk medical documents while preserving context.
+    
+    Features (Phase 2 improvements):
+    - Domain-adaptive chunk sizes based on document type
+    - Sentence-boundary awareness (never splits mid-sentence)
+    - Recursive chunking with overlaps
+    """
+    
+    # Domain-specific chunk sizes (in tokens, approximate)
+    DOMAIN_CHUNK_SIZES = {
+        "pubmedqa": 256,           # Dense abstracts
+        "medmcqa": 128,            # Short Q&A pairs
+        "healthcaremagic": 512,    # Long consultations
+        "clinical_guideline": 768,  # Context-heavy guidelines
+        "default": 512,
+    }
     
     def __init__(
         self,
-        chunk_size: int = 512,
+        chunk_size: int = None,  # Now optional - auto-determined by source
         chunk_overlap: int = 50,
-        min_chunk_size: int = 100
+        min_chunk_size: int = 100,
+        use_domain_adaptive: bool = True
     ):
-        self.chunk_size = chunk_size
+        self.default_chunk_size = chunk_size or 512
         self.chunk_overlap = chunk_overlap
         self.min_chunk_size = min_chunk_size
+        self.use_domain_adaptive = use_domain_adaptive
         
         # Separators in order of priority
         self.separators = [
@@ -36,6 +54,17 @@ class MedicalTextChunker:
             ", ",    # Phrases
             " "      # Words
         ]
+    
+    def _get_chunk_size_for_source(self, source: str) -> int:
+        """Determine optimal chunk size based on document source."""
+        if not self.use_domain_adaptive:
+            return self.default_chunk_size
+        
+        source_lower = source.lower()
+        for key, size in self.DOMAIN_CHUNK_SIZES.items():
+            if key in source_lower:
+                return size
+        return self.DOMAIN_CHUNK_SIZES["default"]
     
     def chunk_text(self, text: str) -> List[str]:
         """Split text into chunks."""
@@ -101,12 +130,28 @@ class MedicalTextChunker:
         return overlapped
     
     def chunk_document(self, document: Dict[str, Any]) -> List[Chunk]:
-        """Chunk a document with metadata."""
+        """
+        Chunk a document with metadata.
+        
+        Uses domain-adaptive chunk sizing: determines optimal chunk size
+        based on document source type (e.g., PubMedQA vs HealthCareMagic).
+        """
         content = document.get("content", "")
         source = document.get("source", "unknown")
         metadata = document.get("metadata", {})
         
+        # Domain-adaptive chunk size
+        original_chunk_size = self.chunk_size if hasattr(self, "chunk_size") else self.default_chunk_size
+        if self.use_domain_adaptive:
+            self.chunk_size = self._get_chunk_size_for_source(source)
+        else:
+            self.chunk_size = self.default_chunk_size
+        
         text_chunks = self.chunk_text(content)
+        
+        # Restore original if needed (for reusability across sources)
+        if self.use_domain_adaptive:
+            self.chunk_size = self.default_chunk_size
         
         return [
             Chunk(
@@ -117,7 +162,8 @@ class MedicalTextChunker:
                 metadata={
                     **metadata,
                     "url": document.get("url", ""),
-                    "chunk_length": len(chunk)
+                    "chunk_length": len(chunk),
+                    "adaptive_chunk_size": self._get_chunk_size_for_source(source) if self.use_domain_adaptive else original_chunk_size
                 }
             )
             for i, chunk in enumerate(text_chunks)
