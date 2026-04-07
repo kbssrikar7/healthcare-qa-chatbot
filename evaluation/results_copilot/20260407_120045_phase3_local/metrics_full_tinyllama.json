@@ -1,0 +1,9 @@
+{
+  "variant": "standard_tinyllama",
+  "n": 97,
+  "answerable_pct": 1.0,
+  "keyword_coverage_mean": 0.484,
+  "rougeL_mean": 0.234,
+  "bertscore_f1_mean": 0.186,
+  "latency_mean_ms": 27600.0
+}

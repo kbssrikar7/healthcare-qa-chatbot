@@ -1,0 +1,10 @@
+[
+  {
+    "variant": "standard_tinyllama",
+    "n": 10,
+    "answerable_pct": 1.0,
+    "keyword_coverage_mean": 0.39,
+    "rougeL_mean": 0.274,
+    "bertscore_f1_mean": 0.0
+  }
+]

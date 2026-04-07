@@ -1,0 +1,22 @@
+{
+  "variant": "qlora_tinyllama",
+  "n": 97,
+  "answerable_pct": 1.0,
+  "keyword_coverage_mean": 0.4634,
+  "keyword_coverage_ci_95": [
+    0.391,
+    0.5309
+  ],
+  "rougeL_mean": 0.2374,
+  "rougeL_ci_95": [
+    0.1961,
+    0.2838
+  ],
+  "bertscore_f1_mean": 0.179,
+  "bertscore_ci_95": [
+    0.1225,
+    0.2348
+  ],
+  "latency_mean_ms": 35282.1,
+  "latency_p90_ms": 54629.8
+}
