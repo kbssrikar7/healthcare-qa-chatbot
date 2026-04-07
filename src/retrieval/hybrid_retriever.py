@@ -122,6 +122,18 @@ class HybridRetriever:
         # Initialize BM25 for sparse retrieval if corpus provided
         if corpus:
             self._init_bm25(corpus)
+    
+    def warm_up(self) -> None:
+        """
+        Pre-initialize BM25 index from vector store.
+        
+        Call this during API startup to avoid 20-60s first-query lag.
+        If BM25 is already initialized (via corpus= at __init__), this is a no-op.
+        """
+        if self.bm25 is None and not self._bm25_init_attempted:
+            logger.info("Warmup: pre-initializing BM25 from vector store...")
+            self._lazy_init_bm25_from_store()
+            logger.info("Warmup: BM25 initialization complete")
 
     def _init_bm25(self, corpus: List[Dict]) -> None:
         """Initialize BM25 index from a corpus list."""

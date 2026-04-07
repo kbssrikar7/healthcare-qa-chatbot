@@ -117,6 +117,20 @@ async def startup_preload():
     _init_conversation_manager()
     _init_feedback_system()
 
+    # ── Pre-initialize BM25 index ─────────────────────────────────────────────
+    # BM25 lazy-loads 182K docs from ChromaDB on first hybrid query (20-60s hang).
+    # Pre-initialize it here during startup so the first user query is fast.
+    try:
+        pipeline = get_pipeline(model_choice="tinyllama")
+        if pipeline and hasattr(pipeline, "retriever") and hasattr(pipeline.retriever, "warm_up"):
+            logger.info("Startup: pre-initializing BM25 index...")
+            _t_bm25 = __import__("time").perf_counter()
+            pipeline.retriever.warm_up()
+            _bm25_ms = (__import__("time").perf_counter() - _t_bm25) * 1000
+            logger.info(f"Startup: BM25 initialization complete ({_bm25_ms:.0f} ms)")
+    except Exception as e:
+        logger.warning(f"Startup: BM25 warmup failed (non-fatal): {e}")
+
     # ── Warmup query: run a dummy question through the full pipeline ──────────
     # This ensures the tokenizer, generation model, NLI model, and embedding
     # model are all loaded and warmed up before the first real user request.
