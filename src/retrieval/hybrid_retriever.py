@@ -374,12 +374,50 @@ class HybridRetriever:
         # Sort by score and return top k
         documents.sort(key=lambda x: x.score, reverse=True)
 
+        # Document-level safety filter: tag potentially harmful chunks
+        documents = self._safety_filter_documents(documents)
+
         # Log per-stage latency for diagnostics
         total = sum(_timings.values())
         parts = " | ".join(f"{k}={v:.1f}" for k, v in _timings.items())
         logger.debug(f"Retrieval latency: total={total:.1f}ms  [{parts}]")
 
         return documents[:k]
+
+    # ── Safety filter ─────────────────────────────────────────────────────────
+
+    # Patterns for content that should not appear in source citations
+    _HARMFUL_PATTERNS = [
+        r"\bhow\s+to\s+(?:make|synthesize|produce|create)\s+\w+\s+(?:drug|poison|explosive)",
+        r"\bself[- ]harm\b",
+        r"\b(?:illegal|illicit)\s+drug\s+(?:synthesis|recipe|formula)",
+    ]
+
+    def _safety_filter_documents(
+        self, documents: List[RetrievedDocument]
+    ) -> List[RetrievedDocument]:
+        """Tag retrieved chunks that contain potentially harmful content.
+
+        Does NOT remove documents — adds a ``safety_flagged`` key to metadata
+        so the pipeline can decide whether to include them in the LLM context.
+        Harmful chunks are moved to the end of the list so they are less likely
+        to make the top-k cut.
+        """
+        import re as _re
+        safe, flagged = [], []
+        for doc in documents:
+            content_lower = doc.content.lower()
+            is_harmful = any(
+                _re.search(p, content_lower) for p in self._HARMFUL_PATTERNS
+            )
+            if is_harmful:
+                doc.metadata["safety_flagged"] = True
+                logger.debug(f"Safety-flagged retrieved chunk from '{doc.source}'")
+                flagged.append(doc)
+            else:
+                doc.metadata.setdefault("safety_flagged", False)
+                safe.append(doc)
+        return safe + flagged
 
     def retrieve_with_context(
         self,

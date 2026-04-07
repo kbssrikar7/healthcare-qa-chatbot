@@ -89,6 +89,18 @@ async def startup_preload():
             retriever.initialize()
             logger.info("Startup: BM25 index ready")
 
+    # Verify embedding model compatibility between index and query model
+    if shared and "vector_store" in shared and "embedder" in shared:
+        vs = shared["vector_store"]
+        embedder = shared["embedder"]
+        if hasattr(vs, "verify_embedding_compatibility") and hasattr(embedder, "model_name"):
+            dim = getattr(embedder, "dimension", 384)
+            compatible = vs.verify_embedding_compatibility(embedder.model_name, dim)
+            if compatible:
+                logger.info(f"Startup: embedding compatibility verified ({embedder.model_name})")
+            else:
+                logger.warning("Startup: embedding mismatch detected — retrieval may be unreliable")
+
     # Pre-load NLI model for hallucination detection (avoids 30s delay on first NLI check)
     try:
         from src.xai.hallucination_detector import HallucinationDetector

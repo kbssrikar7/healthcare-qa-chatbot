@@ -7,6 +7,7 @@ import pandas as pd
 from pathlib import Path
 from typing import List, Dict, Optional, Generator
 from tqdm import tqdm
+from loguru import logger
 
 
 class MedicalDatasetLoader:
@@ -119,9 +120,9 @@ class MedicalDatasetLoader:
                     "answer": row.get("Answer", row.get("answer", "")),
                     "source": "MedQuAD"
                 })
-            print(f"  Loaded MedQuAD: {len(df):,} entries")
+            logger.info(f"  Loaded MedQuAD: {len(df):,} entries")
         except Exception as e:
-            print(f"  [SKIP] MedQuAD: {e}")
+            logger.warning(f"  [SKIP] MedQuAD: {e}")
         
         # 2. Load PubMedQA
         try:
@@ -138,9 +139,9 @@ class MedicalDatasetLoader:
                     "context": context_text,
                     "source": "PubMedQA"
                 })
-            print(f"  Loaded PubMedQA: {len(df):,} entries")
+            logger.info(f"  Loaded PubMedQA: {len(df):,} entries")
         except Exception as e:
-            print(f"  [SKIP] PubMedQA: {e}")
+            logger.warning(f"  [SKIP] PubMedQA: {e}")
         
         # 3. Load MedMCQA
         try:
@@ -167,9 +168,9 @@ class MedicalDatasetLoader:
                     "source": f"MedMCQA/{row.get('subject_name', 'General')}"
                 })
                 count += 1
-            print(f"  Loaded MedMCQA: {count:,} entries")
+            logger.info(f"  Loaded MedMCQA: {count:,} entries")
         except Exception as e:
-            print(f"  [SKIP] MedMCQA: {e}")
+            logger.warning(f"  [SKIP] MedMCQA: {e}")
         
         # 4. Load HealthCareMagic
         try:
@@ -186,9 +187,9 @@ class MedicalDatasetLoader:
                     "answer": row.get("output", ""),
                     "source": "HealthCareMagic"
                 })
-            print(f"  Loaded HealthCareMagic: {len(df):,} entries")
+            logger.info(f"  Loaded HealthCareMagic: {len(df):,} entries")
         except Exception as e:
-            print(f"  [SKIP] HealthCareMagic: {e}")
+            logger.warning(f"  [SKIP] HealthCareMagic: {e}")
         
         # 5. Load MedQA USMLE
         try:
@@ -210,9 +211,9 @@ class MedicalDatasetLoader:
                         "answer": str(answer),
                         "source": "MedQA-USMLE"
                     })
-            print(f"  Loaded MedQA USMLE: {len(df):,} entries")
+            logger.info(f"  Loaded MedQA USMLE: {len(df):,} entries")
         except Exception as e:
-            print(f"  [SKIP] MedQA USMLE: {e}")
+            logger.warning(f"  [SKIP] MedQA USMLE: {e}")
         
         # 6. Load ChatDoctor
         try:
@@ -228,9 +229,9 @@ class MedicalDatasetLoader:
                         "answer": answer,
                         "source": "ChatDoctor"
                     })
-            print(f"  Loaded ChatDoctor: {len(df):,} entries")
+            logger.info(f"  Loaded ChatDoctor: {len(df):,} entries")
         except Exception as e:
-            print(f"  [SKIP] ChatDoctor: {e}")
+            logger.warning(f"  [SKIP] ChatDoctor: {e}")
         
         # 7. Load Medical Meadow
         try:
@@ -252,9 +253,9 @@ class MedicalDatasetLoader:
                         "answer": output_text,
                         "source": f"MedicalMeadow/{source}"
                     })
-            print(f"  Loaded Medical Meadow: {len(df):,} entries")
+            logger.info(f"  Loaded Medical Meadow: {len(df):,} entries")
         except Exception as e:
-            print(f"  [SKIP] Medical Meadow: {e}")
+            logger.warning(f"  [SKIP] Medical Meadow: {e}")
         
         # 8. Load Additional QA
         try:
@@ -269,16 +270,16 @@ class MedicalDatasetLoader:
                         "answer": answer,
                         "source": "LavitaMedicalQA"
                     })
-            print(f"  Loaded Additional QA: {len(df):,} entries")
+            logger.info(f"  Loaded Additional QA: {len(df):,} entries")
         except Exception as e:
-            print(f"  [SKIP] Additional QA: {e}")
+            logger.warning(f"  [SKIP] Additional QA: {e}")
         
-        print(f"\nTotal QA pairs loaded: {len(qa_pairs):,}")
+        logger.info(f"Total QA pairs loaded: {len(qa_pairs):,}")
         return qa_pairs
     
     def get_documents_for_knowledge_base(self) -> Generator[Dict, None, None]:
         """Yield documents for building knowledge base."""
-        print("Loading all QA pairs for knowledge base...")
+        logger.info("Loading all QA pairs for knowledge base...")
         qa_pairs = self.load_all_qa_pairs()
         
         for qa in qa_pairs:
@@ -314,7 +315,7 @@ class MedicalDatasetLoader:
                 df = loader()
                 stats[name] = len(df)
                 total += len(df)
-            except:
+            except Exception as e:
                 stats[name] = 0
         
         stats["total"] = total

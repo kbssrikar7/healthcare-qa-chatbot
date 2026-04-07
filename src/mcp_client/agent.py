@@ -62,7 +62,8 @@ class HealthcareMCPClient:
             response = await self._session.list_tools()
             return [tool.model_dump() for tool in response.tools]
         except Exception as e:
-            print(f"Failed to list MCP tools: {e}")
+            from loguru import logger
+            logger.warning(f"Failed to list MCP tools: {e}")
             return []
             
     async def call_tool(self, tool_name: str, arguments: Dict[str, Any]) -> str:

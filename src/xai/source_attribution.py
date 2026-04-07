@@ -49,10 +49,14 @@ class SourceAttributor:
     def __init__(
         self,
         similarity_threshold: float = 0.3,
+        embedding_threshold: float = 0.55,
         embedder = None,
         use_nlp: bool = True
     ):
+        # Text overlap threshold (Jaccard-like: 0–1, lower scores expected)
         self.similarity_threshold = similarity_threshold
+        # Cosine similarity threshold for embedding-based matching
+        self.embedding_threshold = embedding_threshold
         self.embedder = embedder
         self.use_nlp = use_nlp and NLP_AVAILABLE
     
@@ -192,7 +196,8 @@ class SourceAttributor:
                     "url": doc.get("url", "")
                 }
         
-        if best_score >= self.similarity_threshold:
+        threshold = self.embedding_threshold if self.embedder else self.similarity_threshold
+        if best_score >= threshold:
             return best_match
         return None
     

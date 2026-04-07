@@ -77,15 +77,69 @@ class VectorStore:
         
         self.collection_name = collection_name
         self.embedding_function = embedding_function
-        
+
         # Get or create collection
         self.collection = self.client.get_or_create_collection(
             name=collection_name,
             metadata={"hnsw:space": "cosine"}
         )
-        
+
         logger.info(f" Vector store initialized: {collection_name}")
         logger.info(f" Documents in collection: {self.collection.count()}")
+
+    def verify_embedding_compatibility(self, model_name: str, dimension: int) -> bool:
+        """Check that the query model matches the indexed embedding model.
+
+        Reads stored model metadata from collection. If no metadata is stored
+        (older index), logs a warning but returns True (non-fatal).
+
+        Args:
+            model_name: Name of the embedding model being used for queries.
+            dimension:  Expected embedding dimension.
+
+        Returns:
+            True if compatible (or no stored metadata to compare against).
+        """
+        try:
+            meta = self.collection.metadata or {}
+            stored_model = meta.get("embedding_model")
+            stored_dim   = meta.get("embedding_dimension")
+            if stored_model and stored_model != model_name:
+                logger.warning(
+                    f"Embedding model mismatch: index was built with '{stored_model}' "
+                    f"but query model is '{model_name}'. Retrieval quality may be degraded."
+                )
+                return False
+            if stored_dim and int(stored_dim) != dimension:
+                logger.error(
+                    f"Embedding dimension mismatch: index has {stored_dim}d, "
+                    f"query model produces {dimension}d vectors. Queries will fail."
+                )
+                return False
+            if not stored_model:
+                logger.debug("No embedding model metadata in index — skipping compatibility check")
+            return True
+        except Exception as e:
+            logger.warning(f"Could not verify embedding compatibility: {e}")
+            return True  # non-fatal
+
+    def record_embedding_model(self, model_name: str, dimension: int) -> None:
+        """Persist embedding model info in collection metadata (call once at index build time)."""
+        try:
+            # ChromaDB does not support updating collection metadata after creation,
+            # so we store it in a dedicated sentinel document instead.
+            sentinel_id = "__embedding_meta__"
+            existing = self.collection.get(ids=[sentinel_id])
+            if not existing["ids"]:
+                self.collection.add(
+                    ids=[sentinel_id],
+                    documents=["__embedding_metadata_sentinel__"],
+                    metadatas=[{"embedding_model": model_name, "embedding_dimension": dimension}],
+                    embeddings=[[0.0] * dimension],
+                )
+                logger.info(f"Recorded embedding model metadata: {model_name} ({dimension}d)")
+        except Exception as e:
+            logger.warning(f"Could not record embedding model metadata: {e}")
     
     def add_documents(
         self,
@@ -245,4 +299,4 @@ class VectorStore:
     def delete_collection(self):
         """Delete the collection."""
         self.client.delete_collection(self.collection_name)
-        print(f"🗑️ Deleted collection: {self.collection_name}")
+        logger.info(f"Deleted collection: {self.collection_name}")
