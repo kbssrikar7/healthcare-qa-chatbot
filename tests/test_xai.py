@@ -350,8 +350,13 @@ class TestMultiSignalConfidenceScorer:
         result = scorer._retrieval_confidence(mock_docs)
         assert result > 0.5
 
-    def test_retrieval_confidence_low_scores(self, scorer):
-        """Documents with very low scores should yield low retrieval confidence."""
+    def test_retrieval_confidence_no_docs(self, scorer):
+        """Empty document list should yield zero retrieval confidence."""
+        result = scorer._retrieval_confidence([])
+        assert result == 0.0
+
+    def test_retrieval_confidence_score_agnostic(self, scorer):
+        """Confidence normalizes by max so absolute scale (cosine vs RRF) doesn't change ranking."""
         from dataclasses import dataclass
 
         @dataclass
@@ -359,9 +364,12 @@ class TestMultiSignalConfidenceScorer:
             score: float
             content: str = ""
 
-        low_docs = [_Doc(score=0.05), _Doc(score=0.03), _Doc(score=0.02)]
-        result = scorer._retrieval_confidence(low_docs)
-        assert result < 0.5
+        # Same relative distribution at different scales → same confidence
+        cosine_docs = [_Doc(0.9), _Doc(0.54), _Doc(0.36)]   # cosine similarity scale
+        rrf_docs    = [_Doc(0.03), _Doc(0.018), _Doc(0.012)]  # RRF scale (same ratios)
+        r_cosine = scorer._retrieval_confidence(cosine_docs)
+        r_rrf    = scorer._retrieval_confidence(rrf_docs)
+        assert abs(r_cosine - r_rrf) < 0.01  # scale-invariant
 
     def test_generation_confidence_high_probs(self, scorer):
         """Very high token probabilities should yield a confidence close to 1."""

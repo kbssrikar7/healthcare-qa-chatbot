@@ -10,9 +10,20 @@ Provides:
 - Counterfactual explanations
 """
 
-from .confidence_scorer import ConfidenceScorer
-from .source_attribution import SourceAttributor
-from .rationale_generator import RationaleGenerator
+try:
+    from .confidence_scorer import ConfidenceScorer
+except Exception:
+    ConfidenceScorer = None  # type: ignore
+
+try:
+    from .source_attribution import SourceAttributor
+except Exception:
+    SourceAttributor = None  # type: ignore
+
+try:
+    from .rationale_generator import RationaleGenerator
+except Exception:
+    RationaleGenerator = None  # type: ignore
 
 __all__ = [
     'ConfidenceScorer',

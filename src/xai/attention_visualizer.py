@@ -105,7 +105,8 @@ class TokenImportanceAnalyzer:
                 importance_scores = np.ones(len(tokens)) * 0.5
                 
         except Exception as e:
-            print(f"Gradient computation failed: {e}")
+            from loguru import logger
+            logger.warning(f"Gradient computation failed: {e}")
             importance_scores = np.ones(len(tokens)) * 0.5
         
         # Build result

@@ -88,6 +88,9 @@ class RetrievalConfig:
     rerank_top_k: int = 10
     chunk_size: int = 512
     chunk_overlap: int = 50
+    bm25_batch_size: int = 5000
+    rerank_fetch_multiplier: int = 3
+    no_rerank_fetch_multiplier: int = 2
 
 @dataclass
 class SafetyConfig:
@@ -116,6 +119,9 @@ class PipelineConfig:
     enable_corrective_rag: bool = True
     enable_factual_consistency: bool = True
     
+    # Pipeline selection: "standard" (default), "langchain", or "langgraph"
+    default_pipeline: str = os.getenv("DEFAULT_PIPELINE", "standard")
+
     # MCP Integration
     enable_mcp_search: bool = os.getenv("ENABLE_MCP_SEARCH", "false").lower() == "true"
     mcp_search_cmd: str = os.getenv("MCP_SEARCH_CMD", "npx")
@@ -126,6 +132,25 @@ class PipelineConfig:
     cache_ttl_seconds: int = 3600
     max_cache_items: int = 1000
     cache_dir: str = str(DATA_DIR / "cache")
+    max_context_tokens: int = 4000
+    corrective_rag_max_context: int = 2000
+    sentence_length_divisor: int = 200
+
+
+@dataclass
+class XAIConfig:
+    """XAI (Explainability) configuration."""
+    confidence_high_threshold: float = 0.8
+    confidence_low_threshold: float = 0.5
+    max_evidence_length: int = 80
+    nli_entailment_threshold: float = 0.5
+
+
+@dataclass
+class ModelConfig:
+    """Model runtime configuration."""
+    cpu_threads: int = 4
+    max_context_length: int = 2048
 
 
 @dataclass
@@ -146,6 +171,8 @@ class Config:
     safety: SafetyConfig = field(default_factory=SafetyConfig)
     api: APIConfig = field(default_factory=APIConfig)
     pipeline: PipelineConfig = field(default_factory=PipelineConfig)
+    xai: XAIConfig = field(default_factory=XAIConfig)
+    model: ModelConfig = field(default_factory=ModelConfig)
     
     # Paths
     project_root: Path = PROJECT_ROOT

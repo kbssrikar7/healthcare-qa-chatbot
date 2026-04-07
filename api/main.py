@@ -75,6 +75,38 @@ app.state.start_time = time.time()
 app.state.limiter = limiter
 
 
+@app.on_event("startup")
+async def startup_preload():
+    """Pre-load shared components and warm up indexes to avoid first-query delays."""
+    logger.info("Startup: pre-loading shared components...")
+    shared = _get_shared_components()
+
+    # Pre-initialize BM25 index (avoids 20-60s delay on first hybrid query)
+    if shared and "retriever" in shared:
+        retriever = shared["retriever"]
+        if hasattr(retriever, "initialize"):
+            logger.info("Startup: pre-initializing BM25 index...")
+            retriever.initialize()
+            logger.info("Startup: BM25 index ready")
+
+    # Pre-load NLI model for hallucination detection (avoids 30s delay on first NLI check)
+    try:
+        from src.xai.hallucination_detector import HallucinationDetector
+        _detector = HallucinationDetector(use_nli=True)
+        _detector.warm_up()
+        # Store for reuse by pipelines
+        app.state.hallucination_detector = _detector
+        logger.info("Startup: NLI hallucination detector ready")
+    except Exception as e:
+        logger.warning(f"Startup: NLI model pre-load skipped: {e}")
+
+    # Pre-load default pipeline
+    _init_guardrails()
+    _init_conversation_manager()
+    _init_feedback_system()
+    logger.info("Startup: all components ready")
+
+
 @app.exception_handler(RateLimitExceeded)
 async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
     return JSONResponse(status_code=429, content={"detail": "Rate limit exceeded — please slow down."})
@@ -312,7 +344,7 @@ def _get_shared_components():
         retriever = HybridRetriever(embedder, vector_store, reranker=reranker)
         prompt_manager = MedicalPromptManager()
         confidence_scorer = ConfidenceScorer()
-        source_attributor = SourceAttributor()
+        source_attributor = SourceAttributor(embedder=embedder, similarity_threshold=0.3)
         
         # Other quality hooks
         query_enhancer = None
@@ -456,7 +488,7 @@ def get_pipeline(model_choice: str = "tinyllama"):
         # KB fingerprint for cache
         try:
             kb_count = shared["vector_store"].collection.count()
-        except:
+        except Exception:
             kb_count = 0
         cache_context_key = f"{resolved_model_name}_{backend}_kb{kb_count}"
 
@@ -652,6 +684,79 @@ async def health_check():
     )
 
 
+@app.get("/health/components", tags=["Health"])
+async def component_health():
+    """Detailed component health status for diagnostics."""
+    from config.settings import config as _cfg
+    pipeline_cfg = getattr(_cfg, 'pipeline', None)
+    shared = _shared_components
+
+    components = {}
+
+    # Vector store
+    try:
+        if shared and "vector_store" in shared:
+            doc_count = shared["vector_store"].collection.count()
+            components["vector_store"] = {"status": "ok", "doc_count": doc_count}
+        else:
+            components["vector_store"] = {"status": "not_loaded"}
+    except Exception as e:
+        components["vector_store"] = {"status": "error", "error": str(e)}
+
+    # BM25 index
+    if shared and "retriever" in shared:
+        retriever = shared["retriever"]
+        if retriever.bm25 is not None:
+            corpus_size = len(retriever.corpus) if retriever.corpus else 0
+            components["bm25_index"] = {"status": "ok", "doc_count": corpus_size}
+        else:
+            components["bm25_index"] = {"status": "not_initialized"}
+    else:
+        components["bm25_index"] = {"status": "not_loaded"}
+
+    # Optional components
+    for name, key in [
+        ("reranker", "reranker"),
+        ("query_enhancer", "query_enhancer"),
+        ("corrective_rag", "corrective_rag"),
+        ("factual_consistency", "factual_consistency_checker"),
+    ]:
+        if shared and shared.get(key):
+            components[name] = {"status": "ok"}
+        else:
+            enabled = getattr(pipeline_cfg, f"enable_{name}", False) if pipeline_cfg else False
+            components[name] = {"status": "disabled" if not enabled else "failed_to_load"}
+
+    # NLI hallucination detector
+    if hasattr(app.state, "hallucination_detector") and app.state.hallucination_detector:
+        components["nli_detector"] = {
+            "status": "ok",
+            "model_loaded": app.state.hallucination_detector._nli_pipeline is not None,
+        }
+    else:
+        components["nli_detector"] = {"status": "not_loaded"}
+
+    # Cache
+    cache_stats = None
+    for p in pipelines.values():
+        if hasattr(p, "cache_manager") and p.cache_manager:
+            cache_stats = p.cache_manager.get_cache_stats()
+            break
+    components["cache"] = (
+        {"status": "ok", **cache_stats} if cache_stats
+        else {"status": "enabled" if getattr(pipeline_cfg, 'enable_response_cache', False) else "disabled"}
+    )
+
+    # Pipeline info
+    default_pipe = getattr(pipeline_cfg, 'default_pipeline', 'standard') if pipeline_cfg else 'standard'
+
+    return {
+        "default_pipeline": default_pipe,
+        "models_loaded": list(pipelines.keys()),
+        "components": components,
+    }
+
+
 @app.get("/models", tags=["Models"])
 async def list_models():
     """Return available models and their descriptions."""
@@ -763,10 +868,22 @@ async def _prepare_and_execute_pipeline(request: QuestionRequest, start_ts: floa
     model_choice = request.model_choice or "tinyllama"
     pipeline_name = "Standard"
 
-    if request.use_langgraph:
+    # Determine pipeline: per-request flags override config default
+    use_langgraph = request.use_langgraph
+    use_langchain = request.use_langchain
+    if not use_langgraph and not use_langchain:
+        # Apply configured default pipeline
+        from config.settings import config as _cfg
+        default_pipe = getattr(getattr(_cfg, 'pipeline', None), 'default_pipeline', 'standard')
+        if default_pipe == "langgraph":
+            use_langgraph = True
+        elif default_pipe == "langchain":
+            use_langchain = True
+
+    if use_langgraph:
         pipeline_name = "LangGraph"
         qa_pipeline = _get_langgraph_pipeline(model_choice)
-    elif request.use_langchain:
+    elif use_langchain:
         pipeline_name = "LangChain"
         qa_pipeline = _get_langchain_pipeline(model_choice)
     else:

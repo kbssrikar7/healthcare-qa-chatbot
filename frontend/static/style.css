@@ -1,0 +1,625 @@
+/* ========== Typography ========== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+html, body, [class*="css"] {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ========== Header Styles ========== */
+.app-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+}
+
+.app-logo {
+    width: 48px;
+    height: 48px;
+    background: var(--primary);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none;
+}
+
+.app-logo svg {
+    width: 28px;
+    height: 28px;
+}
+
+.main-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    letter-spacing: -0.025em;
+}
+
+.sub-header {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+    margin-bottom: 2rem;
+    padding-left: 64px;
+}
+
+/* ========== Chat Cards ========== */
+.chat-card {
+    padding: 1.25rem 1.5rem;
+    border-radius: var(--radius-lg);
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+.user-card {
+    background: var(--user-card-bg);
+    border: 1px solid var(--user-card-border);
+    margin-left: 48px;
+}
+
+.user-card::before {
+    content: '';
+    position: absolute;
+    left: -40px;
+    top: 12px;
+    width: 32px;
+    height: 32px;
+    background: #2563eb;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-card::after {
+    content: 'U';
+    position: absolute;
+    left: -40px;
+    top: 12px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.bot-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
+    margin-left: 48px;
+}
+
+.bot-card::before {
+    content: '';
+    position: absolute;
+    left: -40px;
+    top: 12px;
+    width: 32px;
+    height: 32px;
+    background: var(--primary);
+    border-radius: var(--radius-sm);
+}
+
+.bot-card::after {
+    content: 'M';
+    position: absolute;
+    left: -40px;
+    top: 12px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 0.875rem;
+}
+
+.card-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.user-card .card-label {
+    color: var(--user-card-label);
+}
+
+.bot-card .card-label {
+    color: var(--primary);
+}
+
+.card-content {
+    color: var(--text-primary);
+    line-height: 1.7;
+}
+
+/* ========== Confidence Meter ========== */
+.confidence-container {
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+}
+
+.confidence-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.confidence-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.confidence-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.confidence-value.high { color: var(--success); }
+.confidence-value.medium { color: var(--warning); }
+.confidence-value.low { color: var(--danger); }
+
+.confidence-track {
+    width: 100%;
+    height: 6px;
+    background: var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.confidence-fill {
+    height: 100%;
+    border-radius: var(--radius-sm);
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.confidence-fill.high { background: var(--success); }
+.confidence-fill.medium { background: var(--warning); }
+.confidence-fill.low { background: var(--danger); }
+
+.confidence-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 0.75rem;
+}
+
+/* ========== Source Cards ========== */
+.section-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 1.5rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--primary);
+    display: inline-block;
+}
+
+.source-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.source-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.25rem;
+    transition: all 0.2s ease;
+    height: 100%;
+}
+
+.source-card:hover {
+    border-color: var(--primary-light);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.source-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--source-badge-text);
+    background: var(--source-badge-bg);
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 0.75rem;
+}
+
+.source-text {
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin-bottom: 0.75rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.source-meta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* ========== Disclaimer Box ========== */
+.disclaimer-box {
+    background: var(--disclaimer-bg);
+    border-left: 4px solid var(--disclaimer-border);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 1rem 1.25rem;
+    margin-top: 1.5rem;
+}
+
+.disclaimer-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--disclaimer-title);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.disclaimer-text {
+    font-size: 0.85rem;
+    color: var(--disclaimer-text);
+    line-height: 1.6;
+}
+
+.disclaimer-meta {
+    font-size: 0.75rem;
+    color: var(--disclaimer-meta);
+    margin-top: 0.5rem;
+}
+
+/* ========== Attribution Cards ========== */
+.attribution-card {
+    background: var(--attr-bg);
+    border-left: 3px solid var(--primary);
+    padding: 0.875rem 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.attribution-claim {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.attribution-source {
+    font-size: 0.8rem;
+    color: var(--primary);
+    font-weight: 500;
+}
+
+/* ========== Reasoning Box ========== */
+.reasoning-box {
+    background: var(--reasoning-bg);
+    border-left: 4px solid var(--success);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 1rem 1.25rem;
+    color: var(--reasoning-text);
+    line-height: 1.7;
+}
+
+/* ========== Key Terms ========== */
+.key-term {
+    display: inline-block;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    color: var(--primary);
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    margin: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: none;
+}
+
+/* ========== Loading States ========== */
+.loading-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.loading-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--primary);
+    border-radius: 0;
+    animation: pulse 1.4s infinite ease-in-out both;
+}
+
+.loading-dot:nth-child(1) { animation-delay: -0.32s; }
+.loading-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes pulse {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+    40% { transform: scale(1); opacity: 1; }
+}
+
+/* ========== Loading Skeleton ========== */
+.skeleton-container {
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    margin-bottom: 1rem;
+    margin-left: 48px;
+}
+.skeleton-line {
+    height: 14px;
+    margin-bottom: 10px;
+    background: linear-gradient(90deg, var(--border) 25%, var(--surface-elevated) 50%, var(--border) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+}
+.skeleton-line.short { width: 45%; }
+.skeleton-line.medium { width: 75%; }
+.skeleton-line.long { width: 92%; }
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ========== Example Buttons ========== */
+.stButton > button {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text-primary) !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+    border-radius: var(--radius-sm) !important;
+}
+
+.stButton > button:hover {
+    border-color: var(--primary) !important;
+    color: var(--primary) !important;
+    box-shadow: var(--shadow-md) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* ========== Sidebar Styles ========== */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, var(--surface-elevated) 0%, var(--surface) 100%);
+}
+
+[data-testid="stSidebar"] .stMarkdown h1,
+[data-testid="stSidebar"] .stMarkdown h2,
+[data-testid="stSidebar"] .stMarkdown h3 {
+    color: var(--text-primary);
+}
+
+.sidebar-logo {
+    width: 48px;
+    height: 48px;
+    background: var(--primary);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.sidebar-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.sidebar-section {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+/* ========== Info Box ========== */
+.info-box {
+    background: var(--info-bg);
+    border: 1px solid var(--info-border);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    color: var(--info-text);
+    font-size: 0.9rem;
+}
+
+/* ========== Hide Streamlit Branding ========== */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+
+/* ========== Fixed Chat Input Bar (ChatGPT-style) ========== */
+
+/* Push content up so it never hides under the fixed bar */
+.block-container {
+    padding-bottom: 100px !important;
+}
+
+/* Pin the entire bar to the bottom of the viewport, full width */
+div.st-key-chat_input_bar {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    /* left padding = sidebar width; keeps pill centred in the content area */
+    padding: 10px 5vw 14px calc(21rem + 5vw) !important;
+    background: var(--surface, #ffffff) !important;
+    border-top: 1px solid var(--border, #e2e8f0) !important;
+    display: flex !important;
+    justify-content: center !important;
+    z-index: 999 !important;
+}
+
+/* The rounded pill that wraps mic + input + send */
+div.st-key-chat_input_bar [data-testid="stHorizontalBlock"] {
+    background: var(--surface-elevated, #f8fafc) !important;
+    border: 1.5px solid var(--border, #e2e8f0) !important;
+    border-radius: 14px !important;
+    padding: 4px 6px 4px 4px !important;
+    align-items: center !important;
+    width: 100% !important;
+    max-width: 760px !important;
+    gap: 0 !important;
+    flex-shrink: 0 !important;
+}
+div.st-key-chat_input_bar [data-testid="stHorizontalBlock"]:focus-within {
+    border-color: var(--primary, #4f46e5) !important;
+    box-shadow: 0 0 0 3px rgba(79,70,229,0.12) !important;
+}
+
+/* Remove per-column internal padding so the pill is seamless */
+div.st-key-chat_input_bar [data-testid="column"] {
+    padding: 0 !important;
+    overflow: visible !important;
+}
+
+/* Text input — borderless, transparent inside the pill */
+div.st-key-chat_input_bar [data-testid="stTextInput"] {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+div.st-key-chat_input_bar [data-testid="stTextInput"] > div {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+div.st-key-chat_input_bar [data-testid="stTextInput"] input {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+    padding: 10px 6px 10px 10px !important;
+    font-size: 0.95rem !important;
+    color: var(--text-primary, #0f172a) !important;
+    caret-color: var(--primary, #4f46e5) !important;
+}
+div.st-key-chat_input_bar [data-testid="stTextInput"] input::placeholder {
+    color: var(--text-muted, #94a3b8) !important;
+}
+
+/* Form wrapper — strip all decoration */
+div.st-key-chat_input_bar [data-testid="stForm"] {
+    border: none !important;
+    padding: 0 !important;
+    background: transparent !important;
+}
+
+/* Send button — solid circle */
+div.st-key-chat_input_bar [data-testid="stFormSubmitButton"] button {
+    background: var(--primary, #4f46e5) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 50% !important;
+    width: 38px !important;
+    height: 38px !important;
+    min-height: unset !important;
+    padding: 0 !important;
+    font-size: 1.15rem !important;
+    line-height: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: background 0.2s !important;
+    margin: 2px !important;
+}
+div.st-key-chat_input_bar [data-testid="stFormSubmitButton"] button:hover {
+    background: var(--primary-dark, #3730a3) !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Mic button — ghost circle, icon only */
+div.st-key-chat_input_bar .audio-recorder {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 2px !important;
+}
+div.st-key-chat_input_bar .audio-recorder button {
+    background: transparent !important;
+    border: none !important;
+    color: var(--text-muted, #94a3b8) !important;
+    border-radius: 50% !important;
+    width: 38px !important;
+    height: 38px !important;
+    min-height: unset !important;
+    padding: 6px !important;
+    cursor: pointer !important;
+    transition: color 0.2s, background 0.2s !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 0 !important;
+}
+div.st-key-chat_input_bar .audio-recorder button:hover {
+    color: var(--primary, #4f46e5) !important;
+    background: rgba(79,70,229,0.08) !important;
+}
+/* Red pulse while actively recording */
+div.st-key-chat_input_bar .audio-recorder button[style*="rgb(239"],
+div.st-key-chat_input_bar .audio-recorder button[style*="rgb(248"] {
+    color: #ef4444 !important;
+    background: rgba(239,68,68,0.1) !important;
+    animation: mic-pulse 1s infinite !important;
+}
+@keyframes mic-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.3); }
+    50%       { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+}
+
+/* Transcription preview toast above the bar, centred in content area */
+.voice-toast {
+    position: fixed;
+    bottom: 76px;
+    /* centre inside the content area (right of sidebar) */
+    left: calc(21rem + (100vw - 21rem) / 2);
+    transform: translateX(-50%);
+    background: var(--surface-elevated, #f8fafc);
+    border: 1px solid var(--primary, #4f46e5);
+    border-radius: 8px;
+    padding: 6px 16px;
+    font-size: 0.88rem;
+    color: var(--text-primary, #0f172a);
+    z-index: 1000;
+    max-width: 600px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.voice-toast b { color: var(--primary, #4f46e5); }
+
+/* ========== Custom Expander ========== */
+.streamlit-expanderHeader {
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
+}

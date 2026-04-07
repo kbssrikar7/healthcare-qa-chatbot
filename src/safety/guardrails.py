@@ -124,17 +124,31 @@ This chatbot cannot provide emergency medical assistance.
         text_lower = text.lower()
         flags = []
         
-        # Check for emergency keywords
+        # Check for emergency keywords (with negation awareness)
         if self.enable_emergency_detection:
-            for keyword in self.EMERGENCY_KEYWORDS:
-                if keyword in text_lower:
-                    return SafetyCheckResult(
-                        level=SafetyLevel.EMERGENCY,
-                        passed=False,
-                        flags=["emergency_detected"],
-                        message=f"Emergency keyword detected: {keyword}",
-                        redirect_message=self.EMERGENCY_MESSAGE
-                    )
+            # Skip educational queries
+            educational_re = re.compile(
+                r'\b(what\s+is|what\s+are|define|explain|tell\s+me\s+about|'
+                r'symptoms\s+of|causes\s+of|treatment\s+for)\b',
+                re.IGNORECASE
+            )
+            if not educational_re.search(text):
+                negation_words = {"not", "no", "don't", "dont", "doesn't", "never",
+                                  "without", "deny", "denies", "denied"}
+                for keyword in self.EMERGENCY_KEYWORDS:
+                    if keyword in text_lower:
+                        # Check for negation in 40-char window before keyword
+                        idx = text_lower.find(keyword)
+                        prefix = text_lower[max(0, idx - 40):idx]
+                        if any(neg in prefix for neg in negation_words):
+                            continue
+                        return SafetyCheckResult(
+                            level=SafetyLevel.EMERGENCY,
+                            passed=False,
+                            flags=["emergency_detected"],
+                            message=f"Emergency keyword detected: {keyword}",
+                            redirect_message=self.EMERGENCY_MESSAGE
+                        )
         
         # Check for sensitive topics
         for topic in self.SENSITIVE_TOPICS:
@@ -251,8 +265,12 @@ class ContentFilter:
 
 
 class EmergencyDetector:
-    """Detect medical emergencies requiring immediate attention."""
-    
+    """Detect medical emergencies requiring immediate attention.
+
+    Uses negation-aware matching to reduce false positives
+    (e.g. "I don't have chest pain" should NOT trigger emergency).
+    """
+
     EMERGENCY_SYMPTOMS = {
         "cardiac": ["chest pain", "heart attack", "can't breathe", "shortness of breath", "crushing chest"],
         "stroke": ["face drooping", "arm weakness", "speech difficulty", "sudden numbness", "sudden confusion"],
@@ -260,16 +278,56 @@ class EmergencyDetector:
         "mental": ["suicide", "suicidal", "want to die", "kill myself", "end my life"],
         "trauma": ["severe bleeding", "broken bone", "head injury", "unconscious", "not responding"]
     }
-    
+
+    # Words that negate the symptom when they appear before it
+    NEGATION_WORDS = {"not", "no", "don't", "dont", "doesn't", "doesnt",
+                      "never", "without", "deny", "denies", "denied",
+                      "absent", "negative", "ruled out", "no signs of"}
+
+    # Patterns indicating educational/informational queries (not emergencies)
+    EDUCATIONAL_PATTERNS = re.compile(
+        r'\b(what\s+is|what\s+are|define|explain|tell\s+me\s+about|'
+        r'symptoms\s+of|causes\s+of|treatment\s+for|how\s+to\s+treat|'
+        r'difference\s+between|learned\s+about|studying|homework|'
+        r'research\s+on|article\s+about|read\s+about)\b',
+        re.IGNORECASE
+    )
+
+    def _is_negated(self, text_lower: str, symptom: str) -> bool:
+        """Check if a symptom mention is negated by preceding words."""
+        idx = text_lower.find(symptom)
+        if idx < 0:
+            return False
+        # Check a window of 40 chars before the symptom
+        prefix = text_lower[max(0, idx - 40):idx]
+        for neg in self.NEGATION_WORDS:
+            if neg in prefix:
+                return True
+        return False
+
+    def _is_educational(self, text: str) -> bool:
+        """Check if the query is educational/informational, not an emergency report."""
+        return bool(self.EDUCATIONAL_PATTERNS.search(text))
+
     def detect(self, text: str) -> Tuple[bool, Optional[str]]:
-        """Detect if text indicates a medical emergency."""
+        """Detect if text indicates a medical emergency.
+
+        Returns (False, None) for negated symptoms and educational queries.
+        """
         text_lower = text.lower()
-        
+
+        # Educational queries about symptoms are not emergencies
+        if self._is_educational(text):
+            return False, None
+
         for category, symptoms in self.EMERGENCY_SYMPTOMS.items():
             for symptom in symptoms:
                 if symptom in text_lower:
+                    # Skip if the symptom is negated
+                    if self._is_negated(text_lower, symptom):
+                        continue
                     return True, category
-        
+
         return False, None
     
     def get_emergency_response(self, category: str) -> str:
@@ -345,9 +403,25 @@ class DrugInteractionChecker:
         ),
     ]
     
+    # Negation words that negate a drug mention when they appear before it
+    NEGATION_WORDS = {"not", "no", "never", "don't", "dont", "doesn't", "doesnt",
+                      "didn't", "didnt", "without", "stop", "stopped", "stopping",
+                      "discontinued", "quit"}
+
+    def _is_negated(self, text_lower: str, drug: str, window: int = 30) -> bool:
+        """Check if a drug mention is negated by preceding words."""
+        idx = text_lower.find(drug)
+        if idx < 0:
+            return False
+        prefix = text_lower[max(0, idx - window):idx]
+        return any(neg in prefix.split() for neg in self.NEGATION_WORDS)
+
     def check_interaction_risk(self, text: str) -> List[Dict]:
         """
         Check if text mentions potentially dangerous drug combinations.
+        
+        Negation-aware: skips drugs preceded by negation words like
+        "not", "stopped", "never" to avoid false positives.
         
         Args:
             text: Text to analyze
@@ -359,8 +433,10 @@ class DrugInteractionChecker:
         warnings = []
         
         for drug_set_1, drug_set_2, severity, description in self.HIGH_RISK_INTERACTIONS:
-            found_1 = [drug for drug in drug_set_1 if drug in text_lower]
-            found_2 = [drug for drug in drug_set_2 if drug in text_lower]
+            found_1 = [drug for drug in drug_set_1
+                       if drug in text_lower and not self._is_negated(text_lower, drug)]
+            found_2 = [drug for drug in drug_set_2
+                       if drug in text_lower and not self._is_negated(text_lower, drug)]
             
             if found_1 and found_2:
                 warnings.append({

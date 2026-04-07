@@ -56,12 +56,17 @@ class MultiSignalConfidenceScorer:
     signals (set weight=0) for ablation studies.
     """
 
+    # Weights informed by ablation study (evaluation/results/ablation.json):
+    # - Retrieval is strongest ECE contributor (removing it: ECE 0.2417→0.2593)
+    # - Source agreement is 2nd strongest (removing it: ECE 0.2417→0.2563)
+    # - Entity coverage *hurts* calibration (removing it: ECE 0.2417→0.2079)
+    # - Consistency slightly hurts (removing it: ECE 0.2417→0.2272)
     DEFAULT_WEIGHTS: Dict[str, float] = {
-        "retrieval": 0.25,
+        "retrieval": 0.30,
         "generation": 0.25,
-        "consistency": 0.20,
-        "source_agreement": 0.15,
-        "entity_coverage": 0.15,
+        "consistency": 0.15,
+        "source_agreement": 0.25,
+        "entity_coverage": 0.05,
     }
 
     def __init__(
@@ -146,7 +151,11 @@ class MultiSignalConfidenceScorer:
     # ------------------------------------------------------------------
 
     def _retrieval_confidence(self, documents: list) -> float:
-        """Score based on retrieval quality metrics."""
+        """Score based on retrieval quality metrics.
+
+        Normalizes scores to [0, 1] internally regardless of input scale
+        (handles both cosine similarity ~0.3-0.9 and RRF ~0.01-0.04).
+        """
         if not documents:
             return 0.0
 
@@ -154,15 +163,30 @@ class MultiSignalConfidenceScorer:
         if not scores:
             return 0.0
 
-        top_score = max(scores)
-        mean_score = float(np.mean(scores))
+        # Normalize scores to [0, 1] by dividing by max (handles any scale)
+        max_raw = max(scores)
+        if max_raw > 0:
+            norm_scores = [s / max_raw for s in scores]
+        else:
+            norm_scores = scores
+
+        top_score = norm_scores[0]  # best doc (always 1.0 after normalization)
+        mean_score = float(np.mean(norm_scores))
         # Score dropoff: large gap between top and last → high confidence
         dropoff = (
-            (scores[0] - scores[-1]) / (scores[0] + 1e-8) if len(scores) > 1 else 0.5
+            (norm_scores[0] - norm_scores[-1]) / (norm_scores[0] + 1e-8)
+            if len(norm_scores) > 1
+            else 0.5
         )
+        # Number of strong docs (>50% of top score)
+        n_strong = sum(1 for s in norm_scores if s > 0.5)
+        coverage = min(n_strong / max(len(norm_scores), 1), 1.0)
 
         return float(
-            np.clip(0.4 * top_score + 0.3 * mean_score + 0.3 * dropoff, 0.0, 1.0)
+            np.clip(
+                0.3 * top_score + 0.2 * mean_score + 0.25 * dropoff + 0.25 * coverage,
+                0.0, 1.0,
+            )
         )
 
     def _generation_confidence(self, probabilities: Optional[List[float]]) -> float:

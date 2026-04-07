@@ -16,6 +16,7 @@ import re
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import List, Dict, Optional, Any
+from loguru import logger
 
 
 class HallucinationType(Enum):
@@ -103,6 +104,20 @@ class HallucinationDetector:
         self.use_nli = use_nli
         self._nli_pipeline = None
         self._rules = _make_rules()
+
+    def warm_up(self) -> None:
+        """Pre-load NLI model to avoid first-query latency spike."""
+        if self.use_nli and self._nli_pipeline is None:
+            try:
+                from transformers import pipeline as hf_pipeline
+                self._nli_pipeline = hf_pipeline(
+                    "text-classification",
+                    model="microsoft/deberta-base-mnli",
+                    device=-1,
+                )
+                logger.info("NLI pipeline pre-loaded successfully")
+            except Exception as e:
+                logger.warning(f"NLI pipeline warm-up failed: {e}")
 
     # ------------------------------------------------------------------
     # Public API

@@ -10,6 +10,7 @@ Enhanced with:
 """
 
 import hashlib
+import time
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
@@ -27,6 +28,7 @@ class RetrievedDocument:
     score: float
     metadata: Dict
     doc_id: str = ""
+    score_type: str = "cosine"  # "cosine" | "rrf" | "reranked"
 
 
 def reciprocal_rank_fusion(
@@ -283,24 +285,31 @@ class HybridRetriever:
             self._lazy_init_bm25_from_store()
 
         fetch_k = k * 3 if use_reranking else k * 2
+        _timings: Dict[str, float] = {}
 
         # Dense retrieval
+        _t0 = time.perf_counter()
         dense_results = self._dense_retrieve(query, fetch_k)
+        _timings["dense_ms"] = (time.perf_counter() - _t0) * 1000
 
         if use_hybrid and self.bm25 is not None:
             # Sparse retrieval
+            _t0 = time.perf_counter()
             sparse_results = self._sparse_retrieve(query, fetch_k)
+            _timings["sparse_ms"] = (time.perf_counter() - _t0) * 1000
 
             # Create ranked lists for RRF using STABLE doc IDs (not content prefix)
             dense_ranked = [(doc_id, score) for _, score, _, doc_id in dense_results]
             sparse_ranked = [(doc_id, score) for _, score, _, doc_id in sparse_results]
 
             # Apply RRF
+            _t0 = time.perf_counter()
             fused_scores = reciprocal_rank_fusion(
                 [dense_ranked, sparse_ranked],
                 k=self.rrf_k,
                 weights=[self.dense_weight, self.sparse_weight],
             )
+            _timings["rrf_ms"] = (time.perf_counter() - _t0) * 1000
 
             # Merge documents by stable ID (dedup)
             doc_map: Dict[str, Tuple[str, Dict]] = {}
@@ -322,6 +331,7 @@ class HybridRetriever:
                             score=fused_score,
                             metadata=metadata,
                             doc_id=doc_id,
+                            score_type="rrf",
                         )
                     )
         else:
@@ -339,7 +349,9 @@ class HybridRetriever:
 
         # Apply reranking if available
         if use_reranking and self.reranker is not None:
+            _t0 = time.perf_counter()
             documents = self.reranker.rerank(query, documents, top_k=k)
+            _timings["rerank_ms"] = (time.perf_counter() - _t0) * 1000
             # Ensure we have RetrievedDocument objects
             if documents and not isinstance(documents[0], RetrievedDocument):
                 documents = [
@@ -351,12 +363,22 @@ class HybridRetriever:
                         score=d.score if hasattr(d, "score") else 0.0,
                         metadata=d.metadata if hasattr(d, "metadata") else {},
                         doc_id=getattr(d, "doc_id", ""),
+                        score_type="reranked",
                     )
                     for d in documents
                 ]
+            else:
+                for d in documents:
+                    d.score_type = "reranked"
 
         # Sort by score and return top k
         documents.sort(key=lambda x: x.score, reverse=True)
+
+        # Log per-stage latency for diagnostics
+        total = sum(_timings.values())
+        parts = " | ".join(f"{k}={v:.1f}" for k, v in _timings.items())
+        logger.debug(f"Retrieval latency: total={total:.1f}ms  [{parts}]")
+
         return documents[:k]
 
     def retrieve_with_context(

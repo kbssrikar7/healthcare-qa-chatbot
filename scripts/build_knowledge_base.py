@@ -120,7 +120,8 @@ def main():
     
     try:
         final_stats = vector_store.get_stats()
-    except:
+    except Exception as e:
+        print(f"[warn] Could not retrieve final stats: {e}")
         final_stats = {"count": "unknown"}
     
     print("\n" + "=" * 60)

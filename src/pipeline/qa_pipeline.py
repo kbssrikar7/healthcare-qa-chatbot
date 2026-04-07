@@ -136,7 +136,22 @@ class HealthcareQAPipeline:
             self.rationale_generator = RationaleGenerator(self.llm)
 
         # Multi-signal confidence scorer (5-signal XAI breakdown)
-        self.multi_signal_scorer = MultiSignalConfidenceScorer() if MultiSignalConfidenceScorer else None
+        # Load fitted Platt calibration params from evaluation/results/calibration.json
+        _platt_params = None
+        try:
+            import json as _json
+            _cal_path = Path(__file__).parent.parent.parent / "evaluation" / "results" / "calibration.json"
+            if _cal_path.exists():
+                _cal = _json.loads(_cal_path.read_text())
+                if "platt_a" in _cal and "platt_b" in _cal:
+                    _platt_params = {"a": float(_cal["platt_a"]), "b": float(_cal["platt_b"])}
+                    logger.info(f"Loaded Platt calibration: a={_platt_params['a']:.3f}, b={_platt_params['b']:.3f}")
+        except Exception as e:
+            logger.warning(f"Could not load calibration params, using defaults: {e}")
+        self.multi_signal_scorer = (
+            MultiSignalConfidenceScorer(calibration_params=_platt_params)
+            if MultiSignalConfidenceScorer else None
+        )
 
         # Hallucination detector with DeBERTa NLI enabled (model cached locally)
         self.hallucination_detector = HallucinationDetector(use_nli=True) if HallucinationDetector else None
@@ -418,25 +433,14 @@ class HealthcareQAPipeline:
         confidence_breakdown = None
         if self.multi_signal_scorer and include_explanation:
             try:
-                # RRF scores live in 0.01–0.04 range but MultiSignalConfidenceScorer
-                # expects cosine-similarity-like 0–1 values.  Normalize by max score
-                # so the top doc always maps to 1.0 and others scale proportionally.
-                raw_scores = [doc.score for doc in documents]
-                max_score = max(raw_scores) if raw_scores else 1.0
-                if max_score > 0:
-                    for doc in documents:
-                        doc.score = doc.score / max_score
-
+                # MultiSignalConfidenceScorer handles score normalization
+                # internally — no need to mutate document scores here.
                 bd = self.multi_signal_scorer.compute_confidence(
                     query=question,
                     answer=answer,
                     retrieved_documents=documents,
                     generation_probabilities=generation_result.probabilities,
                 )
-
-                # Restore original scores so source list stays accurate
-                for doc, orig in zip(documents, raw_scores):
-                    doc.score = orig
                 confidence = {
                     "score": bd.calibrated_confidence,
                     "level": bd.confidence_level,
@@ -563,26 +567,33 @@ class HealthcareQAPipeline:
         """
         Adaptive grounding gate: doc is relevant if
             score >= max(absolute_score_floor, adaptive_ratio * top_score)
-        
-        This handles both cosine-similarity scores (0–1) and RRF scores (~0.016)
-        without the static threshold problem.
+
+        Score-type-aware: uses different absolute floors for RRF vs cosine scores.
         """
         if not documents:
             return False
-        
+
         top_score = max(doc.score for doc in documents)
-        
+
+        # Use score_type to set appropriate absolute floor
+        score_type = getattr(documents[0], "score_type", "cosine")
+        if score_type == "rrf":
+            # RRF scores are inherently small (~0.01-0.04)
+            abs_floor = 0.005
+        else:
+            abs_floor = self.absolute_score_floor
+
         # Hybrid threshold: whichever is larger wins
         threshold = max(
-            self.absolute_score_floor,
+            abs_floor,
             self.adaptive_threshold_ratio * top_score,
         )
-        
+
         relevant_docs = [doc for doc in documents if doc.score >= threshold]
-        
+
         if len(relevant_docs) < self.min_relevant_docs:
             return False
-        
+
         return True
     
     def _clean_answer(self, answer: str) -> str:

@@ -14,7 +14,11 @@
       "query": "So I playing a game at my church last weekend and the game involved running and I ended up tripping and falling down on my right knee and it hurt really bad and the next day my knee was swollen and bruised and it hurts to kneel on or when I put pressure on it and it has been like this for about a we",
       "reference_answer": "Welcome to Chat Doctor . I have gone through your query and can understand your concern. As per your complaint it seems that due to traumatic injury there has been inflammation of the soft tissues and there is accumulation of inflammatory exudate and cells in the area leading to swelling. The bruising is due to ruptured blood vessels leading to Hematoma formation. I would suggest you to do alternate warm and cool compresses over the swelling. Take anti-inflammatory painkiller like Ibuprofen. App",
       "expected_keywords": [
-        "swelling"
+        "swelling",
+        "injury",
+        "inflammation",
+        "ibuprofen",
+        "hematoma"
       ],
       "category": "clinical",
       "source": "ChatDoctor-HealthCareMagic",
@@ -27,12 +31,12 @@
       "query": "Do supervised colorectal trainees differ from consultants in terms of quality of TME surgery?",
       "reference_answer": "No. We conclude that the quality of rectal cancer excision, as defined by mesorectal grades, achieved by supervised colorectal trainees is comparable with that achieved by consultants.",
       "expected_keywords": [
-        "achieved",
-        "conclude",
         "quality",
         "rectal",
         "cancer",
-        "excision"
+        "excision",
+        "mesorectal",
+        "trainees"
       ],
       "category": "research",
       "source": "PubMedQA",
@@ -59,7 +63,7 @@
     },
     {
       "id": "medqa_010",
-      "query": "A 3rd year resident in good standing with his residency training program would like to work more hours outside his residency obligations to gain more experience and pay for his medical school loans. He currently works and trains 60 hours per week as a resident and has a 10-hour shift external to his residency program on Saturdays. He is free of any educational and work obligations on Sundays. Based on the most recent standards set by the Accreditation Council for Graduate Medical Education (ACGME), which of the following is the most accurate statement regarding this resident\u2019s moonlighting and patient safety?",
+      "query": "A 3rd year resident in good standing with his residency training program would like to work more hours outside his residency obligations to gain more experience and pay for his medical school loans. He currently works and trains 60 hours per week as a resident and has a 10-hour shift external to his residency program on Saturdays. He is free of any educational and work obligations on Sundays. Based on the most recent standards set by the Accreditation Council for Graduate Medical Education (ACGME), which of the following is the most accurate statement regarding this resident’s moonlighting and patient safety?",
       "reference_answer": "He may work longer shifts",
       "expected_keywords": [
         "longer",
@@ -92,7 +96,7 @@
     {
       "id": "medqa_027",
       "query": "A researcher wants to perform an experiment to detect HIF-1a in RCC under normoxic conditions with blotting techniques. Which of the following statements are most likely to be true regarding her experiment?",
-      "reference_answer": "A Western blot will show increased HIF-1\u03b1 compared to a normoxic control.",
+      "reference_answer": "A Western blot will show increased HIF-1α compared to a normoxic control.",
       "expected_keywords": [
         "western",
         "blot",
@@ -111,10 +115,10 @@
       "query": "He has a bronze discoloration to his skin, but he denies being outside in the sun or any history of laying in tanning beds. What is the next best step in the management of this patient?",
       "reference_answer": "Start him on both hydrocortisone and fludrocortisone therapy",
       "expected_keywords": [
-        "start",
         "hydrocortisone",
         "fludrocortisone",
-        "therapy"
+        "therapy",
+        "management"
       ],
       "category": "treatment",
       "source": "MedQA-USMLE-step2&3",
@@ -161,10 +165,10 @@
       "expected_keywords": [
         "quilting",
         "suture",
-        "seems",
         "efficient",
         "technique",
-        "prevent"
+        "prevent",
+        "seroma"
       ],
       "category": "research",
       "source": "PubMedQA",
@@ -177,12 +181,12 @@
       "query": "Staging laparoscopy in patients with hepatocellular carcinoma: is it useful?",
       "reference_answer": "No. The overall yield of SL for HCC was 7 %, and the accuracy was 27 %. When accurate imaging methods are available and additional percutaneous liver biopsy is implemented as a standard procedure in the preoperative workup of patients with HCC, the benefit of SL will become even less.",
       "expected_keywords": [
-        "overall",
         "yield",
         "accuracy",
-        "accurate",
         "imaging",
-        "methods"
+        "methods",
+        "laparoscopy",
+        "hcc"
       ],
       "category": "research",
       "source": "PubMedQA",
@@ -246,8 +250,8 @@
         "ampk",
         "secretion",
         "melatonin",
-        "taken",
-        "together"
+        "pineal",
+        "metabolic"
       ],
       "category": "research",
       "source": "PubMedQA",
@@ -260,7 +264,11 @@
       "query": "if i do any physical activities my body  experiences burning feeling with rashes all over the body and severe itches. I referred several doctors they said it is because of some allergy but cannot be diagnosed, they prescribed me with cetrizine tablets, I am taking it for nearly 10 years so became ad",
       "reference_answer": "Thank you for asking at Chat Doctor. I went through your history. I would like to ask you about your symptoms in great detail, like - what are the activities that precipitate itching & rashes, whether they occur without any activity as well, whether you have any other medical conditions, whether you are taking any other medicines on regular basis, whether you have any other allergies, etc. etc. However, from your history, I would first think of what we call \\\"Cholinergic urticaria\\\". It is not e",
       "expected_keywords": [
-        "history"
+        "cholinergic",
+        "urticaria",
+        "itching",
+        "rashes",
+        "allergy"
       ],
       "category": "treatment",
       "source": "ChatDoctor-HealthCareMagic",
@@ -274,11 +282,10 @@
       "reference_answer": "Yes. The findings showed that acupuncture of voice-related acupoints could bring about improvement in vocal function and healing of vocal fold lesions.",
       "expected_keywords": [
         "vocal",
-        "findings",
-        "showed",
         "acupuncture",
         "voice-related",
-        "acupoints"
+        "acupoints",
+        "improvement"
       ],
       "category": "research",
       "source": "PubMedQA",
@@ -310,10 +317,10 @@
       "expected_keywords": [
         "disruption",
         "children",
-        "consistently",
-        "showed",
         "secondary",
-        "physis"
+        "physis",
+        "endochondral",
+        "ocd"
       ],
       "category": "research",
       "source": "PubMedQA",
@@ -362,7 +369,10 @@
       "reference_answer": "and welcome to Chat Doctor. Thank you for your query. I am Chat Doctor, I understand your concerns and I will try to help you as much as I can. In most cases these spots are benign growths such as cysts or hematomas. Hematoma is very small and this can't cause such symptoms unless larger than 10\\u00a0cm. You should do MRI scan or liver biopsy to find what type of lesion it is.  Less common this may be malignant issues such as hepatocellular carcinoma. This abdominal pain may not be related to li",
       "expected_keywords": [
         "liver",
-        "query"
+        "biopsy",
+        "carcinoid",
+        "hematoma",
+        "mri"
       ],
       "category": "diagnosis",
       "source": "ChatDoctor-HealthCareMagic",
@@ -412,9 +422,9 @@
       "reference_answer": "If your elderly parent is having problems with the glaucoma medication, his/her ophthalmologist is the only one who can decide in changing medications and their dose according to the current health situation of the patient. If you are worried about the price, you can discuss with your parent doctor about the possibility of disbursement. According to my knowledge and my practice, many countries do apply insurance policies in treating patients with various diagnosis, including glaucoma. In fact, I",
       "expected_keywords": [
         "glaucoma",
-        "parent",
         "medications",
-        "according"
+        "ophthalmologist",
+        "insurance"
       ],
       "category": "treatment",
       "source": "ChatDoctor-HealthCareMagic",
@@ -446,9 +456,10 @@
       "reference_answer": "Thanks for writing to us. The pain on both the sides with a normal ultrasound scan could be due to a myofascial syn Chat Doctor. You can take mild painkillers like ibuprofen along with a good muscle relaxant for symptomatic relief after consulting your physician. Since the pain is persistent, it is less likely to be related to a renal infection. I hope this information has been both informative and helpful for you.",
       "expected_keywords": [
         "pain",
-        "thanks",
-        "writing",
-        "sides"
+        "kidney",
+        "infection",
+        "ibuprofen",
+        "ultrasound"
       ],
       "category": "treatment",
       "source": "ChatDoctor-HealthCareMagic",
@@ -562,12 +573,11 @@
       "query": "Proliferative index obtained by DNA image cytometry. Does it add prognostic information in Auer IV breast cancer?",
       "reference_answer": "Yes. According to ICM-DNA values corresponding to the S + G2/M region, patients with breast cancers classified as Auer IV can be divided into subgroups with different tumor characteristics and prognoses.",
       "expected_keywords": [
-        "according",
         "icm-dna",
         "values",
-        "corresponding",
-        "region",
-        "breast"
+        "breast",
+        "prognoses",
+        "subgroups"
       ],
       "category": "research",
       "source": "PubMedQA",
@@ -613,9 +623,11 @@
       "query": "Hello, for the past few weeks I have been experiencing dizzy spells. This is accompanied by a numb, almost cold feeling, in my hands, feet and face. My vision goes a bit blurry too. It happens after I ve had chocolate or a fizzy drink. I am on an antidepressant too.",
       "reference_answer": "Thanks for choosing Chat Doctor for posting your query. I have gone through your question in detail and I can understand what you are going through. It could be due to interaction with an antidepressant. You need to state which antidepressant you are on. Is it MAO Inhibitors? Hope I am able to answer your concerns. If you have any further query, I would be glad to help you. In future if you wish to contact me directly, you can use the below-mentioned link",
       "expected_keywords": [
-        "query",
         "antidepressant",
-        "thanks"
+        "interaction",
+        "dizzy",
+        "mao",
+        "inhibitors"
       ],
       "category": "symptoms",
       "source": "ChatDoctor-HealthCareMagic",
@@ -646,12 +658,11 @@
       "query": "Does stress increase imitation of drinking behavior?",
       "reference_answer": "No. Generally, it appears that among young male adults, imitation of alcohol consumption is a robust phenomenon not dependent on individual stress levels.",
       "expected_keywords": [
-        "generally",
-        "appears",
-        "among",
-        "young",
-        "male",
-        "adults"
+        "imitation",
+        "alcohol",
+        "consumption",
+        "stress",
+        "robust"
       ],
       "category": "research",
       "source": "PubMedQA",
@@ -714,7 +725,7 @@
     },
     {
       "id": "medqa_019",
-      "query": "His chest radiograph shows pulmonary infiltrates and mediastinal lymphadenopathy, sputum smear is negative, Mantoux test is 12 mm \u00d7 14 mm, CD4+ T cell count is 370/\u03bcL, and HIV RNA is 2,900 copies/mL. What is the most appropriate initial step in treatment?",
+      "query": "His chest radiograph shows pulmonary infiltrates and mediastinal lymphadenopathy, sputum smear is negative, Mantoux test is 12 mm × 14 mm, CD4+ T cell count is 370/μL, and HIV RNA is 2,900 copies/mL. What is the most appropriate initial step in treatment?",
       "reference_answer": "Continue antitubercular therapy and antiretroviral therapy without any change",
       "expected_keywords": [
         "therapy",
@@ -734,8 +745,10 @@
       "reference_answer": "First do u have any ECG report. Is it showing any abnormalities. What I can suggest, first get one thyroid test done. Secondly is he inhaler on regular basis if yes then one content in inhaler is albuterol or formoterol or levosalbutamol, this content causes palpitations tremors and other complaints. So you asked your physician to remove this content from inhaler. Or sometimes if bronchial asthma is not controlled then it causes low oxygen level in blood and palpitations.",
       "expected_keywords": [
         "inhaler",
-        "content",
-        "first"
+        "palpitations",
+        "thyroid",
+        "asthma",
+        "albuterol"
       ],
       "category": "treatment",
       "source": "ChatDoctor-HealthCareMagic",
@@ -905,8 +918,8 @@
         "cardioembolic",
         "stroke",
         "level",
-        "independently",
-        "associated"
+        "associated",
+        "biomarker"
       ],
       "category": "research",
       "source": "PubMedQA",
@@ -982,7 +995,7 @@
     },
     {
       "id": "medqa_007",
-      "query": "A 47-year-old executive schedules an appointment his physician for a routine medical check-up. He currently has no complaints and claims to be \u201cas fit as a fiddle.\u201d The physical examination findings are unremarkable, except for a mid-systolic murmur heard in the 2nd left intercostal space that radiates to the carotids on auscultation. The physician instructs the patient to stand from a supine position with the stethoscope still placed on his chest. Which of the following changes would occur with this maneuver?",
+      "query": "A 47-year-old executive schedules an appointment his physician for a routine medical check-up. He currently has no complaints and claims to be “as fit as a fiddle.” The physical examination findings are unremarkable, except for a mid-systolic murmur heard in the 2nd left intercostal space that radiates to the carotids on auscultation. The physician instructs the patient to stand from a supine position with the stethoscope still placed on his chest. Which of the following changes would occur with this maneuver?",
       "reference_answer": "A reduction in diastolic filling time",
       "expected_keywords": [
         "reduction",
@@ -1086,9 +1099,11 @@
       "query": "Hi I recently received the depo-provera shot on October 9th. By the 12th I started feeling tired and now I can t even go to school with out feeling sick and very very tired. I used to workout (run and strength train) at least 4 times a week and now I can t even get through a 20 minute run which used",
       "reference_answer": "CassctiexxThanks for writing in to Chat Doctor ! The change of mood, depression, lack of concentration can be expected with Depot Proverb, but the other things like feeling red and unwell and fast heart rate are unexpected sequela. I think yours nurse is right you may be having some viral syn Chat Doctor.  Infection or infectious mononucleosis etc. If you have any further query please let me know I would try to answer it for you. Wish you a great health!",
       "expected_keywords": [
-        "cassctiexxthanks",
-        "writing",
-        "mood"
+        "mood",
+        "vitamin",
+        "deficiency",
+        "symptoms",
+        "blood"
       ],
       "category": "treatment",
       "source": "ChatDoctor-HealthCareMagic",
@@ -1243,7 +1258,7 @@
     },
     {
       "id": "medqa_026",
-      "query": "A 22-year-old man from Nepal presents to the emergency department complaining of swelling and pain in his right testicle. The patient states that he just arrived in the United States to live with his wife, with whom he is monogamous. The patient denies painful urination or urethral discharge, but admits that 10 days ago he \u201cfelt like he had a fever\u201d and the right side of his face was swollen and painful. Which of the following is characteristic of the most likely diagnosis?",
+      "query": "A 22-year-old man from Nepal presents to the emergency department complaining of swelling and pain in his right testicle. The patient states that he just arrived in the United States to live with his wife, with whom he is monogamous. The patient denies painful urination or urethral discharge, but admits that 10 days ago he “felt like he had a fever” and the right side of his face was swollen and painful. Which of the following is characteristic of the most likely diagnosis?",
       "reference_answer": "Preventable by a live attenuated vaccine",
       "expected_keywords": [
         "preventable",
@@ -1263,10 +1278,10 @@
       "expected_keywords": [
         "signal",
         "intensity",
-        "showed",
         "significant",
         "difference",
-        "development"
+        "development",
+        "mri"
       ],
       "category": "research",
       "source": "PubMedQA",
@@ -1281,8 +1296,7 @@
       "expected_keywords": [
         "normal",
         "question",
-        "million",
-        "welcome"
+        "million"
       ],
       "category": "clinical",
       "source": "ChatDoctor-HealthCareMagic",
@@ -1328,7 +1342,7 @@
     {
       "id": "medqa_030",
       "query": "A lymph node biopsy shows granuloma formation and large CD15-positive, CD30-positive cells with bilobed nuclei. Which of the following is the most likely explanation for this patient's laboratory findings?",
-      "reference_answer": "Secretion of \u03b3-interferon by activated T-lymphocytes",
+      "reference_answer": "Secretion of γ-interferon by activated T-lymphocytes",
       "expected_keywords": [
         "secretion",
         "interferon",
@@ -1343,7 +1357,7 @@
     },
     {
       "id": "medqa_028",
-      "query": "A fundoscopic examination shows small red dots in the superficial retinal layers suggestive of microaneurysms. The HbA1c is 9% and the urinalysis shows the following:\nColor Pale yellow (light/pale-to-dark/deep amber)\nClarity Cloudy\npH 6.6\nSpecific gravity 1.010\nGlucose 199 mg/dl\nKetones None\nNitrites Negative\nLeukocyte esterase Negative\nBilirubin Negative\nUrinary bilirubin Traces\nRed blood cells 3 RBCs\nProtein 120 mg/d\nRBCs \u2264 2 RBCs/hpf\nWBCs 22 WBCs/hpf\nEpithelial cells 27 squamous epithelial cells/hpf\nCasts 5 hyaline casts/lpf\nCrystals Occasional\nBacteria None\nYeast Present\nWhich of the following statements best describes the cause of this patient\u2019s glucosuria?",
+      "query": "A fundoscopic examination shows small red dots in the superficial retinal layers suggestive of microaneurysms. The HbA1c is 9% and the urinalysis shows the following:\nColor Pale yellow (light/pale-to-dark/deep amber)\nClarity Cloudy\npH 6.6\nSpecific gravity 1.010\nGlucose 199 mg/dl\nKetones None\nNitrites Negative\nLeukocyte esterase Negative\nBilirubin Negative\nUrinary bilirubin Traces\nRed blood cells 3 RBCs\nProtein 120 mg/d\nRBCs ≤ 2 RBCs/hpf\nWBCs 22 WBCs/hpf\nEpithelial cells 27 squamous epithelial cells/hpf\nCasts 5 hyaline casts/lpf\nCrystals Occasional\nBacteria None\nYeast Present\nWhich of the following statements best describes the cause of this patient’s glucosuria?",
       "reference_answer": "Secondary active transporters fail to completely reabsorb glucose in the renal tubules",
       "expected_keywords": [
         "secondary",
@@ -1364,10 +1378,11 @@
       "query": "Dear Dr. Matthew MintzI have a very sore tongue. It looks like blotches of raw tongue where it looks like the skin came off. It is constant and very painful with a large degree of burning. I also have little ulcers (white dots) which also are extremely sore. It hurts to eat anything with salt or som",
       "reference_answer": "Welcome Thanks for consulting Chat Doctor, I have gone through your query, as you have mentioned that you have sore painful tongue, don't worry it can be due to National deficiency, or decapitation of papillae.  You do is take one capsule vitamin B complex supplement, twice daily for 5 days.  You can apply ointment McCoppin or colonel twice daily for 5\\u00a0days.  If then you won't get relief then go to dentist for examination and if necessary investigations.  Hope this will help you.",
       "expected_keywords": [
-        "twice",
-        "daily",
-        "welcome",
-        "thanks"
+        "antibiotic",
+        "infection",
+        "dosage",
+        "treatment",
+        "bacteria"
       ],
       "category": "symptoms",
       "source": "ChatDoctor-HealthCareMagic",
@@ -1380,9 +1395,11 @@
       "query": "Hello! About a year ago I had pannik attack and the doctor prescribe Zoloft and Tafil. I did the treatment for 6 months and felt good. Now I feel like sometimes I can not swallow, I am eating less and I tray tio eat only soft food. am I having panik attacks again?",
       "reference_answer": "and welcome to Chat Doctor, In your query you have not mentioned whether you are still continuing medication or not. I hope you eye on medications which can be tapered slowly before stopping with regular follow up from a qualified psychiatrist. Experiencing mild difficulty in swallowing once in a while do not appear to be a part of panic attack. Maintain good food, adequate HY Chat Doctor. So as far as I can see, there is nothing in you that you should be worried of. Hope I have answered your qu",
       "expected_keywords": [
-        "hope",
-        "welcome",
-        "query"
+        "diagnosis",
+        "treatment",
+        "symptoms",
+        "medical",
+        "consultation"
       ],
       "category": "treatment",
       "source": "ChatDoctor-HealthCareMagic",
@@ -1413,12 +1430,11 @@
       "query": "Fast foods - are they a risk factor for asthma?",
       "reference_answer": "Yes. Frequent consumption of hamburgers showed a dose-dependent association with asthma symptoms, and frequent takeaway consumption showed a similar association with BHR.",
       "expected_keywords": [
-        "frequent",
         "consumption",
-        "showed",
         "association",
         "hamburgers",
-        "dose-dependent"
+        "dose-dependent",
+        "dietary"
       ],
       "category": "research",
       "source": "PubMedQA",
@@ -1443,7 +1459,7 @@
     },
     {
       "id": "medqa_012",
-      "query": "A chi-square test is performed to test the significance of the relationship, and an odds ratio of 2.1 was computed for the association between low education and the risk of MI, with a confidence interval of 0.9\u20139.7. What inference can be made on the association between young age MI and educational status from this study?",
+      "query": "A chi-square test is performed to test the significance of the relationship, and an odds ratio of 2.1 was computed for the association between low education and the risk of MI, with a confidence interval of 0.9–9.7. What inference can be made on the association between young age MI and educational status from this study?",
       "reference_answer": "The association is not statistically significant, and low education is not a risk factor.",
       "expected_keywords": [
         "association",
@@ -1482,8 +1498,11 @@
       "query": "I have a hard lump on my upper back and its been there for over 2 years with no pain and the only reason i know its there is my wife asked me about it one night and asked me what it was and if it hurt at all at the time no it did not hurt but i had a doctor look at it anyway they said it was nothing",
       "reference_answer": "Dear,Thanks for your query to Chat Doctor. Studied your query in full depth of its details. Reviewed it in context of your health concerns. Based On the facts, You seem to suffer from-Lipoma on the Back with Drums Disease Type-A painful version of the Benign Lipoma.or/ it could be a -Sebaceous Cyst with Hematoma and infection-due to excessive handling lately. Or / could be due to Chronic burnt out-Boil with Abscess, increasing lately USG of the lump and FNAC Biopsy if need be, after Surgeons Sec",
       "expected_keywords": [
-        "query",
-        "lately"
+        "symptoms",
+        "diagnosis",
+        "treatment",
+        "medical",
+        "assessment"
       ],
       "category": "symptoms",
       "source": "ChatDoctor-HealthCareMagic",
@@ -1543,7 +1562,7 @@
     },
     {
       "id": "medqa_032",
-      "query": "On anoscopy, a non-tender, dilated vascular protrusion is noted superior to the pectinate line. Which of the following is most likely true about this patient\u2019s current symptoms?",
+      "query": "On anoscopy, a non-tender, dilated vascular protrusion is noted superior to the pectinate line. Which of the following is most likely true about this patient’s current symptoms?",
       "reference_answer": "The vascular protrusion drains into the superior rectal vein.",
       "expected_keywords": [
         "vascular",
@@ -1612,9 +1631,10 @@
       "reference_answer": "Thanks for writing to us, I have studied your case with diligence. As per your history and injury pattern there can be tear in ankle ligament leading to pain and swelling. Instability may increase due to laxity of ligament. I will advise doing MRI ankle for soft tissue involvement. Till time, you can continue use supportive splint or brace. Physiotherapy like ultrasound and TENS will help in early healing. Persistent pain after ankle injury is common and may take 6 months to heal. Hope this answ",
       "expected_keywords": [
         "ankle",
-        "writing",
         "injury",
-        "ligament"
+        "ligament",
+        "sprain",
+        "treatment"
       ],
       "category": "symptoms",
       "source": "ChatDoctor-HealthCareMagic",

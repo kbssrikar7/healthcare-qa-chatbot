@@ -1,16 +1,19 @@
 """
 Source attribution for medical QA.
 """
+import logging
 from typing import List, Dict, Optional
 from dataclasses import dataclass
 import re
 import numpy as np
 
+logger = logging.getLogger(__name__)
+
 # Try to import spacy for better NLP, fall back to regex
 try:
     import spacy
     NLP_AVAILABLE = True
-except ImportError:
+except Exception:
     NLP_AVAILABLE = False
     spacy = None
 
@@ -194,10 +197,15 @@ class SourceAttributor:
         return None
     
     def _embedding_similarity(self, text1: str, text2: str) -> float:
-        """Calculate embedding-based similarity."""
+        """Calculate cosine similarity between embeddings."""
         emb1 = self.embedder.embed_query(text1)
         emb2 = self.embedder.embed_query(text2)
-        return float(np.dot(emb1, emb2))
+        # Cosine similarity (normalized dot product)
+        norm1 = np.linalg.norm(emb1)
+        norm2 = np.linalg.norm(emb2)
+        if norm1 == 0 or norm2 == 0:
+            return 0.0
+        return float(np.dot(emb1, emb2) / (norm1 * norm2))
     
     def _text_overlap(self, claim: str, content: str) -> float:
         """Calculate word overlap similarity."""
