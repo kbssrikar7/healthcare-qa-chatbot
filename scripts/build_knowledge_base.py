@@ -2,7 +2,19 @@
 """
 Build the medical knowledge base from downloaded datasets.
 Optimized for handling large datasets with progress tracking.
+
+Usage examples
+--------------
+# Default (legacy MedicalTextChunker, KB v1):
+    python scripts/build_knowledge_base.py
+
+# KB v2 with RecursiveSentenceChunker:
+    python scripts/build_knowledge_base.py \
+        --chunker recursive \
+        --output-dir data/knowledge_base_v2 \
+        --collection medical_knowledge_v2
 """
+import argparse
 import sys
 import gc
 from pathlib import Path
@@ -11,25 +23,43 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from tqdm import tqdm
 from src.data_pipeline.loaders.dataset_loader import MedicalDatasetLoader
 from src.data_pipeline.preprocessors.text_cleaner import MedicalTextCleaner
-from src.data_pipeline.preprocessors.chunker import MedicalTextChunker
+from src.data_pipeline.preprocessors.chunker import MedicalTextChunker, RecursiveSentenceChunker
 from src.embeddings.embedding_models import MedicalEmbedder
 from src.embeddings.vector_store import VectorStore
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Build medical knowledge base")
+    parser.add_argument("--chunker", choices=["fixed", "recursive"], default="fixed",
+                        help="Chunker type: 'fixed' = original MedicalTextChunker, "
+                             "'recursive' = new RecursiveSentenceChunker for KB v2")
+    parser.add_argument("--output-dir", default="data/knowledge_base",
+                        help="ChromaDB persist directory")
+    parser.add_argument("--collection", default="medical_knowledge",
+                        help="ChromaDB collection name")
+    args = parser.parse_args()
+
     print("\n" + "=" * 60)
     print("  BUILDING MEDICAL KNOWLEDGE BASE")
+    print(f"  chunker={args.chunker}  output={args.output_dir}  collection={args.collection}")
     print("=" * 60)
-    
+
     # Initialize components
     print("\n[1/5] Initializing components...")
     loader = MedicalDatasetLoader()
     cleaner = MedicalTextCleaner()
-    chunker = MedicalTextChunker(chunk_size=512, chunk_overlap=50)
+
+    if args.chunker == "recursive":
+        chunker = RecursiveSentenceChunker(chunk_overlap=100, min_chunk_size=80)
+        print("  Using RecursiveSentenceChunker (domain-adaptive, sentence-boundary-aware)")
+    else:
+        chunker = MedicalTextChunker(chunk_size=512, chunk_overlap=50)
+        print("  Using MedicalTextChunker (fixed 512-token chunks)")
+
     embedder = MedicalEmbedder(model_name="all-minilm")
     vector_store = VectorStore(
-        collection_name="medical_knowledge",
-        persist_directory="data/knowledge_base"
+        collection_name=args.collection,
+        persist_directory=args.output_dir,
     )
     
     # Show dataset statistics
@@ -130,8 +160,18 @@ def main():
     print(f"  Documents processed: {doc_count:,}")
     print(f"  Chunks created: {len(all_chunks):,}")
     print(f"  Vector store stats: {final_stats}")
-    print(f"  Location: data/knowledge_base")
+    print(f"  Location: {args.output_dir}")
     print("\nThe knowledge base is ready for use!")
+
+    # Record embedding model metadata as sidecar JSON
+    try:
+        vector_store.record_embedding_model(
+            model_name=embedder._model_path,
+            dimension=embedder.embedding_dimension,
+        )
+        print(f"  Embedding metadata written to {args.output_dir}/embedding_metadata.json")
+    except Exception as e:
+        print(f"  [warn] Could not write embedding metadata: {e}")
 
 
 if __name__ == "__main__":
