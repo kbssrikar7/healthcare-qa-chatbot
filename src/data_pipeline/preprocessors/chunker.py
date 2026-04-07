@@ -1,7 +1,15 @@
 """
 Document chunking for medical texts with context preservation.
+
+Classes
+-------
+MedicalTextChunker
+    Original fixed-size chunker (kept for backward compatibility).
+RecursiveSentenceChunker
+    Improved recursive chunker that respects sentence boundaries using a
+    separator hierarchy.  This is the chunker to use for KB v2 builds.
 """
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
 import re
 
@@ -184,3 +192,178 @@ class MedicalTextChunker:
         for doc in documents:
             all_chunks.extend(self.chunk_document(doc))
         return all_chunks
+
+
+# ---------------------------------------------------------------------------
+# RecursiveSentenceChunker — improved chunker for KB v2
+# ---------------------------------------------------------------------------
+
+class RecursiveSentenceChunker:
+    """
+    Recursive text splitter that respects sentence boundaries.
+
+    Algorithm
+    ---------
+    1. Try to split on the highest-priority separator (paragraph breaks).
+    2. If any resulting piece is still too large, recurse with the next
+       separator in the hierarchy.
+    3. Once all pieces fit within `chunk_size`, merge adjacent pieces while
+       keeping the total below the limit, then add overlap.
+
+    Domain-adaptive sizes are applied per document source so the caller
+    does not need to know about chunk sizes at all.
+
+    Usage
+    -----
+    >>> chunker = RecursiveSentenceChunker()
+    >>> chunks = chunker.chunk_document({"content": "...", "source": "PubMedQA"})
+    """
+
+    # Separator hierarchy: try paragraph first, fall back to finer splits
+    _SEPARATORS = ["\n\n", "\n", ". ", "; ", ", ", " ", ""]
+
+    # Domain-specific chunk sizes (characters, ~4 chars/token)
+    _DOMAIN_SIZES: Dict[str, int] = {
+        "pubmedqa":         256 * 4,   # ~1 024 chars
+        "medmcqa":          128 * 4,   # ~  512 chars
+        "healthcaremagic":  512 * 4,   # ~2 048 chars
+        "clinical_guideline": 768 * 4, # ~3 072 chars
+        "default":          512 * 4,   # ~2 048 chars
+    }
+
+    def __init__(
+        self,
+        chunk_size: Optional[int] = None,
+        chunk_overlap: int = 100,
+        min_chunk_size: int = 80,
+        use_domain_adaptive: bool = True,
+        keep_separator: bool = True,
+    ):
+        self._default_chunk_size = chunk_size or self._DOMAIN_SIZES["default"]
+        self._chunk_overlap = chunk_overlap
+        self._min_chunk_size = min_chunk_size
+        self._use_domain_adaptive = use_domain_adaptive
+        self._keep_separator = keep_separator
+
+    # ------------------------------------------------------------------
+    # Public API
+    # ------------------------------------------------------------------
+
+    def chunk_document(self, document: Dict[str, Any]) -> List[Chunk]:
+        """Chunk a single document dict, returning a list of Chunk objects."""
+        content = document.get("content", "")
+        source = document.get("source", "unknown")
+        metadata = document.get("metadata", {})
+        if not content:
+            return []
+
+        chunk_size = self._size_for_source(source)
+        raw_chunks = self._split(content, self._SEPARATORS, chunk_size)
+
+        return [
+            Chunk(
+                content=c,
+                source=source,
+                chunk_id=i,
+                total_chunks=len(raw_chunks),
+                metadata={
+                    **metadata,
+                    "chunk_length": len(c),
+                    "chunker": "recursive",
+                    "chunk_size_chars": chunk_size,
+                },
+            )
+            for i, c in enumerate(raw_chunks)
+        ]
+
+    def chunk_documents(self, documents: List[Dict[str, Any]]) -> List[Chunk]:
+        """Chunk multiple documents."""
+        all_chunks: List[Chunk] = []
+        for doc in documents:
+            all_chunks.extend(self.chunk_document(doc))
+        return all_chunks
+
+    # ------------------------------------------------------------------
+    # Internal helpers
+    # ------------------------------------------------------------------
+
+    def _size_for_source(self, source: str) -> int:
+        if not self._use_domain_adaptive:
+            return self._default_chunk_size
+        src = source.lower()
+        for key, size in self._DOMAIN_SIZES.items():
+            if key != "default" and key in src:
+                return size
+        return self._DOMAIN_SIZES["default"]
+
+    def _split(self, text: str, separators: List[str], chunk_size: int) -> List[str]:
+        """Recursively split *text* using the separator hierarchy."""
+        if not text:
+            return []
+
+        # Find the first separator that is present in text
+        sep = ""
+        remaining_seps = separators[:]
+        for candidate in separators:
+            if candidate == "" or candidate in text:
+                sep = candidate
+                remaining_seps = separators[separators.index(candidate) + 1:]
+                break
+
+        # Split on chosen separator
+        if sep:
+            pieces = re.split(re.escape(sep), text)
+            if self._keep_separator and sep.strip():
+                # Re-attach the separator to the end of each piece
+                pieces = [p + sep if i < len(pieces) - 1 else p
+                          for i, p in enumerate(pieces)]
+        else:
+            # No separator left → character-level fallback
+            return [text[i:i + chunk_size] for i in range(0, len(text), chunk_size)]
+
+        # Recurse on pieces that are still too large
+        good: List[str] = []
+        for piece in pieces:
+            piece = piece.strip()
+            if not piece:
+                continue
+            if len(piece) <= chunk_size:
+                good.append(piece)
+            else:
+                good.extend(self._split(piece, remaining_seps, chunk_size))
+
+        # Merge adjacent small pieces to avoid tiny fragments, then add overlap
+        merged = self._merge(good, chunk_size)
+        return self._add_overlap(merged) if self._chunk_overlap > 0 else merged
+
+    def _merge(self, pieces: List[str], chunk_size: int) -> List[str]:
+        """Greedily merge adjacent pieces to fill chunks up to chunk_size."""
+        merged: List[str] = []
+        current = ""
+        for piece in pieces:
+            if not piece:
+                continue
+            candidate = (current + " " + piece).strip() if current else piece
+            if len(candidate) <= chunk_size:
+                current = candidate
+            else:
+                if len(current) >= self._min_chunk_size:
+                    merged.append(current)
+                current = piece
+        if len(current) >= self._min_chunk_size:
+            merged.append(current)
+        return merged
+
+    def _add_overlap(self, chunks: List[str]) -> List[str]:
+        """Prepend the last `_chunk_overlap` chars of chunk[i-1] to chunk[i]."""
+        if len(chunks) <= 1:
+            return chunks
+        result: List[str] = [chunks[0]]
+        for i in range(1, len(chunks)):
+            tail = chunks[i - 1][-self._chunk_overlap:]
+            # Trim to word boundary to avoid splitting mid-word
+            space = tail.find(" ")
+            if space > 0:
+                tail = tail[space + 1:]
+            result.append((tail + " " + chunks[i]).strip())
+        return result

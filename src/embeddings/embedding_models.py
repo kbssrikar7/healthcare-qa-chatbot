@@ -8,7 +8,7 @@ from typing import List, Union, Optional
 from sentence_transformers import SentenceTransformer
 from pathlib import Path
 import os
-from functools import lru_cache
+from collections import OrderedDict
 
 
 class MedicalEmbedder:
@@ -68,10 +68,9 @@ class MedicalEmbedder:
                 device=self.device,
             )
 
-        # Per-instance LRU cache: { query_str -> np.ndarray }
-        # Using an OrderedDict-style approach with a capped size.
-        self._embed_cache: dict = {}
-        self._embed_cache_order: list = []  # FIFO eviction when full
+        # Per-instance LRU cache: OrderedDict { query_str -> np.ndarray }
+        # move_to_end on hit gives true LRU behaviour; popitem(last=False) for eviction.
+        self._embed_cache: OrderedDict = OrderedDict()
 
     # ------------------------------------------------------------------
     # Public API
@@ -105,20 +104,19 @@ class MedicalEmbedder:
         Cached results are stored as immutable numpy arrays (read-only view).
         Callers that need to mutate the result should call `.copy()` themselves.
         """
-        # Cache hit — return a copy to protect the cached array from mutation
+        # Cache hit — move to end (most-recently-used) and return a copy
         if query in self._embed_cache:
+            self._embed_cache.move_to_end(query)
             return self._embed_cache[query].copy()
 
         # Cache miss — encode and store
         embedding = self.embed(query, show_progress=False)[0]
 
-        # Evict oldest entry if cache is full
-        if len(self._embed_cache_order) >= self._EMBED_CACHE_SIZE:
-            oldest = self._embed_cache_order.pop(0)
-            self._embed_cache.pop(oldest, None)
+        # Evict LRU entry if cache is full (O(1))
+        if len(self._embed_cache) >= self._EMBED_CACHE_SIZE:
+            self._embed_cache.popitem(last=False)
 
         self._embed_cache[query] = embedding
-        self._embed_cache_order.append(query)
 
         return embedding.copy()
 
@@ -129,7 +127,6 @@ class MedicalEmbedder:
     def clear_cache(self) -> None:
         """Clear the query embedding cache (e.g., after knowledge-base rebuild)."""
         self._embed_cache.clear()
-        self._embed_cache_order.clear()
         logger.debug("Query embedding cache cleared.")
 
     def cache_stats(self) -> dict:

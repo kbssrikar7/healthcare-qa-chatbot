@@ -1,6 +1,7 @@
 """
 Focused regression tests for the local-safe rollout changes.
 """
+from collections import OrderedDict
 from pathlib import Path
 import time
 
@@ -15,8 +16,7 @@ from src.retrieval.hybrid_retriever import HybridRetriever
 def test_query_embedding_cache_is_reused():
     """Repeated queries should hit the per-instance embedding cache."""
     embedder = MedicalEmbedder.__new__(MedicalEmbedder)
-    embedder._embed_cache = {}
-    embedder._embed_cache_order = []
+    embedder._embed_cache = OrderedDict()
     embedder._EMBED_CACHE_SIZE = 256
 
     def fake_embed(texts, **kwargs):

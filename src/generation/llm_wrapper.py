@@ -273,10 +273,15 @@ class MedicalLLM:
         self,
         prompt: str,
         max_new_tokens: int = 256,
-        temperature: float = 0.3,
-        top_p: float = 0.85,
+        temperature: float = 0.1,
+        top_p: float = 0.9,
+        repeat_penalty: float = 1.1,
     ) -> GenerationResult:
-        """Generate using llama-cpp-python (GGUF backend)."""
+        """Generate using llama-cpp-python (GGUF backend).
+
+        BioMistral Q4_K_M performs best with low temperature (0.1) and a mild
+        repeat penalty (1.1) to prevent degenerate looping on CPU.
+        """
         # BioMistral uses native Mistral instruction formatting. If the caller
         # already supplied an [INST] prompt, preserve it instead of double-wrap.
         prompt = prompt.strip()
@@ -286,6 +291,7 @@ class MedicalLLM:
             max_tokens=max_new_tokens,
             temperature=max(temperature, 0.01),  # llama-cpp requires > 0
             top_p=top_p,
+            repeat_penalty=repeat_penalty,
             echo=False,
         )
         text = output["choices"][0]["text"]

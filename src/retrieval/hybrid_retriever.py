@@ -10,8 +10,11 @@ Enhanced with:
 """
 
 import hashlib
+import pickle
+import re
 import time
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
@@ -81,6 +84,8 @@ class HybridRetriever:
 
     # Batch size for loading documents from vector store for BM25
     _BM25_LOAD_BATCH = 5000
+    # Filename for the pickled BM25 index cache (stored next to ChromaDB dir)
+    _BM25_CACHE_FILE = "bm25_index.pkl"
 
     def __init__(
         self,
@@ -111,7 +116,6 @@ class HybridRetriever:
         self.reranker = reranker
         self.rrf_k = rrf_k
         self.corpus = corpus
-        self.corpus_map: Dict[str, int] = {}  # doc_id -> corpus index
         self.bm25 = None
         self._bm25_init_attempted = False
         # Latency diagnostics — exposed for QA pipeline to include in stage_latencies
@@ -139,22 +143,84 @@ class HybridRetriever:
         """Initialize BM25 index from a corpus list."""
         self.corpus = corpus
         tokenized_corpus = []
-        self.corpus_map = {}
 
-        for i, doc in enumerate(corpus):
+        for doc in corpus:
             content = doc.get("content", "")
             tokenized_corpus.append(self._medical_tokenize(content))
-            doc_id = doc.get("id", _stable_doc_id(content, doc.get("source", "")))
-            self.corpus_map[doc_id] = i
 
         self.bm25 = BM25Okapi(tokenized_corpus)
         self._bm25_init_attempted = True
         logger.info(f" BM25 index initialized with {len(corpus)} documents")
 
+    def _bm25_cache_path(self) -> Optional[Path]:
+        """Return path to the BM25 pickle cache, or None if vector store has no persist dir."""
+        try:
+            persist_dir = Path(self.vector_store.persist_directory)
+            return persist_dir / self._BM25_CACHE_FILE
+        except Exception:
+            return None
+
+    def _bm25_cache_key(self, doc_count: int) -> str:
+        """Stable cache key = doc_count + embedding_meta mtime (or '0' if absent)."""
+        try:
+            meta_path = Path(self.vector_store.persist_directory) / "embedding_metadata.json"
+            mtime = str(int(meta_path.stat().st_mtime)) if meta_path.exists() else "0"
+        except Exception:
+            mtime = "0"
+        return f"{doc_count}:{mtime}"
+
+    def _try_load_bm25_cache(self, doc_count: int) -> bool:
+        """Try to load BM25 from pickle cache. Returns True on success."""
+        cache_path = self._bm25_cache_path()
+        if cache_path is None or not cache_path.exists():
+            return False
+        try:
+            with open(cache_path, "rb") as f:
+                cached = pickle.load(f)
+            if cached.get("key") != self._bm25_cache_key(doc_count):
+                logger.debug("BM25 cache invalidated (doc count or KB metadata changed)")
+                return False
+            self.corpus = cached["corpus"]
+            self.bm25 = cached["bm25"]
+            logger.info(
+                f" BM25 loaded from cache ({doc_count:,} docs, "
+                f"{cache_path.stat().st_size // 1024:,} KB)"
+            )
+            return True
+        except Exception as e:
+            logger.warning(f" BM25 cache load failed (will rebuild): {e}")
+            return False
+
+    def _save_bm25_cache(self, doc_count: int) -> None:
+        """Persist BM25 index and corpus to pickle cache for fast subsequent loads."""
+        cache_path = self._bm25_cache_path()
+        if cache_path is None:
+            return
+        try:
+            with open(cache_path, "wb") as f:
+                pickle.dump(
+                    {
+                        "key": self._bm25_cache_key(doc_count),
+                        "corpus": self.corpus,
+                        "bm25": self.bm25,
+                    },
+                    f,
+                    protocol=pickle.HIGHEST_PROTOCOL,
+                )
+            logger.info(
+                f" BM25 index cached to {cache_path.name} "
+                f"({cache_path.stat().st_size // (1024 * 1024):.1f} MB)"
+            )
+        except Exception as e:
+            logger.warning(f" BM25 cache save failed (non-fatal): {e}")
+
     def _lazy_init_bm25_from_store(self) -> None:
         """
         Lazy-load BM25 corpus from vector store in batches.
-        Called on the first hybrid retrieval if no corpus was provided.
+
+        On first call: loads from pickle cache if valid, otherwise fetches from
+        ChromaDB, tokenizes, builds BM25, and saves to cache for next restart.
+        Subsequent API restarts load from cache in seconds instead of minutes.
         """
         if self._bm25_init_attempted:
             return
@@ -166,8 +232,12 @@ class HybridRetriever:
                 logger.warning(" Vector store is empty — BM25 not initialized")
                 return
 
+            # Try loading from pickle cache first
+            if self._try_load_bm25_cache(total):
+                return
+
             logger.info(
-                f" Lazy-loading BM25 corpus from vector store ({total:,} docs)..."
+                f" Building BM25 index from vector store ({total:,} docs)..."
             )
             corpus = []
             offset = 0
@@ -199,6 +269,7 @@ class HybridRetriever:
 
             if corpus:
                 self._init_bm25(corpus)
+                self._save_bm25_cache(total)
             else:
                 logger.warning(" No documents retrieved from vector store for BM25")
         except Exception as e:
@@ -211,7 +282,6 @@ class HybridRetriever:
     @staticmethod
     def _medical_tokenize(text: str) -> list:
         """Tokenize text for BM25, handling medical terms and punctuation."""
-        import re
         text = text.lower()
         # Keep hyphens in compounds (e.g. "non-insulin") but remove other punctuation
         text = re.sub(r'[^\w\s\-]', ' ', text)
@@ -431,7 +501,7 @@ class HybridRetriever:
         r"\bself[- ]harm\b",
         r"\b(?:illegal|illicit)\s+drug\s+(?:synthesis|recipe|formula)",
     ]
-    _HARMFUL_PATTERNS_RE = [__import__("re").compile(p) for p in _HARMFUL_PATTERNS]
+    _HARMFUL_PATTERNS_RE = [re.compile(p) for p in _HARMFUL_PATTERNS]
 
     def _safety_filter_documents(
         self, documents: List[RetrievedDocument]

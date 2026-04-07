@@ -1,6 +1,7 @@
 """
 Vector store management for document retrieval.
 """
+from datetime import datetime, timezone
 from loguru import logger
 import chromadb
 from chromadb.config import Settings
