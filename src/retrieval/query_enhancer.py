@@ -27,23 +27,83 @@ class QueryEnhancer:
     """
     
     # Common medical abbreviation expansions
+    # Covers: vitals, imaging, labs, conditions, cardiology, neurology,
+    # GI, renal, pulmonary, endocrine, and common clinical shorthands.
     MEDICAL_EXPANSIONS = {
+        # Vitals & basic measurements
         "bp": "blood pressure",
         "hr": "heart rate",
-        "ecg": "electrocardiogram",
-        "ekg": "electrocardiogram",
+        "rr": "respiratory rate",
+        "spo2": "oxygen saturation",
+        "bmi": "body mass index",
+        "temp": "temperature",
+        # Imaging
         "ct": "computed tomography",
         "mri": "magnetic resonance imaging",
+        "us": "ultrasound",
+        "xr": "x-ray",
+        "pet": "positron emission tomography",
+        # Labs
         "cbc": "complete blood count",
-        "bmi": "body mass index",
-        "copd": "chronic obstructive pulmonary disease",
-        "chf": "congestive heart failure",
+        "bmp": "basic metabolic panel",
+        "cmp": "comprehensive metabolic panel",
+        "lfts": "liver function tests",
+        "tsh": "thyroid stimulating hormone",
+        "hba1c": "glycated hemoglobin",
+        "pt": "prothrombin time",
+        "inr": "international normalized ratio",
+        "ptt": "partial thromboplastin time",
+        # Cardiology
+        "ecg": "electrocardiogram",
+        "ekg": "electrocardiogram",
         "mi": "myocardial infarction",
         "cvd": "cardiovascular disease",
-        "dm": "diabetes mellitus",
+        "chf": "congestive heart failure",
+        "afib": "atrial fibrillation",
+        "af": "atrial fibrillation",
+        "cabg": "coronary artery bypass grafting",
+        "pci": "percutaneous coronary intervention",
         "htn": "hypertension",
+        # Neurology
+        "tia": "transient ischemic attack",
+        "ms": "multiple sclerosis",
+        "als": "amyotrophic lateral sclerosis",
+        "cva": "cerebrovascular accident stroke",
+        # Gastrointestinal
+        "gerd": "gastroesophageal reflux disease",
+        "ibs": "irritable bowel syndrome",
+        "ibd": "inflammatory bowel disease",
+        "gi": "gastrointestinal",
+        # Renal
+        "ckd": "chronic kidney disease",
+        "esrd": "end stage renal disease",
+        "aki": "acute kidney injury",
         "uti": "urinary tract infection",
+        # Pulmonary
+        "copd": "chronic obstructive pulmonary disease",
+        "pe": "pulmonary embolism",
+        "dvt": "deep vein thrombosis",
+        "ards": "acute respiratory distress syndrome",
+        # Endocrine / metabolic
+        "dm": "diabetes mellitus",
+        "t2dm": "type 2 diabetes mellitus",
+        "t1dm": "type 1 diabetes mellitus",
+        "pcos": "polycystic ovary syndrome",
+        "dka": "diabetic ketoacidosis",
+        # Dosing / timing shorthands (used in queries like "take ibuprofen prn")
+        "prn": "as needed",
+        "bid": "twice daily",
+        "tid": "three times daily",
+        "qid": "four times daily",
+        "qd": "once daily",
+        "npo": "nothing by mouth",
+        "stat": "immediately",
+        # Common oncology
+        "nhl": "non hodgkin lymphoma",
+        "cll": "chronic lymphocytic leukemia",
+        "aml": "acute myeloid leukemia",
     }
+
     
     def __init__(
         self,

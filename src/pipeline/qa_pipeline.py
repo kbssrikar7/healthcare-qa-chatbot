@@ -260,6 +260,10 @@ class HealthcareQAPipeline:
             k=num_documents
         )
         _t["retrieval_ms"] = (time.perf_counter() - _s) * 1000
+        # Merge per-stage retriever timings (dense, sparse, rrf, rerank sub-ms)
+        if hasattr(self.retriever, "last_timings") and self.retriever.last_timings:
+            for sub_key, sub_val in self.retriever.last_timings.items():
+                _t[f"retrieval_{sub_key}"] = sub_val
         
         # 3. CORRECTIVE RAG (post-retrieval quality check)
         _s = time.perf_counter()

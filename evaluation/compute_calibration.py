@@ -95,28 +95,35 @@ def build_calibration_pairs(trajectories: list, test_cases: dict) -> tuple:
         if matched_tc is None:
             continue
 
-        # We don't have the answer text in trajectories, but we can use
-        # answer_length + confidence_score + num_sources as quality proxy
+        # NOTE: Trajectory records store `answer_length` and metadata but NOT
+        # the full answer text. This means we cannot compute keyword_coverage
+        # directly here — we use a proxy heuristic instead.
+        #
+        # Heuristic label (positive = likely correct):
+        #   - answer_len > 80  : short answers (<80 chars) are often non-answers
+        #   - num_sources >= 2 : grounded in at least 2 retrieved docs
+        #   - is_answerable    : pipeline judged it answerable (grounding gate passed)
+        #
+        # When none of those hold, we fall back to confidence score as a weak signal.
+        # This is an intentional approximation; NLI-based labels (above) are preferred.
         answer_len = row["outcome"].get("answer_length", 0)
         num_sources = row["outcome"].get("num_sources_returned", 0)
         is_answerable = row["outcome"].get("is_answerable", True)
 
-        # Heuristic label: answers that are long enough and have sources
-        # are more likely correct
-        kws = matched_tc.get("expected_keywords", [])
-        if answer_len > 50 and num_sources >= 1 and is_answerable:
+        if answer_len > 80 and num_sources >= 2 and is_answerable:
             label = 1
-        elif answer_len < 20 or not is_answerable:
+        elif answer_len < 30 or not is_answerable:
             label = 0
         else:
-            # Medium ground — use confidence as weak signal but flip some
-            label = 1 if conf >= 0.6 else 0
+            # Borderline: use confidence score as weak proxy (but label it carefully)
+            label = 1 if conf >= 0.65 else 0
 
         confidences.append(float(conf))
         labels.append(label)
-        sources.append("kw")
+        sources.append("heuristic")
 
     return confidences, labels, sources
+
 
 
 
@@ -228,7 +235,8 @@ def main():
 
     confidences, labels, sources = build_calibration_pairs(trajectories, test_cases)
     print(f"Usable pairs: {len(confidences)}  "
-          f"(NLI-based={sources.count('nli')}, kw-based={sources.count('kw')})")
+          f"(NLI-based={sources.count('nli')}, heuristic={sources.count('heuristic')})")
+
 
     if len(confidences) < 5:
         print("Too few pairs for calibration — run more queries through the API first.")

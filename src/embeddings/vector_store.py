@@ -87,11 +87,15 @@ class VectorStore:
         logger.info(f" Vector store initialized: {collection_name}")
         logger.info(f" Documents in collection: {self.collection.count()}")
 
-    def verify_embedding_compatibility(self, model_name: str, dimension: int) -> bool:
-        """Check that the query model matches the indexed embedding model.
+        # Path for embedding model sidecar metadata (preferred over sentinel document)
+        self._meta_path = self.persist_directory / "embedding_metadata.json"
 
-        Reads stored model metadata from collection. If no metadata is stored
-        (older index), logs a warning but returns True (non-fatal).
+    def verify_embedding_compatibility(self, model_name: str, dimension: int) -> bool:
+        """
+        Check that the query model matches the indexed embedding model.
+
+        Reads from sidecar JSON first (preferred); falls back to sentinel
+        document in ChromaDB for backward compatibility with older indexes.
 
         Args:
             model_name: Name of the embedding model being used for queries.
@@ -100,46 +104,96 @@ class VectorStore:
         Returns:
             True if compatible (or no stored metadata to compare against).
         """
+        stored_model: Optional[str] = None
+        stored_dim: Optional[int] = None
+
+        # --- Tier 1: sidecar JSON (preferred) ---
         try:
-            meta = self.collection.metadata or {}
-            stored_model = meta.get("embedding_model")
-            stored_dim   = meta.get("embedding_dimension")
-            if stored_model and stored_model != model_name:
-                logger.warning(
-                    f"Embedding model mismatch: index was built with '{stored_model}' "
-                    f"but query model is '{model_name}'. Retrieval quality may be degraded."
-                )
-                return False
-            if stored_dim and int(stored_dim) != dimension:
-                logger.error(
-                    f"Embedding dimension mismatch: index has {stored_dim}d, "
-                    f"query model produces {dimension}d vectors. Queries will fail."
-                )
-                return False
-            if not stored_model:
-                logger.debug("No embedding model metadata in index — skipping compatibility check")
-            return True
+            if self._meta_path.exists():
+                with open(self._meta_path) as f:
+                    meta = json.load(f)
+                stored_model = meta.get("embedding_model")
+                stored_dim = meta.get("embedding_dimension")
         except Exception as e:
-            logger.warning(f"Could not verify embedding compatibility: {e}")
-            return True  # non-fatal
+            logger.warning(f"Could not read embedding sidecar JSON: {e}")
+
+        # --- Tier 2: legacy sentinel document (backward compat) ---
+        if stored_model is None:
+            try:
+                sentinel_id = "__embedding_meta__"
+                result = self.collection.get(ids=[sentinel_id])
+                if result["ids"]:
+                    sentinel_meta = result["metadatas"][0] if result["metadatas"] else {}
+                    stored_model = sentinel_meta.get("embedding_model")
+                    stored_dim = sentinel_meta.get("embedding_dimension")
+                    if stored_model:
+                        logger.debug("Embedding metadata read from legacy sentinel document")
+            except Exception:
+                pass
+
+        # --- Compatibility checks ---
+        if stored_model and stored_model != model_name:
+            logger.warning(
+                f"Embedding model mismatch: index built with '{stored_model}' "
+                f"but query model is '{model_name}'. Retrieval quality may be degraded."
+            )
+            return False
+        if stored_dim and int(stored_dim) != dimension:
+            logger.error(
+                f"Embedding dimension mismatch: index has {stored_dim}d, "
+                f"query model produces {dimension}d vectors. Queries will fail."
+            )
+            return False
+        if not stored_model:
+            logger.debug("No embedding model metadata found — skipping compatibility check")
+        return True
 
     def record_embedding_model(self, model_name: str, dimension: int) -> None:
-        """Persist embedding model info in collection metadata (call once at index build time)."""
+        """
+        Persist embedding model info for future compatibility checks.
+
+        Writes a sidecar JSON file alongside the ChromaDB directory.
+        This is more robust than the old sentinel-document approach:
+        - Survives collection resets
+        - Human-readable and git-trackable
+        - Faster to read (no ChromaDB query needed)
+
+        The legacy sentinel document is also written for backward compatibility
+        with older versions of this code.
+        """
+        import datetime
+
+        # --- Sidecar JSON (primary) ---
         try:
-            # ChromaDB does not support updating collection metadata after creation,
-            # so we store it in a dedicated sentinel document instead.
+            meta = {
+                "embedding_model": model_name,
+                "embedding_dimension": dimension,
+                "recorded_at": datetime.datetime.utcnow().isoformat() + "Z",
+            }
+            with open(self._meta_path, "w") as f:
+                json.dump(meta, f, indent=2)
+            logger.info(
+                f"Embedding metadata written to {self._meta_path.name}: "
+                f"{model_name} ({dimension}d)"
+            )
+        except Exception as e:
+            logger.warning(f"Could not write embedding sidecar JSON: {e}")
+
+        # --- Legacy sentinel document (backward compat) ---
+        try:
             sentinel_id = "__embedding_meta__"
             existing = self.collection.get(ids=[sentinel_id])
             if not existing["ids"]:
                 self.collection.add(
                     ids=[sentinel_id],
                     documents=["__embedding_metadata_sentinel__"],
-                    metadatas=[{"embedding_model": model_name, "embedding_dimension": dimension}],
+                    metadatas=[{"embedding_model": model_name,
+                                "embedding_dimension": dimension}],
                     embeddings=[[0.0] * dimension],
                 )
-                logger.info(f"Recorded embedding model metadata: {model_name} ({dimension}d)")
         except Exception as e:
-            logger.warning(f"Could not record embedding model metadata: {e}")
+            logger.debug(f"Could not write legacy sentinel document: {e}")
+
     
     def add_documents(
         self,

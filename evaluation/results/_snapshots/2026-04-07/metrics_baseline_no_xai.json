@@ -1,0 +1,22 @@
+{
+  "variant": "no_xai",
+  "n": 97,
+  "answerable_pct": 1.0,
+  "keyword_coverage_mean": 0.4337,
+  "keyword_coverage_ci_95": [
+    0.3661,
+    0.5019
+  ],
+  "rougeL_mean": 0.2263,
+  "rougeL_ci_95": [
+    0.1862,
+    0.2694
+  ],
+  "bertscore_f1_mean": 0.1757,
+  "bertscore_ci_95": [
+    0.1211,
+    0.2323
+  ],
+  "latency_mean_ms": 34042.6,
+  "latency_p90_ms": 54882.4
+}

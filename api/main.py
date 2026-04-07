@@ -116,7 +116,28 @@ async def startup_preload():
     _init_guardrails()
     _init_conversation_manager()
     _init_feedback_system()
+
+    # ── Warmup query: run a dummy question through the full pipeline ──────────
+    # This ensures the tokenizer, generation model, NLI model, and embedding
+    # model are all loaded and warmed up before the first real user request.
+    # Cold-start latency is typically 30–120s; this pays that cost at startup.
+    try:
+        pipeline = get_pipeline(model_choice="tinyllama")
+        if pipeline:
+            logger.info("Startup: running warmup query through default pipeline...")
+            _t_warmup = __import__("time").perf_counter()
+            _ = pipeline.answer(
+                "What is hypertension?",
+                num_documents=3,
+                include_explanation=False,  # skip XAI to keep warmup fast
+            )
+            _warmup_ms = (__import__("time").perf_counter() - _t_warmup) * 1000
+            logger.info(f"Startup: warmup query complete ({_warmup_ms:.0f} ms)")
+    except Exception as e:
+        logger.warning(f"Startup: warmup query failed (non-fatal): {e}")
+
     logger.info("Startup: all components ready")
+
 
 
 @app.exception_handler(RateLimitExceeded)

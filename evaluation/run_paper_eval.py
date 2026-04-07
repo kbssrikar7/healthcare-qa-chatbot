@@ -106,25 +106,44 @@ def run_metrics(test_cases: list, pipeline, variant_name: str, n: int = None) ->
         if i % 10 == 0:
             print(f"    {i}/{len(cases)} done")
 
-    # BERTScore (batch) — try rescaled first, fall back to raw scores
+    # BERTScore (batch) — 3-tier fallback to handle offline environments:
+    #   1. rescale_with_baseline=True  (best for paper; normalizes to human-level range)
+    #   2. rescale_with_baseline=False (raw scores; still meaningful, just different scale)
+    #   3. Skip gracefully             (bertscore_f1_mean = 0.0, note in output)
     bs_f1_mean = 0.0
     bs_f1_scores = []
+    bs_mode = "unavailable"
     if preds:
+        # Tier 1: rescaled (preferred)
         try:
+            bs = bertscore_metric.compute(
+                predictions=preds, references=refs,
+                lang="en", rescale_with_baseline=True, device="cpu",
+            )
+            bs_f1_scores = [float(x) for x in bs["f1"]]
+            bs_f1_mean = sum(bs_f1_scores) / len(bs_f1_scores)
+            bs_mode = "rescaled"
+        except Exception as baseline_err:
+            # Tier 2: unscaled (baseline file not cached locally)
             try:
-                bs = bertscore_metric.compute(predictions=preds, references=refs,
-                                              lang="en", rescale_with_baseline=True,
-                                              device="cpu")
-            except Exception as baseline_err:
-                print(f"    BERTScore baseline not cached, using unscaled: {baseline_err}")
-                bs = bertscore_metric.compute(predictions=preds, references=refs,
-                                              lang="en", rescale_with_baseline=False,
-                                              device="cpu")
-            import statistics
-            bs_f1_scores = list(bs["f1"])
-            bs_f1_mean = statistics.mean(bs_f1_scores)
-        except Exception as e:
-            print(f"    BERTScore error (scores will be 0): {e}")
+                print(f"    [BERTScore] rescaled failed ({type(baseline_err).__name__}), "
+                      f"trying unscaled…")
+                bs = bertscore_metric.compute(
+                    predictions=preds, references=refs,
+                    lang="en", rescale_with_baseline=False, device="cpu",
+                )
+                bs_f1_scores = [float(x) for x in bs["f1"]]
+                bs_f1_mean = sum(bs_f1_scores) / len(bs_f1_scores)
+                bs_mode = "unscaled"
+            except Exception as raw_err:
+                # Tier 3: skip — model files missing even in offline cache
+                print(f"    [BERTScore] unscaled also failed ({type(raw_err).__name__}: "
+                      f"{raw_err}). Scores will be 0.0.")
+                bs_mode = "skipped"
+
+    if bs_mode != "unavailable":
+        print(f"    BERTScore ({bs_mode}): mean F1 = {bs_f1_mean:.4f}")
+
 
     import statistics
     result = {
@@ -133,8 +152,10 @@ def run_metrics(test_cases: list, pipeline, variant_name: str, n: int = None) ->
         "answerable_pct": answerable / total if total else 0,
         "keyword_coverage_mean": statistics.mean(kw_scores) if kw_scores else 0,
         "rougeL_mean": statistics.mean(rouge_scores) if rouge_scores else 0,
-        "bertscore_f1_mean": bs_f1_mean,
+        "bertscore_f1_mean": round(bs_f1_mean, 4),
+        "bertscore_mode": bs_mode,  # "rescaled" | "unscaled" | "skipped" | "unavailable"
     }
+
 
     # Add bootstrap 95% confidence intervals
     if len(kw_scores) >= 5:

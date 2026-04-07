@@ -1,0 +1,15 @@
+[
+  {
+    "variant": "standard_tinyllama",
+    "total_ms_mean": 191614,
+    "total_ms_p90": 276838,
+    "query_enhancement_ms_mean": 0.02,
+    "retrieval_ms_mean": 42624,
+    "corrective_rag_ms_mean": 1218,
+    "generation_ms_mean": 69868,
+    "hallucination_ms_mean": 1736,
+    "confidence_ms_mean": 5,
+    "total_ms_mean_warm": 106433,
+    "notes": "First request: 276.8s (cold model load). Second request: 106.4s (warm). Generation dominates warm-path latency (CPU-only, TinyLlama 1.1B bfloat16)."
+  }
+]

@@ -399,7 +399,6 @@ class HealthcareRAGNodes:
                     refined_query = candidate
             except Exception as e:
                 logger.warning(f"Failed to refine query using LLM: {e}")
-                pass
 
         # --- Strategy 2: keyword extraction from partially-relevant docs ---
         if not refined_query and documents:

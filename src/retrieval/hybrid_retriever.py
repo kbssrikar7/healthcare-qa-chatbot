@@ -114,6 +114,10 @@ class HybridRetriever:
         self.corpus_map: Dict[str, int] = {}  # doc_id -> corpus index
         self.bm25 = None
         self._bm25_init_attempted = False
+        # Latency diagnostics — exposed for QA pipeline to include in stage_latencies
+        self.last_timings: Dict[str, float] = {}
+        # Emit INFO-level timing on first retrieval call; DEBUG thereafter
+        self._first_query_logged = False
 
         # Initialize BM25 for sparse retrieval if corpus provided
         if corpus:
@@ -375,23 +379,35 @@ class HybridRetriever:
         documents.sort(key=lambda x: x.score, reverse=True)
 
         # Document-level safety filter: tag potentially harmful chunks
+        _t0 = time.perf_counter()
         documents = self._safety_filter_documents(documents)
+        _timings["safety_filter_ms"] = (time.perf_counter() - _t0) * 1000
 
         # Log per-stage latency for diagnostics
-        total = sum(_timings.values())
+        # First query → INFO so it's visible without debug logging configured.
+        # Subsequent queries → DEBUG to avoid log spam.
+        _timings["total_ms"] = sum(v for k, v in _timings.items() if k != "total_ms")
+        self.last_timings = dict(_timings)  # expose for pipeline stage_latencies
         parts = " | ".join(f"{k}={v:.1f}" for k, v in _timings.items())
-        logger.debug(f"Retrieval latency: total={total:.1f}ms  [{parts}]")
+        if not self._first_query_logged:
+            logger.info(f"[Retrieval cold-start] {parts}")
+            self._first_query_logged = True
+        else:
+            logger.debug(f"Retrieval latency: {parts}")
 
         return documents[:k]
 
     # ── Safety filter ─────────────────────────────────────────────────────────
 
-    # Patterns for content that should not appear in source citations
+    # Patterns for content that should not appear in source citations.
+    # Pre-compiled once at class definition time — avoids re-compiling on every
+    # document during the safety filter loop (up to 90 compilations per query).
     _HARMFUL_PATTERNS = [
         r"\bhow\s+to\s+(?:make|synthesize|produce|create)\s+\w+\s+(?:drug|poison|explosive)",
         r"\bself[- ]harm\b",
         r"\b(?:illegal|illicit)\s+drug\s+(?:synthesis|recipe|formula)",
     ]
+    _HARMFUL_PATTERNS_RE = [__import__("re").compile(p) for p in _HARMFUL_PATTERNS]
 
     def _safety_filter_documents(
         self, documents: List[RetrievedDocument]
@@ -402,13 +418,15 @@ class HybridRetriever:
         so the pipeline can decide whether to include them in the LLM context.
         Harmful chunks are moved to the end of the list so they are less likely
         to make the top-k cut.
+
+        Uses pre-compiled patterns (_HARMFUL_PATTERNS_RE) — avoids regex
+        recompilation on every call (was ~90 compile+search ops per query).
         """
-        import re as _re
         safe, flagged = [], []
         for doc in documents:
             content_lower = doc.content.lower()
             is_harmful = any(
-                _re.search(p, content_lower) for p in self._HARMFUL_PATTERNS
+                p.search(content_lower) for p in self._HARMFUL_PATTERNS_RE
             )
             if is_harmful:
                 doc.metadata["safety_flagged"] = True
