@@ -42,6 +42,8 @@ SIGNAL_MAP = {
     "entity_coverage": "medical_entity_coverage",
 }
 
+from evaluation.eval_utils import keyword_coverage, is_correct, bootstrap_ci
+
 
 def recompute_conf(breakdown: dict, weights: dict) -> float:
     import numpy as np
@@ -65,13 +67,6 @@ def compute_ece(confidences: list, labels: list, n_bins: int = 10) -> float:
             continue
         ece += (mask.sum() / len(ca)) * abs(la[mask].mean() - ca[mask].mean())
     return float(ece)
-
-
-def keyword_coverage(answer: str, keywords: list) -> float:
-    if not keywords:
-        return 1.0
-    a = answer.lower()
-    return sum(1 for k in keywords if k.lower() in a) / len(keywords)
 
 
 def main():
@@ -105,7 +100,7 @@ def main():
             # Correctness labels
             kws = case.get("expected_keywords", [])
             kw_cov = keyword_coverage(answer, kws)
-            kw_label = 1 if kw_cov >= 0.5 else 0
+            kw_label = 1 if is_correct(kw_cov) else 0
 
             records.append({
                 "query": case["query"],
@@ -132,11 +127,16 @@ def main():
         labels = [r["kw_label"] for r in records]
         kw_covs = [r["kw_coverage"] for r in records]
         ece = compute_ece(confs, labels)
+        conf_mean, conf_lo, conf_hi = bootstrap_ci(confs)
+        kw_mean, kw_lo, kw_hi = bootstrap_ci(kw_covs)
         ablation_results.append({
             "variant": variant_name,
+            "name": variant_name,
             "n": len(records),
-            "mean_confidence": round(statistics.mean(confs), 4),
-            "mean_kw_coverage": round(statistics.mean(kw_covs), 4),
+            "mean_confidence": round(conf_mean, 4),
+            "confidence_ci_95": [round(conf_lo, 4), round(conf_hi, 4)],
+            "mean_kw_coverage": round(kw_mean, 4),
+            "kw_coverage_ci_95": [round(kw_lo, 4), round(kw_hi, 4)],
             "ece": round(ece, 4),
         })
 

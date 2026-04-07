@@ -16,6 +16,7 @@ Usage:
 """
 import os, sys, json, argparse
 from pathlib import Path
+import re
 
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -26,11 +27,15 @@ os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
-def keyword_coverage(answer: str, keywords: list) -> float:
-    if not keywords:
-        return 1.0
-    a = answer.lower()
-    return sum(1 for k in keywords if k.lower() in a) / len(keywords)
+from evaluation.eval_utils import keyword_coverage, is_correct
+
+
+def normalize_question(text: str) -> str:
+    """Normalize a question for exact/fuzzy matching."""
+    text = text.strip().lower()
+    text = re.sub(r"[^\w\s]", " ", text)
+    text = re.sub(r"\s+", " ", text)
+    return text
 
 
 def load_trajectories(path: Path) -> list:
@@ -48,8 +53,11 @@ def build_calibration_pairs(trajectories: list, test_cases: dict) -> tuple:
 
     Label = 1 if the response is "correct":
       - If factual_consistency.score is available → label = fc_score >= 0.5
-      - Else if question fuzzy-matches a test case → label = kw_coverage >= 0.5
-        (using answer_length as quality proxy + confidence-weighted heuristic)
+      - Else if trajectory stores answer text and the question matches a test case
+        → label uses shared correctness definition.
+      - Else if question matches a test case but no answer text is stored
+        → use a conservative matched-question proxy based on answerability,
+          answer length, retrieval support, and retrieval score.
       - Else skip row
     """
     from difflib import SequenceMatcher
@@ -59,7 +67,7 @@ def build_calibration_pairs(trajectories: list, test_cases: dict) -> tuple:
     # Build normalized lookup for fuzzy matching
     norm_test = {}
     for q, tc in test_cases.items():
-        norm_test[q.strip().lower()] = tc
+        norm_test[normalize_question(q)] = tc
 
     for row in trajectories:
         conf = row["outcome"].get("confidence_score")
@@ -76,7 +84,7 @@ def build_calibration_pairs(trajectories: list, test_cases: dict) -> tuple:
             continue
 
         # Fallback: fuzzy match question to test case, use keyword heuristic
-        q = row.get("question", "").strip().lower()
+        q = normalize_question(row.get("question", ""))
         if not q:
             continue
 
@@ -95,32 +103,52 @@ def build_calibration_pairs(trajectories: list, test_cases: dict) -> tuple:
         if matched_tc is None:
             continue
 
-        # NOTE: Trajectory records store `answer_length` and metadata but NOT
-        # the full answer text. This means we cannot compute keyword_coverage
-        # directly here — we use a proxy heuristic instead.
-        #
-        # Heuristic label (positive = likely correct):
-        #   - answer_len > 80  : short answers (<80 chars) are often non-answers
-        #   - num_sources >= 2 : grounded in at least 2 retrieved docs
-        #   - is_answerable    : pipeline judged it answerable (grounding gate passed)
-        #
-        # When none of those hold, we fall back to confidence score as a weak signal.
-        # This is an intentional approximation; NLI-based labels (above) are preferred.
+        answer_text = (
+            row.get("answer")
+            or row.get("response")
+            or row.get("model_answer")
+            or row.get("outcome", {}).get("answer")
+        )
+
+        if answer_text:
+            kw_cov = keyword_coverage(
+                answer_text,
+                matched_tc.get("expected_keywords", []),
+            )
+            label = 1 if is_correct(kw_cov) else 0
+            confidences.append(float(conf))
+            labels.append(label)
+            sources.append("keyword")
+            continue
+
+        # The stored trajectory schema often omits the full answer text.
+        # In that case we derive a conservative proxy label from fields that
+        # are present in matched records instead of pretending to compute
+        # keyword coverage directly.
         answer_len = row["outcome"].get("answer_length", 0)
         num_sources = row["outcome"].get("num_sources_returned", 0)
         is_answerable = row["outcome"].get("is_answerable", True)
+        top_score = row.get("retrieval", {}).get("top_score", 0.0)
 
-        if answer_len > 80 and num_sources >= 2 and is_answerable:
-            label = 1
-        elif answer_len < 30 or not is_answerable:
-            label = 0
-        else:
-            # Borderline: use confidence score as weak proxy (but label it carefully)
-            label = 1 if conf >= 0.65 else 0
+        proxy_score = 0.0
+        if is_answerable:
+            proxy_score += 0.35
+        if answer_len >= 80:
+            proxy_score += 0.30
+        elif answer_len < 30:
+            proxy_score -= 0.25
+        if num_sources >= 2:
+            proxy_score += 0.20
+        if top_score >= 0.011:
+            proxy_score += 0.10
+        if conf >= 0.65:
+            proxy_score += 0.10
+
+        label = 1 if proxy_score >= 0.60 else 0
 
         confidences.append(float(conf))
         labels.append(label)
-        sources.append("heuristic")
+        sources.append("matched_proxy")
 
     return confidences, labels, sources
 

@@ -168,7 +168,7 @@ class VectorStore:
             meta = {
                 "embedding_model": model_name,
                 "embedding_dimension": dimension,
-                "recorded_at": datetime.datetime.utcnow().isoformat() + "Z",
+                "recorded_at": datetime.datetime.now(datetime.UTC).isoformat(),
             }
             with open(self._meta_path, "w") as f:
                 json.dump(meta, f, indent=2)

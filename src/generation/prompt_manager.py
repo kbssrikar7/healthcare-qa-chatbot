@@ -67,6 +67,21 @@ class MedicalPromptManager:
         "<|assistant|>\n"
     )
 
+    BIOMISTRAL_QA_PROMPT = (
+        "<s>[INST] You are a medical fact extractor. Read the REFERENCE TEXT and answer the question.\n"
+        "RULES:\n"
+        "1. ONLY use facts from the REFERENCE TEXT below.\n"
+        "2. Do NOT add any information from your own knowledge.\n"
+        "3. Do NOT guess or make up information.\n"
+        "4. Do NOT copy greetings, names, or sign-offs from the text.\n"
+        "5. If the reference text does not answer the question, say: "
+        "I do not have enough information in my references to answer this.\n"
+        "6. Keep your answer short and factual.\n\n"
+        "REFERENCE TEXT:\n"
+        "{context}\n\n"
+        "QUESTION: {question} [/INST]"
+    )
+
     def __init__(self, default_prompt: str = "medical_qa"):
         self.templates = {
             "medical_qa": PromptTemplate(
@@ -92,16 +107,23 @@ class MedicalPromptManager:
         question: str,
         context: str,
         template_name: Optional[str] = None,
-        additional_instructions: Optional[str] = None
+        additional_instructions: Optional[str] = None,
+        model_name: Optional[str] = None,
     ) -> str:
         """Build a complete prompt."""
         template_name = template_name or self.default_prompt
-        template = self.templates.get(template_name, self.templates["medical_qa"])
-        
-        prompt = template.template.format(
-            question=question,
-            context=context
-        )
+
+        if model_name == "biomistral":
+            prompt = self.BIOMISTRAL_QA_PROMPT.format(
+                question=question,
+                context=context,
+            )
+        else:
+            template = self.templates.get(template_name, self.templates["medical_qa"])
+            prompt = template.template.format(
+                question=question,
+                context=context
+            )
         
         if additional_instructions:
             prompt += f"\n\nAdditional instructions: {additional_instructions}"

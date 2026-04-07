@@ -67,7 +67,7 @@ def fig_metric_comparison():
     if isinstance(rows, dict):
         rows = [rows]
 
-    labels = [r["variant"] for r in rows]
+    labels = [r.get("variant", r.get("name", "?")) for r in rows]
     kw = [r.get("keyword_coverage_mean", 0) for r in rows]
     rl = [r.get("rougeL_mean", 0) for r in rows]
     bs = [r.get("bertscore_f1_mean", 0) for r in rows]
@@ -82,13 +82,17 @@ def fig_metric_comparison():
 
     # Add CI error bars if available
     for i, r in enumerate(rows):
-        if "keyword_coverage_ci" in r:
-            ci = r["keyword_coverage_ci"]
+        if "keyword_coverage_ci_95" in r or "keyword_coverage_ci" in r:
+            ci = r.get("keyword_coverage_ci_95", r.get("keyword_coverage_ci"))
             ax.errorbar(x[i] - width, kw[i], yerr=[[kw[i] - ci[0]], [ci[1] - kw[i]]],
                        fmt="none", color="black", capsize=3)
-        if "rougeL_ci" in r:
-            ci = r["rougeL_ci"]
+        if "rougeL_ci_95" in r or "rougeL_ci" in r:
+            ci = r.get("rougeL_ci_95", r.get("rougeL_ci"))
             ax.errorbar(x[i], rl[i], yerr=[[rl[i] - ci[0]], [ci[1] - rl[i]]],
+                       fmt="none", color="black", capsize=3)
+        if "bertscore_ci_95" in r or "bertscore_f1_ci" in r:
+            ci = r.get("bertscore_ci_95", r.get("bertscore_f1_ci"))
+            ax.errorbar(x[i] + width, bs[i], yerr=[[bs[i] - ci[0]], [ci[1] - bs[i]]],
                        fmt="none", color="black", capsize=3)
 
     ax.set_xlabel("Pipeline Variant")
@@ -155,16 +159,39 @@ def fig_ablation():
         print("  Skipping ablation (no valid data)")
         return
 
-    names = [r["name"] for r in rows]
+    names = [r.get("name", r.get("variant", "?")) for r in rows]
     confs = [r.get("mean_confidence", 0) for r in rows]
     kws = [r.get("mean_kw_coverage", 0) for r in rows]
+    conf_errs = []
+    kw_errs = []
+    for row, conf, kw in zip(rows, confs, kws):
+        conf_ci = row.get("confidence_ci_95", [conf, conf])
+        kw_ci = row.get("kw_coverage_ci_95", [kw, kw])
+        conf_errs.append([(conf - conf_ci[0]), (conf_ci[1] - conf)])
+        kw_errs.append([(kw - kw_ci[0]), (kw_ci[1] - kw)])
 
     x = np.arange(len(names))
     width = 0.35
 
     fig, ax = plt.subplots(figsize=(10, 5))
-    ax.bar(x - width / 2, confs, width, label="Mean Confidence", color=COLORS["primary"])
-    ax.bar(x + width / 2, kws, width, label="Keyword Coverage", color=COLORS["accent"])
+    ax.bar(
+        x - width / 2,
+        confs,
+        width,
+        label="Mean Confidence",
+        color=COLORS["primary"],
+        yerr=np.array(conf_errs).T,
+        capsize=3,
+    )
+    ax.bar(
+        x + width / 2,
+        kws,
+        width,
+        label="Keyword Coverage",
+        color=COLORS["accent"],
+        yerr=np.array(kw_errs).T,
+        capsize=3,
+    )
 
     ax.set_xlabel("Configuration")
     ax.set_ylabel("Score")

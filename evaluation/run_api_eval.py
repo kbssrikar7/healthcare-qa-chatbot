@@ -100,6 +100,7 @@ def run_metrics(cases: list, variant: dict, n: int = None) -> dict:
 
     # BERTScore (batch) — try rescaled first, fall back to raw scores
     bs_f1_mean = 0.0
+    bs_f1_scores = []
     if preds:
         try:
             import evaluate as _ev
@@ -111,12 +112,13 @@ def run_metrics(cases: list, variant: dict, n: int = None) -> dict:
                 print(f"    BERTScore baseline not cached, using unscaled: {baseline_err}")
                 bs = bsm.compute(predictions=preds, references=refs,
                                  lang="en", rescale_with_baseline=False, device="cpu")
-            bs_f1_mean = statistics.mean(bs["f1"])
+            bs_f1_scores = [float(x) for x in bs["f1"]]
+            bs_f1_mean = statistics.mean(bs_f1_scores)
         except Exception as e:
             print(f"    BERTScore error (scores will be 0): {e}")
 
     n_total = len(run_cases)
-    return {
+    result = {
         "variant": name,
         "n": n_total,
         "answerable_pct": round(answerable / n_total, 3) if n_total else 0,
@@ -124,6 +126,19 @@ def run_metrics(cases: list, variant: dict, n: int = None) -> dict:
         "rougeL_mean": round(statistics.mean(rl_scores), 3) if rl_scores else 0,
         "bertscore_f1_mean": round(bs_f1_mean, 3),
     }
+    if len(kw_scores) >= 5:
+        _, lo, hi = bootstrap_ci(kw_scores)
+        result["keyword_coverage_ci"] = [round(lo, 4), round(hi, 4)]
+        result["keyword_coverage_ci_95"] = [round(lo, 4), round(hi, 4)]
+    if len(rl_scores) >= 5:
+        _, lo, hi = bootstrap_ci(rl_scores)
+        result["rougeL_ci"] = [round(lo, 4), round(hi, 4)]
+        result["rougeL_ci_95"] = [round(lo, 4), round(hi, 4)]
+    if len(bs_f1_scores) >= 5:
+        _, lo, hi = bootstrap_ci(bs_f1_scores)
+        result["bertscore_f1_ci"] = [round(lo, 4), round(hi, 4)]
+        result["bertscore_ci_95"] = [round(lo, 4), round(hi, 4)]
+    return result
 
 
 def run_latency(cases: list, variant: dict, n: int = 20) -> dict:
@@ -167,7 +182,11 @@ def run_calibration(cases: list, variant: dict, n: int = None) -> dict:
             r = ask(case["query"], model=variant.get("model", "tinyllama"))
             conf = r.get("confidence", {}).get("score", 0.5)
             kw = case.get("expected_keywords", [])
-            label = 1 if is_correct(keyword_coverage(r.get("answer", ""), kw)) else 0
+            rouge_l_score = None
+            ref = case.get("reference_answer", "")
+            if ref:
+                rouge_l_score = rouge_l(r.get("answer", ""), ref)
+            label = 1 if is_correct(keyword_coverage(r.get("answer", ""), kw), rouge_l_score) else 0
             confidences.append(conf)
             labels.append(label)
         except Exception:
@@ -209,7 +228,7 @@ def run_calibration(cases: list, variant: dict, n: int = None) -> dict:
             ax.bar(used, bin_accs, width=0.08, alpha=0.7, color="#4f46e5",
                    edgecolor="black", label="Model")
         ax.set_xlabel("Predicted confidence")
-        ax.set_ylabel("Fraction correct (KW coverage ≥ 0.5)")
+        ax.set_ylabel("Fraction correct")
         ax.set_title(f"Reliability Diagram  (ECE = {ece:.3f})")
         ax.legend()
         fig.tight_layout()

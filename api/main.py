@@ -343,25 +343,6 @@ def _get_shared_components():
         return _shared_components
 
     try:
-        # --- MONKEYPATCH for pydantic vs spacy in python 3.14 ---
-        import pydantic.v1.schema as p_schema
-        original_model_schema = p_schema.model_type_schema
-        def bypass_model_schema(*args, **kwargs):
-            try:
-                return original_model_schema(*args, **kwargs)
-            except ValueError:
-                return {"type": "object"}, {}, set()
-        p_schema.model_type_schema = bypass_model_schema
-        
-        original_get_annotation = p_schema.get_annotation_from_field_info
-        def bypass_annotation(*args, **kwargs):
-            try:
-                return original_get_annotation(*args, **kwargs)
-            except ValueError:
-                return args[0]
-        p_schema.get_annotation_from_field_info = bypass_annotation
-        # --------------------------------------------------------
-
         from src.embeddings.embedding_models import MedicalEmbedder
         from src.embeddings.vector_store import VectorStore
         from src.retrieval.hybrid_retriever import HybridRetriever
@@ -452,12 +433,24 @@ def _get_shared_components():
     return _shared_components
 
 
-def get_pipeline(model_choice: str = "tinyllama"):
+def _resolve_adapter_path(adapter_path: Optional[str] = None) -> Optional[str]:
+    """Resolve adapter path with a sensible local default when present."""
+    if adapter_path:
+        candidate = Path(adapter_path)
+    else:
+        candidate = Path("models/fine_tuned/medical_adapter")
+    return str(candidate) if candidate.exists() else None
+
+
+def get_pipeline(model_choice: str = "tinyllama", adapter_path: Optional[str] = None):
     """Get or create a pipeline for the given model choice."""
     global pipelines
 
-    if model_choice in pipelines:
-        return pipelines[model_choice]
+    resolved_adapter_path = _resolve_adapter_path(adapter_path)
+    cache_key = f"{model_choice}::{resolved_adapter_path or 'base'}"
+
+    if cache_key in pipelines:
+        return pipelines[cache_key]
 
     import torch
     import gc
@@ -516,16 +509,15 @@ def get_pipeline(model_choice: str = "tinyllama"):
         llm_model_arg = model_choice if backend == "gguf" else resolved_model_name
 
         # Check for fine-tuned adapter (transformers only)
-        adapter_path = Path("models/fine_tuned/medical_adapter")
         llm_kwargs = {
             "model_name": llm_model_arg,
             "load_in_4bit": model_info.get("load_in_4bit", False),
             "hf_token": os.getenv("HUGGINGFACE_TOKEN"),
         }
 
-        if backend == "transformers" and adapter_path.exists():
-            logger.info(f" Found fine-tuned adapter at {adapter_path}")
-            llm_kwargs["adapter_path"] = str(adapter_path)
+        if backend == "transformers" and resolved_adapter_path:
+            logger.info(f" Found fine-tuned adapter at {resolved_adapter_path}")
+            llm_kwargs["adapter_path"] = resolved_adapter_path
             llm = MedicalLLM(**llm_kwargs)
         else:
             if backend == "transformers":
@@ -537,7 +529,8 @@ def get_pipeline(model_choice: str = "tinyllama"):
             kb_count = shared["vector_store"].collection.count()
         except Exception:
             kb_count = 0
-        cache_context_key = f"{resolved_model_name}_{backend}_kb{kb_count}"
+        adapter_tag = Path(resolved_adapter_path).name if resolved_adapter_path else "base"
+        cache_context_key = f"{resolved_model_name}_{backend}_{adapter_tag}_kb{kb_count}"
 
         pipeline = HealthcareQAPipeline(
             retriever=shared["retriever"],
@@ -551,7 +544,7 @@ def get_pipeline(model_choice: str = "tinyllama"):
             factual_consistency_checker=shared.get("factual_consistency_checker"),
             cache_context_key=cache_context_key,
         )
-        pipelines[model_choice] = pipeline
+        pipelines[cache_key] = pipeline
         logger.info(f" Pipeline loaded for {model_info['display_name']}")
         return pipeline
 
@@ -1261,13 +1254,14 @@ async def clear_cache():
 
 # ── Alternative pipeline loaders ─────────────────────────────────────────────
 
-def _get_langchain_pipeline(model_choice: str = "tinyllama"):
+def _get_langchain_pipeline(model_choice: str = "tinyllama", adapter_path: Optional[str] = None):
     """Lazy load LangChain pipeline with specified model.
     
     Args:
         model_choice: Model to use (tinyllama or biomistral)
     """
-    cache_key = f"langchain_{model_choice}"
+    resolved_adapter_path = _resolve_adapter_path(adapter_path)
+    cache_key = f"langchain_{model_choice}::{resolved_adapter_path or 'base'}"
     if cache_key in pipelines:
         return pipelines[cache_key]
     try:
@@ -1277,12 +1271,11 @@ def _get_langchain_pipeline(model_choice: str = "tinyllama"):
         from src.generation.llm_wrapper import MedicalLLM
         from src.langchain import create_langchain_pipeline
 
-        adapter_path = Path("models/fine_tuned/medical_adapter")
         import torch as _torch
         llm = MedicalLLM(
             model_name=model_choice,  # Use requested model instead of hardcoded tinyllama
-            adapter_path=str(adapter_path) if adapter_path.exists() else None,
-            load_in_4bit=adapter_path.exists() and _torch.cuda.is_available(),
+            adapter_path=resolved_adapter_path,
+            load_in_4bit=bool(resolved_adapter_path) and _torch.cuda.is_available(),
         )
         pipeline = create_langchain_pipeline(
             retriever=shared["retriever"],
@@ -1298,13 +1291,14 @@ def _get_langchain_pipeline(model_choice: str = "tinyllama"):
         return None
 
 
-def _get_langgraph_pipeline(model_choice: str = "tinyllama"):
+def _get_langgraph_pipeline(model_choice: str = "tinyllama", adapter_path: Optional[str] = None):
     """Lazy load LangGraph pipeline with specified model.
     
     Args:
         model_choice: Model to use (tinyllama or biomistral)
     """
-    cache_key = f"langgraph_{model_choice}"
+    resolved_adapter_path = _resolve_adapter_path(adapter_path)
+    cache_key = f"langgraph_{model_choice}::{resolved_adapter_path or 'base'}"
     if cache_key in pipelines:
         return pipelines[cache_key]
     try:
@@ -1314,12 +1308,11 @@ def _get_langgraph_pipeline(model_choice: str = "tinyllama"):
         from src.generation.llm_wrapper import MedicalLLM
         from src.langgraph import create_langgraph_pipeline
 
-        adapter_path = Path("models/fine_tuned/medical_adapter")
         import torch as _torch
         llm = MedicalLLM(
             model_name=model_choice,  # Use requested model instead of hardcoded tinyllama
-            adapter_path=str(adapter_path) if adapter_path.exists() else None,
-            load_in_4bit=adapter_path.exists() and _torch.cuda.is_available(),
+            adapter_path=resolved_adapter_path,
+            load_in_4bit=bool(resolved_adapter_path) and _torch.cuda.is_available(),
         )
         pipeline = create_langgraph_pipeline(
             retriever=shared["retriever"],

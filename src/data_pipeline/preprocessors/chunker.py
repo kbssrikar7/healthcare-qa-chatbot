@@ -41,6 +41,10 @@ class MedicalTextChunker:
         use_domain_adaptive: bool = True
     ):
         self.default_chunk_size = chunk_size or 512
+        # Keep a stable base chunk size on the instance. Domain-adaptive chunking
+        # may override this temporarily for a given document, but direct calls to
+        # chunk_text() must still work without going through chunk_document().
+        self.chunk_size = self.default_chunk_size
         self.chunk_overlap = chunk_overlap
         self.min_chunk_size = min_chunk_size
         self.use_domain_adaptive = use_domain_adaptive
@@ -68,7 +72,12 @@ class MedicalTextChunker:
     
     def chunk_text(self, text: str) -> List[str]:
         """Split text into chunks."""
-        if len(text) <= self.chunk_size:
+        if not text:
+            return []
+
+        chunk_size = getattr(self, "chunk_size", self.default_chunk_size)
+
+        if len(text) <= chunk_size:
             return [text] if len(text) >= self.min_chunk_size else []
         
         chunks = []
@@ -78,19 +87,19 @@ class MedicalTextChunker:
         sentences = re.split(r'(?<=[.!?])\s+', text)
         
         for sentence in sentences:
-            if len(current_chunk) + len(sentence) <= self.chunk_size:
+            if len(current_chunk) + len(sentence) <= chunk_size:
                 current_chunk += (" " if current_chunk else "") + sentence
             else:
                 if current_chunk:
                     chunks.append(current_chunk.strip())
                 
                 # Handle very long sentences
-                if len(sentence) > self.chunk_size:
+                if len(sentence) > chunk_size:
                     # Split by words
                     words = sentence.split()
                     current_chunk = ""
                     for word in words:
-                        if len(current_chunk) + len(word) + 1 <= self.chunk_size:
+                        if len(current_chunk) + len(word) + 1 <= chunk_size:
                             current_chunk += (" " if current_chunk else "") + word
                         else:
                             if current_chunk:

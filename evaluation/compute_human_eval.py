@@ -40,6 +40,7 @@ def load_annotations(pattern="human_eval_*.csv"):
                 if not row.get("factual_correctness"):
                     continue
                 try:
+                    automated_confidence = row.get("automated_confidence", "")
                     all_annotations.append({
                         "question_id": row["question_id"],
                         "evaluator_id": row.get("evaluator_id", f.stem),
@@ -47,6 +48,9 @@ def load_annotations(pattern="human_eval_*.csv"):
                         "relevance": int(row["relevance"]),
                         "completeness": int(row["completeness"]),
                         "safety": int(row["safety"]),
+                        "automated_confidence": (
+                            float(automated_confidence) if automated_confidence not in ("", None) else None
+                        ),
                     })
                 except (ValueError, KeyError):
                     continue
@@ -115,6 +119,30 @@ def compute_inter_annotator(annotations):
     return results
 
 
+def compute_confidence_correlation(annotations):
+    """Correlate automated confidence with mean human factual correctness."""
+    grouped = defaultdict(lambda: {"scores": [], "confidence": None})
+    for ann in annotations:
+        grouped[ann["question_id"]]["scores"].append(ann["factual_correctness"])
+        if ann.get("automated_confidence") is not None:
+            grouped[ann["question_id"]]["confidence"] = ann["automated_confidence"]
+
+    human_scores = []
+    automated_scores = []
+    for item in grouped.values():
+        if item["confidence"] is None or not item["scores"]:
+            continue
+        human_scores.append(float(np.mean(item["scores"])))
+        automated_scores.append(float(item["confidence"]))
+
+    if len(human_scores) < 2:
+        return {"note": "Need >= 2 rows with automated_confidence for correlation"}
+
+    return {
+        "pearson_r": round(float(np.corrcoef(human_scores, automated_scores)[0, 1]), 4)
+    }
+
+
 def main():
     annotations = load_annotations()
     if not annotations:
@@ -133,12 +161,15 @@ def main():
 
     agreement = compute_inter_annotator(annotations)
     print(f"\nInter-annotator agreement: {json.dumps(agreement, indent=2)}")
+    confidence_correlation = compute_confidence_correlation(annotations)
+    print(f"\nAutomated confidence correlation: {json.dumps(confidence_correlation, indent=2)}")
 
     # Save results
     out = {
         "n_annotations": len(annotations),
         "mean_scores": means,
         "inter_annotator_agreement": agreement,
+        "automated_confidence_correlation": confidence_correlation,
     }
     out_path = EVAL_DIR / "results" / "human_eval_results.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)

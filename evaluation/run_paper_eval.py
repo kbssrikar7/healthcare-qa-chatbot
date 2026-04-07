@@ -47,7 +47,11 @@ from evaluation.eval_utils import keyword_coverage, is_correct, bootstrap_ci
 # ────────────────────────────────────────────────────────────────────────────
 # Pipeline loader
 # ────────────────────────────────────────────────────────────────────────────
-def load_pipeline(variant: str = "standard", model: str = "tinyllama"):
+def load_pipeline(
+    variant: str = "standard",
+    model: str = "tinyllama",
+    adapter_path: str | None = None,
+):
     """Return an initialised pipeline for variant ∈ {standard, langchain, langgraph}."""
     from api.main import (
         get_pipeline,
@@ -55,11 +59,11 @@ def load_pipeline(variant: str = "standard", model: str = "tinyllama"):
         _get_langgraph_pipeline,
     )
     if variant == "standard":
-        return get_pipeline(model)
+        return get_pipeline(model, adapter_path=adapter_path)
     elif variant == "langchain":
-        return _get_langchain_pipeline(model_choice=model)
+        return _get_langchain_pipeline(model_choice=model, adapter_path=adapter_path)
     elif variant == "langgraph":
-        return _get_langgraph_pipeline(model_choice=model)
+        return _get_langgraph_pipeline(model_choice=model, adapter_path=adapter_path)
     else:
         raise ValueError(f"Unknown variant: {variant}")
 
@@ -161,12 +165,15 @@ def run_metrics(test_cases: list, pipeline, variant_name: str, n: int = None) ->
     if len(kw_scores) >= 5:
         mean, lo, hi = bootstrap_ci(kw_scores)
         result["keyword_coverage_ci"] = [round(lo, 4), round(hi, 4)]
+        result["keyword_coverage_ci_95"] = [round(lo, 4), round(hi, 4)]
     if len(rouge_scores) >= 5:
         mean, lo, hi = bootstrap_ci(rouge_scores)
         result["rougeL_ci"] = [round(lo, 4), round(hi, 4)]
+        result["rougeL_ci_95"] = [round(lo, 4), round(hi, 4)]
     if len(bs_f1_scores) >= 5:
         mean, lo, hi = bootstrap_ci(bs_f1_scores)
         result["bertscore_f1_ci"] = [round(lo, 4), round(hi, 4)]
+        result["bertscore_ci_95"] = [round(lo, 4), round(hi, 4)]
 
     return result
 
@@ -275,6 +282,14 @@ def run_calibration(test_cases: list, pipeline, n: int = None) -> dict:
     cases = test_cases[:n] if n else test_cases
     confidences, labels = [], []
 
+    scorer = None
+    rouge_scorer = None
+    try:
+        from rouge_score import rouge_scorer as _rs
+        rouge_scorer = _rs.RougeScorer(["rougeL"], use_stemmer=True)
+    except Exception:
+        rouge_scorer = None
+
     print(f"\n  Calibration: collecting {len(cases)} predictions …")
     for case in cases:
         try:
@@ -282,8 +297,13 @@ def run_calibration(test_cases: list, pipeline, n: int = None) -> dict:
             conf = resp.confidence.get("score", 0.5)
             kws = case.get("expected_keywords", [])
             kw_cov = keyword_coverage(resp.answer, kws)
-            # Correctness = keyword_coverage >= 0.4 AND ROUGE-L >= 0.2
-            label = 1 if is_correct(kw_cov) else 0
+            rouge_l = None
+            if rouge_scorer and case.get("reference_answer"):
+                rouge_l = rouge_scorer.score(
+                    case["reference_answer"],
+                    resp.answer,
+                )["rougeL"].fmeasure
+            label = 1 if is_correct(kw_cov, rouge_l) else 0
             confidences.append(conf)
             labels.append(label)
         except Exception:
@@ -399,6 +419,11 @@ def main():
     parser.add_argument("--model", default="tinyllama",
                         choices=["tinyllama", "biomistral"],
                         help="LLM model to use for standard pipeline")
+    parser.add_argument(
+        "--adapter",
+        default=None,
+        help="Optional PEFT adapter path for transformers-backed evaluations",
+    )
     args = parser.parse_args()
 
     test_path = PROJECT_ROOT / args.test_set
@@ -420,7 +445,7 @@ def main():
     for v in args.variants:
         try:
             print(f"  Loading {v} …", end=" ", flush=True)
-            pipelines[v] = load_pipeline(v, model=args.model)
+            pipelines[v] = load_pipeline(v, model=args.model, adapter_path=args.adapter)
             print("OK")
         except Exception as e:
             print(f"FAILED: {e}")

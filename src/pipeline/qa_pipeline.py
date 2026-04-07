@@ -379,7 +379,8 @@ class HealthcareQAPipeline:
         prompt = self.prompt_manager.build_prompt(
             question=question,
             context=generation_context,
-            template_name=template_name
+            template_name=template_name,
+            model_name=getattr(self.llm, "model_name", None),
         )
         
         generation_result = self.llm.generate(

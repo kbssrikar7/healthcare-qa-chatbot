@@ -277,8 +277,10 @@ class MedicalLLM:
         top_p: float = 0.85,
     ) -> GenerationResult:
         """Generate using llama-cpp-python (GGUF backend)."""
-        # BioMistral uses Mistral instruction format
-        formatted = f"[INST] {prompt.strip()} [/INST]"
+        # BioMistral uses native Mistral instruction formatting. If the caller
+        # already supplied an [INST] prompt, preserve it instead of double-wrap.
+        prompt = prompt.strip()
+        formatted = prompt if "[INST]" in prompt else f"<s>[INST] {prompt} [/INST]"
         output = self._gguf_llm(
             formatted,
             max_tokens=max_new_tokens,

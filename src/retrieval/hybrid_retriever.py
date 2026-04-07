@@ -218,14 +218,8 @@ class HybridRetriever:
         tokens = text.split()
         return [t for t in tokens if len(t) >= 2]
 
-    def _dense_retrieve(self, query: str, k: int) -> List[Tuple[str, float, Dict, str]]:
-        """
-        Perform dense vector retrieval.
-        Returns list of (content, score, metadata, doc_id) tuples.
-        """
-        query_embedding = self.embedder.embed_query(query)
-        results = self.vector_store.search(query_embedding.tolist(), n_results=k)
-
+    def _format_dense_results(self, results: Dict) -> List[Tuple[str, float, Dict, str]]:
+        """Convert raw vector-store results into dense retrieval tuples."""
         documents = []
         if results["documents"] and results["documents"][0]:
             ids = results.get("ids", [[]])[0]
@@ -243,8 +237,22 @@ class HybridRetriever:
                     else _stable_doc_id(doc, metadata.get("source", ""))
                 )
                 documents.append((doc, float(similarity), metadata, doc_id))
-
         return documents
+
+    def _dense_retrieve(
+        self,
+        query: str,
+        k: int,
+        query_embedding: Optional[np.ndarray] = None,
+    ) -> List[Tuple[str, float, Dict, str]]:
+        """
+        Perform dense vector retrieval.
+        Returns list of (content, score, metadata, doc_id) tuples.
+        """
+        if query_embedding is None:
+            query_embedding = self.embedder.embed_query(query)
+        results = self.vector_store.search(query_embedding.tolist(), n_results=k)
+        return self._format_dense_results(results)
 
     def _sparse_retrieve(
         self, query: str, k: int
@@ -305,14 +313,18 @@ class HybridRetriever:
 
         # Dense retrieval
         _t0 = time.perf_counter()
-        dense_results = self._dense_retrieve(query, fetch_k)
-        _timings["dense_ms"] = (time.perf_counter() - _t0) * 1000
+        query_embedding = self.embedder.embed_query(query)
+        _timings["embedding_ms"] = (time.perf_counter() - _t0) * 1000
+
+        _t0 = time.perf_counter()
+        dense_results = self._dense_retrieve(query, fetch_k, query_embedding=query_embedding)
+        _timings["chroma_query_ms"] = (time.perf_counter() - _t0) * 1000
 
         if use_hybrid and self.bm25 is not None:
             # Sparse retrieval
             _t0 = time.perf_counter()
             sparse_results = self._sparse_retrieve(query, fetch_k)
-            _timings["sparse_ms"] = (time.perf_counter() - _t0) * 1000
+            _timings["bm25_query_ms"] = (time.perf_counter() - _t0) * 1000
 
             # Create ranked lists for RRF using STABLE doc IDs (not content prefix)
             dense_ranked = [(doc_id, score) for _, score, _, doc_id in dense_results]
