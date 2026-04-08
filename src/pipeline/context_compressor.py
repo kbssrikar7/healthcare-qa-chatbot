@@ -6,6 +6,7 @@ Reorders and compresses context to maximize LLM attention on relevant content.
 """
 from typing import List, Dict, Optional
 from dataclasses import dataclass
+from loguru import logger
 
 
 @dataclass
@@ -163,27 +164,13 @@ class ContextCompressor:
         """
         if len(docs) <= 2:
             return docs
-        
-        # Put best at start, second best at end, rest in middle
-        reordered = []
-        
-        # First half (best docs)
-        first_half = docs[:len(docs)//2]
-        # Second half (remaining docs)
-        second_half = docs[len(docs)//2:]
-        
-        # Interleave: best at start, second best at end
-        reordered.append(first_half[0])  # Best at start
-        
-        # Add middle docs
-        for i in range(1, len(first_half)):
-            reordered.append(first_half[i])
-        
-        # Add second half
-        for doc in second_half:
-            reordered.append(doc)
-        
-        return reordered
+
+        # Best at start, second-best at END, rest in middle
+        # (Liu et al., "Lost in the Middle", 2023)
+        best = docs[0]
+        second_best = docs[1]
+        middle = docs[2:]
+        return [best] + middle + [second_best]
     
     def _truncate_to_tokens(self, text: str) -> str:
         """Truncate text to max tokens (approximating 4 chars = 1 token)."""

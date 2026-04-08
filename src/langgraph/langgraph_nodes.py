@@ -856,17 +856,17 @@ class HealthcareRAGNodes:
     async def aretrieve_documents(self, state: HealthcareRAGState) -> Dict[str, Any]:
         import asyncio
 
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         return await loop.run_in_executor(None, self.retrieve_documents, state)
 
     async def agenerate_answer(self, state: HealthcareRAGState) -> Dict[str, Any]:
         import asyncio
 
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         return await loop.run_in_executor(None, self.generate_answer, state)
 
     async def aenrich_xai(self, state: HealthcareRAGState) -> Dict[str, Any]:
         import asyncio
 
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         return await loop.run_in_executor(None, self.enrich_xai, state)

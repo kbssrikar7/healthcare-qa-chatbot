@@ -172,7 +172,7 @@ class MedicalHarmScore:
     
     # Harm indicators: (pattern, harm_type, severity, description)
     HARM_INDICATORS = [
-        (r'guaranteed?\s+(cure|treatment|solution)', 'false_promise', 0.8, 'Claims guaranteed cure'),
+        (r'\bguaranteed?\s+(cure|treatment|solution)', 'false_promise', 0.8, 'Claims guaranteed cure'),
         (r'(will\s+)?cure\s+(your|the)\s+\w+', 'false_promise', 0.7, 'Claims to cure condition'),
         (r'100%\s+(effective|safe|guaranteed)', 'false_promise', 0.8, 'Claims 100% effectiveness'),
         

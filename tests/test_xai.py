@@ -600,3 +600,89 @@ class TestMultiSignalConfidenceScorer:
         assert bd.confidence_level == "low"
         assert bd.explanation == ""
         assert bd.signal_weights == {}
+
+
+# ── Attention Visualizer tests ───────────────────────────────────────────────
+
+class TestTokenImportance:
+    """Tests for TokenImportance dataclass and attention visualizer fallback."""
+
+    def test_token_importance_defaults(self):
+        """is_computed defaults to True."""
+        from src.xai.attention_visualizer import TokenImportance
+        ti = TokenImportance(token="aspirin", importance=0.8, position=0)
+        assert ti.is_computed is True
+
+    def test_token_importance_not_computed(self):
+        """is_computed can be set to False for placeholder scores."""
+        from src.xai.attention_visualizer import TokenImportance
+        ti = TokenImportance(token="aspirin", importance=0.5, position=0, is_computed=False)
+        assert ti.is_computed is False
+        assert ti.importance == 0.5
+
+    def test_fallback_scores_marked_not_computed(self):
+        """When gradient computation fails, all tokens must have is_computed=False."""
+        import unittest.mock as mock
+        import torch
+        from src.xai.attention_visualizer import TokenImportanceAnalyzer
+
+        # Minimal mock model/tokenizer that raises on forward pass
+        mock_model = mock.MagicMock()
+        mock_model.parameters.return_value = iter([torch.zeros(1)])
+        mock_model.get_input_embeddings.side_effect = RuntimeError("no GPU")
+        mock_tokenizer = mock.MagicMock()
+        tok_output = mock.MagicMock()
+        tok_output.input_ids = torch.tensor([[1, 2, 3]])
+        tok_output.__getitem__ = lambda self, k: {"input_ids": torch.tensor([[1, 2, 3]])}[k]
+        mock_tokenizer.return_value = tok_output
+        mock_tokenizer.convert_ids_to_tokens.return_value = ["What", "is", "aspirin"]
+
+        analyzer = TokenImportanceAnalyzer(mock_model, mock_tokenizer)
+        results = analyzer.compute_token_importance("What is aspirin")
+
+        assert len(results) == 3
+        assert all(not r.is_computed for r in results), "Fallback tokens must have is_computed=False"
+        assert all(r.importance == 0.5 for r in results), "Fallback scores must be uniform 0.5"
+
+
+# ── RationaleGenerator tests ─────────────────────────────────────────────────
+
+class TestRationaleGenerator:
+    """Tests for RationaleGenerator template and CoT paths."""
+
+    def test_template_rationale_no_extras(self):
+        """Template rationale works with just question and answer."""
+        from src.xai.rationale_generator import RationaleGenerator
+        gen = RationaleGenerator(llm=None)
+        rationale = gen.generate_template_rationale(
+            question="What is hypertension?",
+            answer="Hypertension is high blood pressure.",
+        )
+        assert isinstance(rationale, str)
+        assert len(rationale) > 20
+        assert "healthcare professional" in rationale.lower()
+
+    def test_template_rationale_with_confidence(self):
+        """Confidence level and score appear in template rationale."""
+        from src.xai.rationale_generator import RationaleGenerator
+        gen = RationaleGenerator(llm=None)
+        rationale = gen.generate_template_rationale(
+            question="What is aspirin used for?",
+            answer="Aspirin is used as a pain reliever.",
+            confidence={"score": 0.82, "level": "high"},
+            sources=[{"source": "PubMedQA"}, {"source": "MedMCQA"}],
+        )
+        assert "high" in rationale
+        assert "82%" in rationale or "0.82" in rationale or "82" in rationale
+
+    def test_generate_rationale_falls_back_without_llm(self):
+        """generate_rationale uses template when llm=None."""
+        from src.xai.rationale_generator import RationaleGenerator
+        gen = RationaleGenerator(llm=None)
+        rationale = gen.generate_rationale(
+            question="What causes diabetes?",
+            answer="Diabetes is caused by insulin deficiency.",
+            context="Insulin is a hormone produced by the pancreas.",
+        )
+        assert isinstance(rationale, str)
+        assert len(rationale) > 10

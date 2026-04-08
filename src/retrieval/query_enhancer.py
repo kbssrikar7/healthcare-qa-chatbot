@@ -202,17 +202,26 @@ class QueryEnhancer:
         # Question to statement conversion
         query_lower = query.lower().strip()
         
-        if query_lower.startswith("what is "):
-            reformulations.append(query[8:].strip("?") + " definition and explanation")
-        elif query_lower.startswith("how to "):
-            reformulations.append(query[7:].strip("?") + " treatment and management")
-        elif query_lower.startswith("what are the symptoms of "):
-            condition = query[25:].strip("?")
-            reformulations.append(f"{condition} clinical presentation signs")
-        elif query_lower.startswith("what causes "):
-            condition = query[12:].strip("?")
-            reformulations.append(f"{condition} etiology pathophysiology")
-        
+        patterns = [
+            ("what is ", 8, " definition and explanation"),
+            ("how to ", 7, " treatment and management"),
+            ("what are the symptoms of ", 25, " clinical presentation signs"),
+            ("what causes ", 12, " etiology pathophysiology"),
+            ("how do you treat ", 17, " management therapy options"),
+            ("is it safe to ", 14, " safety risks contraindications"),
+            ("can i take ", 11, " drug interactions compatibility"),
+            ("how long does ", 14, " duration prognosis timeline"),
+            ("why does ", 9, " mechanism pathophysiology cause"),
+            ("what happens if ", 16, " complications consequences effects"),
+            ("how is ", 7, " diagnosed detection screening"),
+            ("when should i ", 14, " indications medical attention criteria"),
+        ]
+
+        for prefix, length, suffix in patterns:
+            if query_lower.startswith(prefix):
+                reformulations.append(query[length:].strip("?") + suffix)
+                break
+
         return reformulations
     
     def _llm_expand(self, query: str) -> List[str]:

@@ -239,11 +239,20 @@ class MultiSignalConfidenceScorer:
 
         def _extract(text: str) -> set:
             entities: set = set()
-            # Proper nouns: case-sensitive (capital letters identify entities)
+            # PascalCase proper nouns (e.g. "Myocardial Infarction")
             entities.update(re.findall(r"\b[A-Z][a-z]+(?:\s[A-Z][a-z]+)+\b", text))
-            # Dosages and conditions: case-insensitive
+            # Dosages (case-insensitive)
             entities.update(re.findall(r"\b\d+\s*(?:mg|ml|mcg|units|mmol|g)\b", text, re.IGNORECASE))
-            entities.update(re.findall(r"\b(?:type\s*[12]\s*diabetes|hypertension|cancer|infection)\b", text, re.IGNORECASE))
+            # Expanded medical conditions (case-insensitive)
+            medical_pattern = (
+                r"\b(?:type\s*[12]\s*diabetes|diabetes\s*(?:mellitus|insipidus)?|"
+                r"hypertension|hypotension|cancer|infection|asthma|arthritis|"
+                r"anemia|depression|anxiety|pneumonia|bronchitis|hepatitis|"
+                r"cirrhosis|epilepsy|migraine|obesity|osteoporosis|COPD|"
+                r"stroke|dementia|Alzheimer|Parkinson|thyroid|"
+                r"chronic\s+\w+|acute\s+\w+)\b"
+            )
+            entities.update(re.findall(medical_pattern, text, re.IGNORECASE))
             return {e.lower() for e in entities}
 
         query_ent = _extract(query)

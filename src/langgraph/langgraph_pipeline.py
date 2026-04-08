@@ -23,7 +23,6 @@ from src.langgraph.langgraph_nodes import HealthcareRAGNodes, MEDICAL_DISCLAIMER
 from src.langgraph.langgraph_routing import (
     route_after_grading,
     route_after_verify,
-    route_after_xai
 )
 from src.pipeline.qa_pipeline import QAResponse
 

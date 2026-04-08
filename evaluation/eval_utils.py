@@ -6,6 +6,7 @@ Provides:
   - Bootstrap confidence intervals for statistical significance
   - Keyword coverage computation
 """
+import re
 import numpy as np
 from typing import List, Tuple, Optional
 
@@ -41,7 +42,7 @@ def keyword_coverage(answer: str, keywords: list) -> float:
     if not keywords:
         return 1.0
     a = answer.lower()
-    return sum(1 for k in keywords if k.lower() in a) / len(keywords)
+    return sum(1 for k in keywords if re.search(r'\b' + re.escape(k.lower()) + r'\b', a)) / len(keywords)
 
 
 # ── Bootstrap confidence intervals ──────────────────────────────────────────

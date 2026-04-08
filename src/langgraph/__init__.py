@@ -15,8 +15,6 @@ __all__ = [
     "UNANSWERABLE_RESPONSE",
     "route_after_grading",
     "route_after_verify",
-    "route_after_xai",
-    "should_continue_retrieval",
     "LangGraphHealthcareQAPipeline",
     "LangGraphQAResult",
     "create_langgraph_pipeline",
@@ -33,11 +31,6 @@ _EXPORT_MAP = {
     ),
     "route_after_grading": ("src.langgraph.langgraph_routing", "route_after_grading"),
     "route_after_verify": ("src.langgraph.langgraph_routing", "route_after_verify"),
-    "route_after_xai": ("src.langgraph.langgraph_routing", "route_after_xai"),
-    "should_continue_retrieval": (
-        "src.langgraph.langgraph_routing",
-        "should_continue_retrieval",
-    ),
     "LangGraphHealthcareQAPipeline": (
         "src.langgraph.langgraph_pipeline",
         "LangGraphHealthcareQAPipeline",

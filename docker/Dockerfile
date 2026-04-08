@@ -26,15 +26,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+# Create non-root user
+RUN useradd -m -r appuser
+
 # Copy installed packages from builder
-COPY --from=builder /root/.local /root/.local
-ENV PATH=/root/.local/bin:$PATH
+COPY --from=builder /root/.local /home/appuser/.local
+ENV PATH=/home/appuser/.local/bin:$PATH
 
 # Copy application code
-COPY . .
+COPY --chown=appuser:appuser . .
 
 # Create data directories
-RUN mkdir -p data/raw data/processed data/knowledge_base models outputs
+RUN mkdir -p data/raw data/processed data/knowledge_base models outputs \
+    && chown -R appuser:appuser /app
 
 # Set environment variables
 ENV PYTHONPATH=/app
@@ -42,6 +46,8 @@ ENV PYTHONUNBUFFERED=1
 ENV USE_GPU=false
 ENV LOG_LEVEL=INFO
 ENV ENVIRONMENT=production
+
+USER appuser
 
 # Expose ports
 EXPOSE 8000 8501

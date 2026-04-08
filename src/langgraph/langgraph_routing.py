@@ -4,7 +4,7 @@ LangGraph Routing Logic for Healthcare RAG Pipeline.
 Defines conditional edge functions that determine the next node
 based on current state.
 """
-from typing import Literal
+from typing import Literal  # noqa: F401 — kept for re-export compatibility
 from langgraph.graph import END
 
 from src.langgraph.langgraph_state import HealthcareRAGState
@@ -65,30 +65,3 @@ def route_after_verify(state: HealthcareRAGState) -> Literal["enrich_xai", "refi
     return "enrich_xai"
 
 
-def route_after_xai(state: HealthcareRAGState) -> Literal["end", "review"]:
-    """
-    Route after XAI enrichment.
-    
-    Decides whether to:
-    - "end": Complete the response
-    - "review": Flag for human review (low confidence)
-    """
-    needs_review = state.get("needs_review", False)
-    
-    if needs_review:
-        return "review"
-    return "end"
-
-
-def should_continue_retrieval(state: HealthcareRAGState) -> bool:
-    """
-    Check if we should continue retrieval loop.
-    
-    Returns True if:
-    - Not enough relevant documents
-    - Haven't exceeded retry count
-    """
-    is_answerable = state.get("is_answerable", False)
-    retry_count = state.get("retry_count", 0)
-    
-    return not is_answerable and retry_count < MAX_RETRY_COUNT

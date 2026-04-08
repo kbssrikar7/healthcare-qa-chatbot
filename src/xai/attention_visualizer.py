@@ -17,6 +17,7 @@ class TokenImportance:
     token: str
     importance: float
     position: int
+    is_computed: bool = True  # False when gradient failed and scores are placeholder uniform 0.5
 
 @dataclass
 class AttentionVisualization:
@@ -94,6 +95,7 @@ class TokenImportanceAnalyzer:
             target.backward()
             
             # Get gradient magnitudes
+            is_computed = True
             if embeddings.grad is not None:
                 gradients = embeddings.grad.detach().cpu().numpy()
                 # L2 norm of gradients per token
@@ -103,19 +105,22 @@ class TokenImportanceAnalyzer:
                     importance_scores = importance_scores / importance_scores.max()
             else:
                 importance_scores = np.ones(len(tokens)) * 0.5
-                
+                is_computed = False
+
         except Exception as e:
             from loguru import logger
             logger.warning(f"Gradient computation failed: {e}")
             importance_scores = np.ones(len(tokens)) * 0.5
-        
+            is_computed = False
+
         # Build result
         result = []
         for i, (token, score) in enumerate(zip(tokens, importance_scores)):
             result.append(TokenImportance(
                 token=token,
                 importance=float(score),
-                position=i
+                position=i,
+                is_computed=is_computed,
             ))
         
         return result

@@ -23,6 +23,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 os.environ.setdefault("HF_HUB_OFFLINE", "1")
 os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Request, Depends, Security
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
@@ -57,37 +58,12 @@ async def verify_api_key(api_key: str = Security(_api_key_header)):
 
 # ── App setup ────────────────────────────────────────────────────────────────
 
-app = FastAPI(
-    title="Healthcare QA Chatbot API",
-    description="An explainable medical question-answering system combining LLM + RAG + XAI",
-    version="2.0.0",
-    openapi_tags=[
-        {"name": "Health", "description": "Service health and readiness checks"},
-        {"name": "QA", "description": "Ask medical questions and get explainable answers"},
-        {"name": "Models", "description": "Available LLM model information"},
-        {"name": "Sessions", "description": "Conversation session management"},
-        {"name": "Feedback", "description": "User feedback and rating collection"},
-    ],
-)
 
-# Record startup time
-app.state.start_time = time.time()
-app.state.limiter = limiter
-
-
-@app.on_event("startup")
-async def startup_preload():
-    """Pre-load shared components and warm up indexes to avoid first-query delays."""
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan: startup warmup and shutdown cleanup."""
     logger.info("Startup: pre-loading shared components...")
     shared = _get_shared_components()
-
-    # Pre-initialize BM25 index (avoids 20-60s delay on first hybrid query)
-    if shared and "retriever" in shared:
-        retriever = shared["retriever"]
-        if hasattr(retriever, "initialize"):
-            logger.info("Startup: pre-initializing BM25 index...")
-            retriever.initialize()
-            logger.info("Startup: BM25 index ready")
 
     # Verify embedding model compatibility between index and query model
     if shared and "vector_store" in shared and "embedder" in shared:
@@ -152,6 +128,36 @@ async def startup_preload():
 
     logger.info("Startup: all components ready")
 
+    yield  # Application runs here
+
+    # Shutdown: save conversation sessions
+    try:
+        from src.pipeline.conversation_manager import ConversationManager
+        cm = getattr(app.state, "conversation_manager", None)
+        if cm:
+            cm.save_sessions()
+            logger.info("Shutdown: conversation sessions saved")
+    except Exception:
+        pass
+
+
+app = FastAPI(
+    title="Healthcare QA Chatbot API",
+    description="An explainable medical question-answering system combining LLM + RAG + XAI",
+    version="2.0.0",
+    lifespan=lifespan,
+    openapi_tags=[
+        {"name": "Health", "description": "Service health and readiness checks"},
+        {"name": "QA", "description": "Ask medical questions and get explainable answers"},
+        {"name": "Models", "description": "Available LLM model information"},
+        {"name": "Sessions", "description": "Conversation session management"},
+        {"name": "Feedback", "description": "User feedback and rating collection"},
+    ],
+)
+
+# Record startup time
+app.state.start_time = time.time()
+app.state.limiter = limiter
 
 
 @app.exception_handler(RateLimitExceeded)
