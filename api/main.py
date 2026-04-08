@@ -756,7 +756,6 @@ async def component_health():
 
     # Optional components
     for name, key in [
-        ("reranker", "reranker"),
         ("query_enhancer", "query_enhancer"),
         ("corrective_rag", "corrective_rag"),
         ("factual_consistency", "factual_consistency_checker"),
@@ -766,6 +765,19 @@ async def component_health():
         else:
             enabled = getattr(pipeline_cfg, f"enable_{name}", False) if pipeline_cfg else False
             components[name] = {"status": "disabled" if not enabled else "failed_to_load"}
+
+    # Reranker lives inside the retriever, not as a top-level shared component
+    if shared and shared.get("retriever"):
+        retriever_obj = shared["retriever"]
+        reranker_obj = getattr(retriever_obj, "reranker", None)
+        if reranker_obj is not None:
+            model_id = getattr(reranker_obj, "model_name", "cross-encoder")
+            components["reranker"] = {"status": "ok", "model": model_id}
+        else:
+            enabled = getattr(pipeline_cfg, "enable_reranker", False) if pipeline_cfg else False
+            components["reranker"] = {"status": "disabled" if not enabled else "failed_to_load"}
+    else:
+        components["reranker"] = {"status": "not_loaded"}
 
     # NLI hallucination detector
     if hasattr(app.state, "hallucination_detector") and app.state.hallucination_detector:
@@ -808,7 +820,7 @@ async def list_models():
             "parameters": info["parameters"],
             "requires_gpu": info["requires_gpu"],
             "backend": info.get("backend", "transformers"),
-            "loaded": key in pipelines,
+            "loaded": any(k.startswith(key) for k in pipelines),
         }
     return result
 

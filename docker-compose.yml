@@ -1,0 +1,69 @@
+# Healthcare QA Chatbot — Docker Compose
+# Run with:   docker-compose up -d
+# Stop with:  docker-compose down
+#
+# Requires:
+#   - data/knowledge_base/ (ChromaDB index)
+#   - models/             (TinyLlama cached from HuggingFace, GGUF if using BioMistral)
+#
+# First time setup:
+#   cp .env.example .env
+#   docker-compose up --build
+
+version: '3.9'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: healthcare-qa-api
+    ports:
+      - "${API_PORT:-8000}:8000"
+    environment:
+      - HF_HUB_OFFLINE=${HF_HUB_OFFLINE:-1}
+      - TRANSFORMERS_OFFLINE=${TRANSFORMERS_OFFLINE:-1}
+      - USE_GPU=${USE_GPU:-false}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - API_KEY=${API_KEY:-}
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+      - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN:-}
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 120s
+    restart: unless-stopped
+    networks:
+      - mediquery-net
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: healthcare-qa-frontend
+    command: >
+      python3 -m streamlit run frontend/streamlit_app.py
+      --server.port=8501
+      --server.address=0.0.0.0
+      --server.headless=true
+      --browser.gatherUsageStats=false
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://api:8000
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - mediquery-net
+
+networks:
+  mediquery-net:
+    driver: bridge

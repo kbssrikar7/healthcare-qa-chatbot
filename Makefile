@@ -10,8 +10,8 @@ PYTEST    := $(VENV)/bin/pytest
 UVICORN   := $(VENV)/bin/uvicorn
 STREAMLIT := $(VENV)/bin/streamlit
 
-.PHONY: help install test test-all run run-frontend eval eval-quick eval-table \
-        lint fmt clean docker-build docker-run freeze
+.PHONY: help install test test-all run run-frontend start stop eval eval-quick eval-table \
+        lint fmt clean docker-build docker-run docker-up docker-down docker-logs freeze
 
 # ── Default ───────────────────────────────────────────────────────────────────
 help:
@@ -21,12 +21,17 @@ help:
 	@echo "  test-all      — run full test suite"
 	@echo "  run           — start FastAPI backend (port 8000)"
 	@echo "  run-frontend  — start Streamlit frontend (port 8501)"
+	@echo "  start         — start both API + frontend (background)"
+	@echo "  stop          — stop all background services"
 	@echo "  eval          — run paper evaluation on 97-question test set"
 	@echo "  eval-quick    — quick eval on 10 questions (smoke test)"
 	@echo "  eval-table    — print LaTeX comparison table"
 	@echo "  freeze        — update requirements.lock from current venv"
 	@echo "  docker-build  — build Docker image"
 	@echo "  docker-run    — run Docker image (CPU, port 8000)"
+	@echo "  docker-up     — docker-compose up -d (API + frontend)"
+	@echo "  docker-down   — docker-compose down"
+	@echo "  docker-logs   — tail docker-compose logs"
 	@echo "  clean         — remove __pycache__, .pyc files"
 
 # ── Setup ─────────────────────────────────────────────────────────────────────
@@ -50,6 +55,12 @@ run:
 
 run-frontend:
 	$(STREAMLIT) run frontend/streamlit_app.py --server.port 8501
+
+start:
+	./start.sh
+
+stop:
+	./start.sh --stop
 
 # ── Evaluation ────────────────────────────────────────────────────────────────
 eval:
@@ -76,6 +87,15 @@ docker-run:
 		-v $(PWD)/models:/app/models \
 		--env-file .env \
 		healthcare-qa:latest
+
+docker-up:
+	docker-compose up -d
+
+docker-down:
+	docker-compose down
+
+docker-logs:
+	docker-compose logs -f
 
 # ── Lint / Format ─────────────────────────────────────────────────────────────
 lint:

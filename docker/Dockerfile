@@ -44,11 +44,13 @@ ENV LOG_LEVEL=INFO
 ENV ENVIRONMENT=production
 
 # Expose ports
-EXPOSE 8000 7860
+EXPOSE 8000 8501
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+# Health check — 120s start-period for BM25 index build (367K docs)
+HEALTHCHECK --interval=30s --timeout=15s --start-period=120s --retries=5 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Default command - run API
-CMD ["python", "api/main.py"]
+# Default command — FastAPI via uvicorn (use docker-compose to also run frontend)
+CMD ["python3", "-m", "uvicorn", "api.main:app", \
+     "--host", "0.0.0.0", "--port", "8000", \
+     "--workers", "1", "--log-level", "info"]
