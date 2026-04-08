@@ -355,8 +355,8 @@ def _get_shared_components():
         logger.info(" Loading shared pipeline components...")
         embedder = MedicalEmbedder(model_name="all-minilm")
         vector_store = VectorStore(
-            collection_name="medical_knowledge",
-            persist_directory="data/knowledge_base",
+            collection_name=config.retrieval.collection_name,
+            persist_directory=config.retrieval.persist_directory,
         )
         
         # Reranker

@@ -16,9 +16,11 @@ from src.fine_tuning.trainer import QLoRAConfig, QLoRATrainer, MedicalQADatasetB
 def main():
     parser = argparse.ArgumentParser(description='Train Medical Adapter')
     parser.add_argument('--output-dir', type=str, default='models/fine_tuned', help='Output directory for model')
-    parser.add_argument('--epochs', type=int, default=1, help='Number of epochs')
-    parser.add_argument('--batch-size', type=int, default=2, help='Batch size')
-    parser.add_argument('--max-samples', type=int, default=1000, help='Max samples to use for quick training')
+    parser.add_argument('--epochs', type=int, default=1, help='Number of training epochs (ignored if --steps > 0)')
+    parser.add_argument('--steps', type=int, default=-1, help='Max training steps (-1 = use --epochs)')
+    parser.add_argument('--batch-size', type=int, default=2, help='Per-device batch size')
+    parser.add_argument('--lr', type=float, default=2e-4, help='Learning rate')
+    parser.add_argument('--max-samples', type=int, default=1800, help='Max QA pairs to train on')
     
     args = parser.parse_args()
     
@@ -42,13 +44,13 @@ def main():
     
     # 2. Config
     config = QLoRAConfig(
-        base_model="TinyLlama/TinyLlama-1.1B-Chat-v1.0", # Using small model for feasibility
+        base_model="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
         output_dir=args.output_dir,
         num_epochs=args.epochs,
-        max_steps=5, # Force short training for demo
+        max_steps=args.steps,  # -1 means use epochs; >0 overrides epochs
         batch_size=args.batch_size,
         gradient_accumulation_steps=4,
-        learning_rate=2e-4
+        learning_rate=args.lr,
     )
     
     # 3. Initialize Trainer

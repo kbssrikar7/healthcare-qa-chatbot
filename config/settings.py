@@ -80,8 +80,8 @@ class LLMConfig:
 class RetrievalConfig:
     """Retrieval system configuration."""
     vector_store_type: str = "chromadb"  # chromadb or pinecone
-    collection_name: str = "medical_knowledge"
-    persist_directory: str = str(DATA_DIR / "knowledge_base")
+    collection_name: str = os.getenv("CHROMA_COLLECTION", "medical_knowledge")
+    persist_directory: str = os.getenv("KB_PERSIST_DIR", str(DATA_DIR / "knowledge_base"))
     top_k: int = 5
     dense_weight: float = 0.7
     sparse_weight: float = 0.3
