@@ -11,7 +11,7 @@ UVICORN   := $(VENV)/bin/uvicorn
 STREAMLIT := $(VENV)/bin/streamlit
 
 .PHONY: help install test test-all run run-frontend start stop eval eval-quick eval-table \
-        lint fmt clean docker-build docker-run docker-up docker-down docker-logs freeze
+        lint fmt clean docker-build docker-run docker-up docker-down docker-logs freeze paper
 
 # ── Default ───────────────────────────────────────────────────────────────────
 help:
@@ -27,6 +27,7 @@ help:
 	@echo "  eval-quick    — quick eval on 10 questions (smoke test)"
 	@echo "  eval-table    — print LaTeX comparison table"
 	@echo "  freeze        — update requirements.lock from current venv"
+	@echo "  paper         — compile paper/paper.tex to PDF (requires pdflatex)"
 	@echo "  docker-build  — build Docker image"
 	@echo "  docker-run    — run Docker image (CPU, port 8000)"
 	@echo "  docker-up     — docker-compose up -d (API + frontend)"
@@ -103,6 +104,11 @@ lint:
 
 fmt:
 	$(VENV)/bin/ruff format src/ api/ evaluation/ tests/
+
+# ── Paper ─────────────────────────────────────────────────────────────────────
+paper:
+	cd paper && pdflatex -interaction=nonstopmode paper.tex && pdflatex -interaction=nonstopmode paper.tex
+	@echo "PDF: paper/paper.pdf"
 
 # ── Clean ─────────────────────────────────────────────────────────────────────
 clean:
