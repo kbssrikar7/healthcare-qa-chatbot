@@ -141,13 +141,15 @@ class MedicalLLM:
         import os
         n_threads = min(4, os.cpu_count() or 4)
         logger.info("Loading GGUF model from {} (n_ctx=4096, n_threads={})", model_path, n_threads)
+        n_gpu_layers = -1 if torch.cuda.is_available() else 0  # -1 = all layers on GPU
         self._gguf_llm = Llama(
             model_path=str(model_path),
             n_ctx=4096,        # Mistral-7B supports 4096; 2048 caused prompt truncation with RAG context
             n_threads=n_threads,
-            n_gpu_layers=0,    # CPU-only
+            n_gpu_layers=n_gpu_layers,
             verbose=False,
         )
+        logger.info("GGUF backend: n_gpu_layers={}", n_gpu_layers)
         logger.info("GGUF model loaded successfully")
 
     # ------------------------------------------------------------------
