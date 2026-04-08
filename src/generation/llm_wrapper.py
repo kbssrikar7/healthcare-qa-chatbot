@@ -138,12 +138,12 @@ class MedicalLLM:
                 "Run the BioMistral download script first."
             )
 
-        logger.info("Loading GGUF model from {} (n_ctx=2048, n_threads=4)", model_path)
         import os
         n_threads = min(4, os.cpu_count() or 4)
+        logger.info("Loading GGUF model from {} (n_ctx=4096, n_threads={})", model_path, n_threads)
         self._gguf_llm = Llama(
             model_path=str(model_path),
-            n_ctx=2048,
+            n_ctx=4096,        # Mistral-7B supports 4096; 2048 caused prompt truncation with RAG context
             n_threads=n_threads,
             n_gpu_layers=0,    # CPU-only
             verbose=False,
@@ -251,21 +251,30 @@ class MedicalLLM:
         self,
         prompt: str,
         max_new_tokens: int = 256,
-        temperature: float = 0.3,
-        top_p: float = 0.85,
+        temperature: Optional[float] = None,
+        top_p: Optional[float] = None,
         do_sample: bool = True,
         return_probabilities: bool = False,
     ) -> GenerationResult:
-        """Generate response from the LLM (routes to correct backend)."""
+        """Generate response from the LLM (routes to correct backend).
+
+        temperature/top_p default to None so each backend applies its own
+        optimal defaults: GGUF uses 0.1/0.9 (BioMistral), transformers uses 0.3/0.85.
+        """
         if self.backend == "gguf":
             return self._generate_gguf(
-                prompt, max_new_tokens=max_new_tokens,
-                temperature=temperature, top_p=top_p,
+                prompt,
+                max_new_tokens=max_new_tokens,
+                temperature=temperature if temperature is not None else 0.1,
+                top_p=top_p if top_p is not None else 0.9,
             )
         return self._generate_transformers(
-            prompt, max_new_tokens=max_new_tokens,
-            temperature=temperature, top_p=top_p,
-            do_sample=do_sample, return_probabilities=return_probabilities,
+            prompt,
+            max_new_tokens=max_new_tokens,
+            temperature=temperature if temperature is not None else 0.3,
+            top_p=top_p if top_p is not None else 0.85,
+            do_sample=do_sample,
+            return_probabilities=return_probabilities,
         )
 
     # ------------------------------------------------------------------
@@ -366,23 +375,38 @@ class MedicalLLM:
         context: str,
         max_new_tokens: int = 256,
     ) -> GenerationResult:
-        """Generate response with context (for RAG) using TinyLlama chat format."""
-        SYS = "<|system|>"
-        USR = "<|user|>"
-        AST = "<|assistant|>"
-        END = "</s>"
+        """Generate response with context (for RAG).
 
-        prompt = (
-            f"{SYS}\n"
-            "Answer the question using ONLY the reference text. "
-            "Do NOT add your own knowledge.\n"
-            f"{END}\n"
-            f"{USR}\n"
-            f"REFERENCE TEXT: {context}\n\n"
-            f"QUESTION: {question}\n"
-            f"{END}\n"
-            f"{AST}\n"
-        )
+        Uses model-native prompt format:
+        - BioMistral (GGUF): Mistral [INST] format
+        - TinyLlama (transformers): TinyLlama chat format
+        """
+        if self.backend == "gguf":
+            # Mistral instruction format used by BioMistral
+            prompt = (
+                f"<s>[INST] You are a medical assistant. "
+                f"Answer the question using ONLY the reference text. "
+                f"Do NOT add your own knowledge.\n\n"
+                f"REFERENCE TEXT: {context}\n\n"
+                f"QUESTION: {question} [/INST]"
+            )
+        else:
+            # TinyLlama chat format
+            SYS = "<|system|>"
+            USR = "<|user|>"
+            AST = "<|assistant|>"
+            END = "</s>"
+            prompt = (
+                f"{SYS}\n"
+                "Answer the question using ONLY the reference text. "
+                "Do NOT add your own knowledge.\n"
+                f"{END}\n"
+                f"{USR}\n"
+                f"REFERENCE TEXT: {context}\n\n"
+                f"QUESTION: {question}\n"
+                f"{END}\n"
+                f"{AST}\n"
+            )
 
         return self.generate(prompt, max_new_tokens=max_new_tokens)
 
