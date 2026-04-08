@@ -1,0 +1,33 @@
+{
+  "variant": "kbv2_tinyllama",
+  "n": 97,
+  "answerable_pct": 1.0,
+  "keyword_coverage_mean": 0.3845360824742268,
+  "rougeL_mean": 0.2076388299627875,
+  "bertscore_f1_mean": 0.1398,
+  "bertscore_mode": "rescaled",
+  "keyword_coverage_ci": [
+    0.3197,
+    0.4646
+  ],
+  "keyword_coverage_ci_95": [
+    0.3197,
+    0.4646
+  ],
+  "rougeL_ci": [
+    0.1695,
+    0.252
+  ],
+  "rougeL_ci_95": [
+    0.1695,
+    0.252
+  ],
+  "bertscore_f1_ci": [
+    0.0844,
+    0.1997
+  ],
+  "bertscore_ci_95": [
+    0.0844,
+    0.1997
+  ]
+}
