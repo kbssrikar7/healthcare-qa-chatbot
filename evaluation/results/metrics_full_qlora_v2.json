@@ -1,0 +1,27 @@
+{
+  "variant": "qlora_v2",
+  "n": 20,
+  "note": "Sample eval \u2014 n=20, high variance. Full 97-question eval pending.",
+  "answerable_pct": 1.0,
+  "keyword_coverage_mean": 0.305,
+  "rougeL_mean": 0.1792,
+  "training": {
+    "steps": 500,
+    "batch_size": 8,
+    "learning_rate": 0.0002,
+    "sources": [
+      "MedMCQA (800 samples)",
+      "PubMedQA (1000 samples)"
+    ],
+    "lora_r": 16,
+    "train_loss_start": 2.057,
+    "train_loss_end": 1.519
+  },
+  "comparison": {
+    "tinyllama_base_n97": {
+      "kw": 0.3845,
+      "rouge": 0.2076
+    },
+    "qlora_v1_100steps": "see metrics_full_qlora.json"
+  }
+}
