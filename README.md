@@ -1,71 +1,60 @@
 # 🏥 Explainable Healthcare QA Chatbot
 
-An intelligent medical question-answering system combining LLM + RAG + XAI.
+![Tests](https://img.shields.io/badge/tests-250%20passing-brightgreen)
+![Python](https://img.shields.io/badge/python-3.11-blue)
+![License](https://img.shields.io/badge/license-MIT-lightgrey)
+![Model](https://img.shields.io/badge/LLM-TinyLlama%201.1B-orange)
+
+A medical question-answering system that combines hybrid retrieval (MedCPT dense + BM25 sparse) with a 1.1B-parameter LLM and a five-signal XAI layer. Given a clinical question, the system retrieves relevant passages from a 180K-chunk knowledge base built on PubMedQA, MedMCQA, and HealthCareMagic, generates an answer, then produces a calibrated confidence score (Platt-scaled ECE=0.14), source attributions, and a hallucination risk flag. BioMistral-7B (GGUF Q4_K_M) is available as an alternative backend. A QLoRA adapter fine-tuned for 500 steps on medical dialogue is optionally loadable. Evaluated on 97 held-out questions: TinyLlama achieves keyword coverage 0.38 [0.32–0.46] and ROUGE-L 0.21; the full XAI pipeline is intentionally more conservative than a retrieval-only baseline, hedging when sources conflict.
 
 ## Quick Start
 
 ```bash
-# Setup
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-
-# Download data
+make install                  # create venv + install deps
 python scripts/download_data.py
-
-# Build knowledge base
 python scripts/build_knowledge_base.py
-
-# Run API
-python api/main.py
-
-# Run Frontend
-streamlit run frontend/streamlit_app.py
+make run                      # API on :8000
+make run-frontend             # Streamlit UI on :8501
 ```
 
-## Architecture
+Or via Docker:
+```bash
+cp .env.example .env          # fill in values
+make docker-up                # API + frontend via docker-compose
+```
 
-- **Retrieval**: Hybrid dense (MedCPT) + sparse (BM25) search
-- **Generation**: Fine-tuned BioMistral-7B with QLoRA
-- **Explainability**: Confidence scoring, source attribution, rationale generation
+## Development
+
+```bash
+make test          # 250 fast tests
+make eval          # 97-question paper eval
+make eval-table    # print LaTeX/markdown comparison table
+```
 
 ## Project Structure
 
 ```
-healthcare_qa_chatbot/
-├── src/              # Source code
+├── src/              # Core source (retrieval, generation, XAI, pipeline)
 ├── api/              # FastAPI backend
 ├── frontend/         # Streamlit UI
-├── data/             # Datasets and knowledge base
-├── models/           # Trained models
-└── tests/            # Test suite
+├── evaluation/       # Eval scripts, figures, results
+├── data/             # Knowledge base + datasets
+├── models/           # Fine-tuned adapter + GGUF weights
+└── tests/            # 250-test suite
 ```
 
 ## Components
 
 | Component | Technology |
 |-----------|------------|
-| LLM | BioMistral-7B |
-| Embeddings | MedCPT / all-MiniLM |
-| Vector Store | ChromaDB |
-| API | FastAPI |
+| Primary LLM | TinyLlama 1.1B (transformers) |
+| Alt LLM | BioMistral-7B Q4_K_M (GGUF via llama-cpp) |
+| Fine-tune | QLoRA adapter, 500 steps |
+| Embeddings | MedCPT-Query-Encoder (768-dim) |
+| Vector Store | ChromaDB (HNSW) |
+| Sparse | BM25 (rank-bm25, pickle-cached) |
+| API | FastAPI + Uvicorn |
 | Frontend | Streamlit |
-
-## Alternative LLM Backends
-
-The API/UI now support:
-- `tinyllama` / `biomistral-7b` (Hugging Face transformers)
-- `lmstudio-local` (LM Studio local server)
-- `airllm-mistral-7b` (AirLLM sharded inference)
-
-Setup guide: `docs/lmstudio_airllm_integration.md`
-
-## Success Metrics
-
-- Retrieval: Recall@10 > 85%
-- Medical Accuracy: > 90%
-- Response Time: < 10s
-- Safety: < 5% hallucination rate
 
 ## License
 
