@@ -581,8 +581,18 @@ def _init_conversation_manager():
     if conversation_manager is not None:
         return
     try:
+        from config.settings import config as _cfg
         from src.conversation.history import ConversationManager
-        conversation_manager = ConversationManager(storage_path="data/conversations")
+        api_cfg = getattr(_cfg, "api", None)
+        conversation_manager = ConversationManager(
+            storage_path=getattr(
+                api_cfg, "conversation_storage_path", "data/conversations/sessions.json"
+            ),
+            max_session_age_hours=getattr(api_cfg, "conversation_max_age_hours", 24),
+            cleanup_interval_minutes=getattr(
+                api_cfg, "conversation_cleanup_interval_minutes", 15
+            ),
+        )
         logger.info(" Conversation manager initialized")
     except Exception as e:
         logger.warning(f" Failed to load conversation manager: {e}")
@@ -1323,10 +1333,12 @@ def _get_langgraph_pipeline(model_choice: str = "tinyllama", adapter_path: Optio
         shared = _get_shared_components()
         if not shared:
             return None
+        from config.settings import config as _cfg
         from src.generation.llm_wrapper import MedicalLLM
         from src.langgraph import create_langgraph_pipeline
 
         import torch as _torch
+        pipeline_cfg = getattr(_cfg, "pipeline", None)
         llm = MedicalLLM(
             model_name=model_choice,  # Use requested model instead of hardcoded tinyllama
             adapter_path=resolved_adapter_path,
@@ -1337,6 +1349,9 @@ def _get_langgraph_pipeline(model_choice: str = "tinyllama", adapter_path: Optio
             llm=llm,
             confidence_scorer=shared["confidence_scorer"],
             source_attributor=shared["source_attributor"],
+            enable_checkpointing=bool(
+                getattr(pipeline_cfg, "enable_langgraph_checkpointing", False)
+            ),
         )
         pipelines[cache_key] = pipeline
         logger.info(f" LangGraph pipeline loaded with {model_choice}")

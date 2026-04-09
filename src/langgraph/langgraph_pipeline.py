@@ -72,7 +72,7 @@ class LangGraphHealthcareQAPipeline:
         source_attributor=None,
         rationale_generator=None,
         k: int = 5,
-        enable_checkpointing: bool = True
+        enable_checkpointing: bool = False
     ):
         """
         Initialize LangGraph Healthcare QA Pipeline.
@@ -84,10 +84,16 @@ class LangGraphHealthcareQAPipeline:
             source_attributor: Optional SourceAttributor  
             rationale_generator: Optional RationaleGenerator
             k: Number of documents to retrieve
-            enable_checkpointing: Enable state checkpointing for debugging
+            enable_checkpointing: Enable state checkpointing for debugging.
+                Disabled by default to avoid unbounded in-memory growth in
+                long-lived API processes.
         """
         self.k = k
         self.enable_checkpointing = enable_checkpointing
+        if self.enable_checkpointing:
+            logger.warning(
+                "LangGraph checkpointing is enabled; MemorySaver stores state in memory."
+            )
         
         # Create nodes with existing components
         self.nodes = HealthcareRAGNodes(
@@ -154,7 +160,8 @@ class LangGraphHealthcareQAPipeline:
         # After XAI: always end (review flag is in state for caller to inspect)
         builder.add_edge("enrich_xai", END)
         
-        # Compile with optional checkpointing
+        # Compile with optional checkpointing. MemorySaver is convenient for
+        # debugging, but we keep it opt-in because it grows with every thread.
         if self.enable_checkpointing:
             checkpointer = MemorySaver()
             return builder.compile(checkpointer=checkpointer)

@@ -116,11 +116,16 @@ class PipelineConfig:
     enable_reranker: bool = True
     enable_query_enhancement: bool = True
     enable_context_compression: bool = False
-    enable_corrective_rag: bool = True
-    enable_factual_consistency: bool = True
+    enable_corrective_rag: bool = False   # second retrieval pass adds 2s+ on CPU
+    enable_factual_consistency: bool = False  # DeBERTa reloads per-request; hallucination_detector covers this
     
     # Pipeline selection: "standard" (default), "langchain", or "langgraph"
     default_pipeline: str = os.getenv("DEFAULT_PIPELINE", "standard")
+    # In-memory LangGraph checkpoints are useful for debugging but can grow
+    # without bound in a long-lived API process, so keep them opt-in.
+    enable_langgraph_checkpointing: bool = os.getenv(
+        "ENABLE_LANGGRAPH_CHECKPOINTING", "false"
+    ).lower() == "true"
 
     # MCP Integration
     enable_mcp_search: bool = os.getenv("ENABLE_MCP_SEARCH", "false").lower() == "true"
@@ -161,6 +166,16 @@ class APIConfig:
     rate_limit_per_minute: int = 60
     max_question_length: int = 1000
     min_question_length: int = 5
+    conversation_storage_path: str = os.getenv(
+        "CONVERSATION_STORAGE_PATH",
+        str(DATA_DIR / "conversations" / "sessions.json"),
+    )
+    conversation_max_age_hours: int = int(
+        os.getenv("CONVERSATION_MAX_AGE_HOURS", "24")
+    )
+    conversation_cleanup_interval_minutes: int = int(
+        os.getenv("CONVERSATION_CLEANUP_INTERVAL_MINUTES", "15")
+    )
 
 @dataclass
 class Config:

@@ -1,13 +1,11 @@
 """
 Source attribution for medical QA.
 """
-import logging
+from loguru import logger
 from typing import List, Dict, Optional
 from dataclasses import dataclass
 import re
 import numpy as np
-
-logger = logging.getLogger(__name__)
 
 # Try to import spacy for better NLP, fall back to regex
 try:
@@ -212,10 +210,27 @@ class SourceAttributor:
             return 0.0
         return float(np.dot(emb1, emb2) / (norm1 * norm2))
     
+    # Common English stopwords to exclude from overlap scoring
+    _STOP_WORDS = frozenset({
+        'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+        'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+        'should', 'may', 'might', 'shall', 'can', 'need', 'dare', 'ought',
+        'to', 'of', 'in', 'for', 'on', 'with', 'at', 'by', 'from', 'as',
+        'into', 'through', 'during', 'before', 'after', 'above', 'below',
+        'between', 'out', 'off', 'over', 'under', 'again', 'further',
+        'then', 'once', 'and', 'but', 'or', 'nor', 'not', 'no', 'so',
+        'that', 'this', 'these', 'those', 'it', 'its', 'he', 'she', 'they',
+        'we', 'you', 'i', 'me', 'him', 'her', 'us', 'them', 'my', 'your',
+        'his', 'our', 'their', 'what', 'which', 'who', 'whom', 'when',
+        'where', 'why', 'how', 'all', 'each', 'every', 'both', 'few',
+        'more', 'most', 'other', 'some', 'such', 'only', 'own', 'same',
+        'than', 'too', 'very', 'just', 'also',
+    })
+
     def _text_overlap(self, claim: str, content: str) -> float:
-        """Calculate word overlap similarity."""
-        claim_words = set(claim.lower().split())
-        content_words = set(content.lower().split())
+        """Calculate word overlap similarity (stopwords excluded)."""
+        claim_words = set(claim.lower().split()) - self._STOP_WORDS
+        content_words = set(content.lower().split()) - self._STOP_WORDS
         
         if not claim_words:
             return 0.0
@@ -238,7 +253,7 @@ class SourceAttributor:
         best_score = 0
         
         words = content.split()
-        for i in range(len(words) - 10):
+        for i in range(max(1, len(words) - 10)):
             window = ' '.join(words[i:i+20]).lower()
             score = sum(1 for w in claim_words if w in window)
             if score > best_score:

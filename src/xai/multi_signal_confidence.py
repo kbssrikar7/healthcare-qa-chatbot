@@ -221,15 +221,23 @@ class MultiSignalConfidenceScorer:
         return float(np.mean(sims))
 
     def _source_agreement_score(self, answer: str, documents: list) -> float:
-        """Score based on how many sources support the answer."""
+        """Score based on how many sources support the answer (term overlap)."""
         if not documents:
+            return 0.0
+
+        answer_words = set(answer.lower().split())
+        if not answer_words:
             return 0.0
 
         supporting = 0
         for doc in documents:
             content = getattr(doc, "content", "")
-            sim = SequenceMatcher(None, answer.lower(), content.lower()).ratio()
-            if sim > 0.3:
+            if not content:
+                continue
+            # Use cheap term overlap instead of O(n²) SequenceMatcher
+            content_words = set(content.lower().split())
+            overlap = len(answer_words & content_words) / len(answer_words)
+            if overlap > 0.15:
                 supporting += 1
 
         return min(supporting / max(len(documents), 1), 1.0)

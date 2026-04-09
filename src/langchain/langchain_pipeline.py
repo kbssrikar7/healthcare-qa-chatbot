@@ -135,6 +135,10 @@ class LangChainHealthcareQAPipeline:
         self.source_attributor = source_attributor
         self.rationale_generator = rationale_generator
 
+        # Cache GPU availability at init (avoids per-call import torch overhead)
+        import torch
+        self._skip_rationale = not torch.cuda.is_available()
+
         # Create LangChain wrappers
         self.lc_retriever = LangChainHybridRetriever(hybrid_retriever=retriever, k=k)
         self.lc_llm = LangChainMedicalLLMFromExisting(llm=llm)
@@ -353,10 +357,7 @@ class LangChainHealthcareQAPipeline:
             # Generate rationale
             # Rationale requires a full extra LLM call (~2-4 min on CPU).
             # Only run it when GPU is available to keep latency reasonable.
-            import torch
-
-            _skip_rationale = not torch.cuda.is_available()
-            if self.rationale_generator and not _skip_rationale:
+            if self.rationale_generator and not self._skip_rationale:
                 try:
                     rationale = self.rationale_generator.generate_rationale(
                         question=question, answer=answer, context=context

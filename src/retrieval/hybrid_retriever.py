@@ -434,6 +434,11 @@ class HybridRetriever:
                     )
         else:
             # Dense only
+            if use_hybrid:
+                logger.warning(
+                    "BM25 index not available — running dense-only retrieval (NOT hybrid). "
+                    "Evaluation metrics labeled 'hybrid' are actually pure dense."
+                )
             documents = [
                 RetrievedDocument(
                     content=doc,

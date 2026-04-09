@@ -6,7 +6,8 @@ follow-up question detection, and session management.
 """
 from typing import List, Dict, Optional
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
+from pathlib import Path
 import uuid
 import json
 import re
@@ -181,23 +182,48 @@ class FollowUpDetector:
         if len(words) <= 3 and has_context:
             return True
         
-        # Missing-subject heuristic only applies when there is prior context.
-        if not self._has_clear_subject(question):
-            return has_context
+        # Missing-subject heuristic: only flag as follow-up if the question
+        # genuinely lacks a clear subject AND is very short (likely an implied "it").
+        if not self._has_clear_subject(question) and len(words) <= 5 and has_context:
+            return True
         
         return False
     
     def _has_clear_subject(self, question: str) -> bool:
         """Check if question has a clear subject (not implied)."""
-        question_lower = question.lower()
+        question_lower = question.lower().strip()
         
-        # Questions starting with specific medical terms likely have clear subject
-        medical_starters = ['what is', 'what are', 'how to treat', 'symptoms of',
-                           'causes of', 'treatment for', 'medication for']
+        # Broad set of question starters that indicate an independent question
+        independent_starters = [
+            # Definitional
+            'what is', 'what are', 'what does', 'what causes', 'what happens',
+            # How-to / mechanism
+            'how to', 'how do', 'how does', 'how can', 'how is', 'how long',
+            'how much', 'how often', 'how many',
+            # Why
+            'why do', 'why does', 'why is', 'why are',
+            # Yes/no medical
+            'can i', 'can you', 'could i', 'should i', 'is it', 'are there',
+            'do i', 'does it', 'will it', 'would it',
+            # Imperative / request
+            'explain', 'describe', 'define', 'tell me about', 'list the',
+            # Medical starters
+            'symptoms of', 'causes of', 'treatment for', 'medication for',
+            'side effects of', 'risk factors for', 'diagnosis of',
+            # When/where
+            'when should', 'when to', 'where can', 'where do',
+            # Comparison
+            'difference between', 'compare',
+        ]
         
-        for starter in medical_starters:
+        for starter in independent_starters:
             if question_lower.startswith(starter):
                 return True
+        
+        # Also consider any question that contains a clear medical noun as independent
+        # (e.g. "Does metformin lower blood sugar?")
+        if len(question_lower.split()) >= 4:
+            return True
         
         return False
 
@@ -209,7 +235,12 @@ class ConversationManager:
     Handles session creation, retrieval, and persistence.
     """
     
-    def __init__(self, storage_path: Optional[str] = None):
+    def __init__(
+        self,
+        storage_path: Optional[str] = None,
+        max_session_age_hours: int = 24,
+        cleanup_interval_minutes: int = 15,
+    ):
         """
         Initialize conversation manager.
         
@@ -219,9 +250,21 @@ class ConversationManager:
         self.conversations: Dict[str, Conversation] = {}
         self.storage_path = storage_path
         self.followup_detector = FollowUpDetector()
+        self.max_session_age_hours = max_session_age_hours
+        self.cleanup_interval = timedelta(minutes=max(0, cleanup_interval_minutes))
+        self._last_cleanup = datetime.min
+
+    def _maybe_cleanup_old_sessions(self, force: bool = False) -> None:
+        """Run periodic cleanup so stale sessions do not accumulate forever."""
+        now = datetime.now()
+        if not force and (now - self._last_cleanup) < self.cleanup_interval:
+            return
+        self.cleanup_old_sessions(max_age_hours=self.max_session_age_hours)
+        self._last_cleanup = now
     
     def create_session(self, metadata: Optional[Dict] = None) -> Conversation:
         """Create a new conversation session."""
+        self._maybe_cleanup_old_sessions()
         conv = Conversation(metadata=metadata or {})
         self.conversations[conv.session_id] = conv
         logger.info(f"Created conversation session: {conv.session_id}")
@@ -229,6 +272,7 @@ class ConversationManager:
     
     def get_session(self, session_id: str) -> Optional[Conversation]:
         """Get an existing conversation by ID."""
+        self._maybe_cleanup_old_sessions()
         return self.conversations.get(session_id)
     
     def get_or_create_session(self, session_id: Optional[str] = None) -> Conversation:
@@ -294,13 +338,16 @@ class ConversationManager:
         """Save all sessions to storage."""
         if not self.storage_path:
             return
+        self._maybe_cleanup_old_sessions(force=True)
         
         data = {
             sid: conv.to_dict()
             for sid, conv in self.conversations.items()
         }
-        
-        with open(self.storage_path, 'w') as f:
+
+        storage_path = Path(self.storage_path)
+        storage_path.parent.mkdir(parents=True, exist_ok=True)
+        with storage_path.open('w') as f:
             json.dump(data, f, indent=2, default=str)
     
     def cleanup_old_sessions(self, max_age_hours: int = 24):

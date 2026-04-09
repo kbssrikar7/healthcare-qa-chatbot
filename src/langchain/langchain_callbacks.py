@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 from datetime import datetime
 from pathlib import Path
 import json
-import logging
+from loguru import logger
 
 try:
     from langchain_core.callbacks import BaseCallbackHandler
@@ -18,8 +18,6 @@ except ImportError:
     BaseCallbackHandler = object
     LLMResult = object
     LANGCHAIN_AVAILABLE = False
-
-logger = logging.getLogger(__name__)
 
 
 class MedicalQACallbackHandler(BaseCallbackHandler):

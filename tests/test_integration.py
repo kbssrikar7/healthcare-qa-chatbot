@@ -8,6 +8,7 @@ Tests cover:
 - Query expansion in retrieval
 - Passage highlighting
 """
+from datetime import datetime, timedelta
 import pytest
 import sys
 from pathlib import Path
@@ -164,6 +165,29 @@ class TestConversationHistory:
         )
         context = session.get_context_window()
         assert "diabetes" in context.lower()
+
+    def test_expired_session_is_cleaned_on_access(self):
+        """Expired sessions should be removed during normal manager use."""
+        from src.conversation.history import ConversationManager
+
+        cm = ConversationManager(max_session_age_hours=1, cleanup_interval_minutes=0)
+        session = cm.create_session()
+        session.last_activity = datetime.now() - timedelta(hours=2)
+
+        assert cm.get_session(session.session_id) is None
+        assert session.session_id not in cm.conversations
+
+    def test_save_sessions_creates_parent_directory(self, tmp_path):
+        """Saving sessions should create parent directories for persistence."""
+        from src.conversation.history import ConversationManager
+
+        storage_path = tmp_path / "nested" / "sessions.json"
+        cm = ConversationManager(storage_path=str(storage_path))
+        cm.create_session()
+
+        cm.save_sessions()
+
+        assert storage_path.exists()
 
 
 # =============================================================================

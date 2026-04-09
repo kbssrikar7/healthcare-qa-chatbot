@@ -517,21 +517,10 @@ def main():
     print(f"Loading test set from: {test_set_path}")
     
     # Initialize components
-    from src.generation.llm_wrapper import MedicalLLM
     from src.retrieval.hybrid_retriever import HybridRetriever
-    from src.pipeline.qa_pipeline import HealthcareQAPipeline
     from src.generation.prompt_manager import MedicalPromptManager
     
-    # 1. Initialize LLM
-    print("Initializing LLM...")
-    llm = MedicalLLM(model_name="tinyllama", load_in_4bit=True)
-    
-    # 2. Initialize Retriever (Mocking embedding for now if needed, or using real one)
-    # Ideally should load from config, but we'll try to use a default or mocked one if not set up
-    # For this script to work standalone without full KB, we might need to handle the retriever carefully.
-    # If KB is built, we can use it. If not, we might fail.
-    # Let's assume KB exists or we can use a mock/empty one for testing logic with warning.
-    
+    # 1. Initialize Retriever (always needed)
     print("Initializing Retriever...")
     from src.embeddings.embedding_models import MedicalEmbedder
     from src.embeddings.vector_store import VectorStore
@@ -544,23 +533,26 @@ def main():
     retriever = HybridRetriever(
         embedder=embedding_model, 
         vector_store=vector_store,
-        corpus=None # We don't have the corpus list loaded here for BM25, ideally we should load it or skip BM25
+        corpus=None
     )
-    # Note: HybridRetriever needs corpus for BM25. If None, it skips sparse retrieval (warns or just works with dense).
-    # Since loading corpus takes time and we just want to test pipeline, dense-only might be fine or we accept it.
-    # To fully test hybrid, we'd need to load documents.
-    # For now, let's proceed with dense-only if corpus is missing.
     
-    # 3. Initialize Prompt Manager
-    prompt_manager = MedicalPromptManager()
-    
-    # 4. Initialize Pipeline
-    print("Initializing Pipeline...")
-    pipeline = HealthcareQAPipeline(
-        retriever=retriever,
-        llm=llm,
-        prompt_manager=prompt_manager
-    )
+    # 2. Initialize LLM + Pipeline only when needed (saves RAM for retrieval-only eval)
+    llm = None
+    pipeline = None
+    if args.mode in ['pipeline', 'both']:
+        from src.generation.llm_wrapper import MedicalLLM
+        from src.pipeline.qa_pipeline import HealthcareQAPipeline
+        
+        print("Initializing LLM...")
+        llm = MedicalLLM(model_name="tinyllama", load_in_4bit=True)
+        
+        prompt_manager = MedicalPromptManager()
+        print("Initializing Pipeline...")
+        pipeline = HealthcareQAPipeline(
+            retriever=retriever,
+            llm=llm,
+            prompt_manager=prompt_manager
+        )
     
     # 5. Run Evaluation
     runner = RAGEvaluationRunner(retriever=retriever, pipeline=pipeline, k=args.k)

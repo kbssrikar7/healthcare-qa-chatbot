@@ -385,7 +385,7 @@ class HealthcareQAPipeline:
         
         generation_result = self.llm.generate(
             prompt,
-            max_new_tokens=256,
+            max_new_tokens=512,
             return_probabilities=include_explanation
         )
         

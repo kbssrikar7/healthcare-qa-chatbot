@@ -11,10 +11,8 @@ from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
 import json
-import logging
+from loguru import logger
 import uuid
-
-logger = logging.getLogger(__name__)
 
 
 @dataclass

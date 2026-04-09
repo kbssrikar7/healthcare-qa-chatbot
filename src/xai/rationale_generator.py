@@ -75,8 +75,9 @@ Step 3 (Explanation):"""
                     temperature=0.7,
                 )
                 return result.response.strip()
-            except Exception:
-                pass  # fall through to template
+            except Exception as e:
+                from loguru import logger
+                logger.warning(f"LLM rationale generation failed, falling back to template: {e}")
 
         return self.generate_template_rationale(question, answer, context=context)
 

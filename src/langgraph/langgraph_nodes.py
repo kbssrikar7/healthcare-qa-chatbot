@@ -232,6 +232,10 @@ class HealthcareRAGNodes:
             else int(getattr(_pipeline, "min_relevant_docs", MIN_RELEVANT_DOCS))
         )
 
+        # Cache GPU availability at init (avoids per-call import torch overhead)
+        import torch
+        self._skip_rationale = not torch.cuda.is_available()
+
     # ------------------------------------------------------------------
     # Node: retrieve_documents
     # ------------------------------------------------------------------
@@ -775,10 +779,7 @@ class HealthcareRAGNodes:
         # Rationale requires a full extra LLM call (~2-4 min on CPU).
         # Only run it when explicitly requested and an LLM is available.
         # On CPU inference this is skipped by default to keep latency reasonable.
-        import torch
-
-        _on_cpu = not torch.cuda.is_available()
-        _skip_rationale = _on_cpu  # skip on CPU to save 2-4 min per request
+        _skip_rationale = self._skip_rationale
 
         if (
             self.rationale_generator

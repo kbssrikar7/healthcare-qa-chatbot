@@ -28,6 +28,13 @@ class MedicalGuardrails:
     """
     Safety guardrails for medical QA to prevent harmful outputs.
     """
+
+    # Pre-compiled regex to detect educational/informational queries (not emergencies)
+    _EDUCATIONAL_RE = re.compile(
+        r'\b(what\s+is|what\s+are|define|explain|tell\s+me\s+about|'
+        r'symptoms\s+of|causes\s+of|treatment\s+for)\b',
+        re.IGNORECASE
+    )
     
     # Emergency keywords that require immediate attention
     EMERGENCY_KEYWORDS = [
@@ -39,7 +46,7 @@ class MedicalGuardrails:
     
     # Dangerous advice patterns to block
     DANGEROUS_PATTERNS = [
-        r"take\s+\d+\s*(mg|ml|pills|tablets)",  # Dosage recommendations
+        r"you\s+should\s+take\s+\d+\s*(mg|ml|pills|tablets)",  # Direct prescriptive dosage (not quoting sources)
         r"you\s+(have|definitely\s+have)\s+\w+\s+(disease|disorder|syndrome|cancer)",  # Direct diagnosis
         r"stop\s+taking\s+your\s+(medication|medicine|prescription)",  # Stopping medication
         r"you\s+don'?t\s+need\s+to\s+see\s+a\s+doctor",  # Discouraging medical care
@@ -127,12 +134,7 @@ This chatbot cannot provide emergency medical assistance.
         # Check for emergency keywords (with negation awareness)
         if self.enable_emergency_detection:
             # Skip educational queries
-            educational_re = re.compile(
-                r'\b(what\s+is|what\s+are|define|explain|tell\s+me\s+about|'
-                r'symptoms\s+of|causes\s+of|treatment\s+for)\b',
-                re.IGNORECASE
-            )
-            if not educational_re.search(text):
+            if not self._EDUCATIONAL_RE.search(text):
                 negation_words = {"not", "no", "don't", "dont", "doesn't", "never",
                                   "without", "deny", "denies", "denied"}
                 for keyword in self.EMERGENCY_KEYWORDS:
@@ -243,9 +245,10 @@ class ContentFilter:
     """Filter inappropriate or harmful content."""
     
     BLOCKED_CONTENT = [
-        "how to make", "how to synthesize", "how to create drugs",
-        "illegal drugs", "recreational drugs",
-        "self-harm", "hurt myself", "harm myself"
+        r"how\s+to\s+(?:make|synthesize|produce|manufacture)\s+(?:illegal\s+)?(?:drugs|narcotics|meth|cocaine|heroin|fentanyl)",
+        r"how\s+to\s+(?:synthesize|create|cook)\s+\w+(?:\s+\w+)?\s+(?:at home|illegally)",
+        r"\billegal\s+drugs\b", r"\brecreational\s+drugs\b",
+        r"\bself-harm\b", r"\bhurt\s+myself\b", r"\bharm\s+myself\b"
     ]
     
     def __init__(self):
@@ -414,7 +417,7 @@ class DrugInteractionChecker:
         if idx < 0:
             return False
         prefix = text_lower[max(0, idx - window):idx]
-        return any(neg in prefix.split() for neg in self.NEGATION_WORDS)
+        return any(neg in prefix for neg in self.NEGATION_WORDS)
 
     def check_interaction_risk(self, text: str) -> List[Dict]:
         """
