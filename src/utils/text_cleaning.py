@@ -29,6 +29,10 @@ AGGRESSIVE_STOP_PATTERNS = [
     r"[Aa] \d{2}-year-old (?:man|woman|patient|child|boy|girl) presents",
     r"[Hh]is (?:temperature|blood pressure|pulse|heart rate) is \d",
     r"[Hh]er (?:temperature|blood pressure|pulse|heart rate) is \d",
+    r"[Tt]he patient'?s? (?:temperature|blood pressure|pulse|heart rate|weight|bmi|body mass)",
+    r"[Tt]he patient'?s? (?:dietary intake|diet|alcohol intake|sodium intake)",
+    r"[Tt]he patient'?s? blood pressure at (?:his|her|the) last",
+    r"[Tt]he patient'?s? (?:dietary|nutritional) intake is (?:low|high)",
     r"(?:^|\n)###\s*(?:Question|Answer|Q|A)\s*:",
     # HealthCareMagic / ChatDoctor sign-off loops — cut wherever they appear
     r"[Tt]hank(?:s| you) for (?:your|the) (?:question|query|message|email|time|concern)",
