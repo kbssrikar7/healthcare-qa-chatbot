@@ -96,6 +96,8 @@ class HybridRetriever:
         sparse_weight: float = 0.3,
         reranker=None,
         rrf_k: int = 60,
+        min_score: float = 0.0,
+        context_window_sentences: int = 0,
     ):
         """
         Initialize hybrid retriever.
@@ -108,6 +110,10 @@ class HybridRetriever:
             sparse_weight: Weight for sparse retrieval in fusion
             reranker: Optional cross-encoder reranker
             rrf_k: RRF constant (default 60)
+            min_score: Minimum relevance score threshold — documents below this
+                are dropped (0.0 = no filtering, recommended: 0.01 for RRF scores)
+            context_window_sentences: If > 0, expand each retrieved chunk by this
+                many sentences before/after (small-to-big retrieval pattern).
         """
         self.embedder = embedder
         self.vector_store = vector_store
@@ -115,6 +121,8 @@ class HybridRetriever:
         self.sparse_weight = sparse_weight
         self.reranker = reranker
         self.rrf_k = rrf_k
+        self.min_score = min_score
+        self.context_window_sentences = context_window_sentences
         self.corpus = corpus
         self.bm25 = None
         self._bm25_init_attempted = False
@@ -549,7 +557,103 @@ class HybridRetriever:
         else:
             logger.debug(f"Retrieval latency: {parts}")
 
+        # Score threshold — drop documents that are too irrelevant to be useful.
+        # Avoids LLM confusion from unrelated chunks polluting the context.
+        if self.min_score > 0.0:
+            before = len(documents)
+            documents = [d for d in documents if d.score >= self.min_score]
+            dropped = before - len(documents)
+            if dropped:
+                logger.debug(
+                    f"Score threshold {self.min_score}: dropped {dropped}/{before} docs"
+                )
+
+        # Context window expansion (small-to-big retrieval).
+        # Each retrieved chunk is expanded with surrounding sentences so the LLM
+        # receives richer context without retrieving more top-k documents.
+        if self.context_window_sentences > 0 and documents:
+            documents = self._expand_context_windows(documents)
+
         return documents[:k]
+
+    # ── Context window expansion ───────────────────────────────────────────────
+
+    @staticmethod
+    def _sentence_split(text: str) -> List[str]:
+        """Split text into sentences on . ! ? boundaries."""
+        import re as _re
+        parts = _re.split(r'(?<=[.!?])\s+', text.strip())
+        return [p for p in parts if p]
+
+    def _expand_context_windows(
+        self, documents: List[RetrievedDocument]
+    ) -> List[RetrievedDocument]:
+        """
+        Expand each retrieved chunk by appending sentences from the BM25 corpus
+        neighbours (small-to-big retrieval pattern).
+
+        For each chunk we find its position in the corpus and prepend/append
+        up to ``context_window_sentences`` sentences from adjacent chunks.
+        Falls back gracefully when corpus is unavailable.
+        """
+        if not self.corpus:
+            return documents
+
+        # Build a content → corpus index map once per call (not per document)
+        content_index: Dict[str, int] = {
+            d.get("content", "")[:120]: i for i, d in enumerate(self.corpus)
+        }
+
+        expanded = []
+        n = self.context_window_sentences
+        for doc in documents:
+            key = doc.content[:120]
+            idx = content_index.get(key)
+            if idx is None:
+                expanded.append(doc)
+                continue
+
+            # Gather sentences from this chunk + surrounding chunks
+            neighbour_range = range(max(0, idx - 1), min(len(self.corpus), idx + 2))
+            all_sentences: List[str] = []
+            for ni in neighbour_range:
+                all_sentences.extend(
+                    self._sentence_split(self.corpus[ni].get("content", ""))
+                )
+
+            # Find the sentences that belong to this chunk, then take ±n around them
+            chunk_sentences = self._sentence_split(doc.content)
+            if not chunk_sentences:
+                expanded.append(doc)
+                continue
+
+            try:
+                first_idx = next(
+                    i for i, s in enumerate(all_sentences)
+                    if chunk_sentences[0][:40] in s
+                )
+                last_idx = len(all_sentences) - 1 - next(
+                    i for i, s in enumerate(reversed(all_sentences))
+                    if chunk_sentences[-1][:40] in s
+                )
+                start = max(0, first_idx - n)
+                end = min(len(all_sentences), last_idx + n + 1)
+                expanded_content = " ".join(all_sentences[start:end])
+            except StopIteration:
+                expanded_content = doc.content
+
+            expanded.append(
+                RetrievedDocument(
+                    content=expanded_content,
+                    source=doc.source,
+                    score=doc.score,
+                    metadata={**doc.metadata, "context_expanded": True},
+                    doc_id=doc.doc_id,
+                    score_type=doc.score_type,
+                )
+            )
+
+        return expanded
 
     # ── Safety filter ─────────────────────────────────────────────────────────
 

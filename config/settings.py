@@ -91,6 +91,11 @@ class RetrievalConfig:
     bm25_batch_size: int = 5000
     rerank_fetch_multiplier: int = 3
     no_rerank_fetch_multiplier: int = 2
+    # Score threshold: drop retrieved docs below this relevance score.
+    # 0.0 = no filtering. For RRF scores (~0.01-0.04 range) use 0.005.
+    min_retrieval_score: float = float(os.getenv("MIN_RETRIEVAL_SCORE", "0.0"))
+    # Context window expansion: sentences before/after each chunk (0 = disabled).
+    context_window_sentences: int = int(os.getenv("CONTEXT_WINDOW_SENTENCES", "0"))
 
 @dataclass
 class SafetyConfig:

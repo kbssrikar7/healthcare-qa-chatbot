@@ -9,6 +9,7 @@ Enhanced with:
 - Enhanced health-check with system metrics
 - Passage highlighting for XAI
 """
+import asyncio
 import os
 from loguru import logger
 import sys
@@ -16,6 +17,7 @@ import time
 import json
 import uuid
 from datetime import datetime, timezone
+from functools import partial
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -375,7 +377,16 @@ def _get_shared_components():
             except Exception as e:
                 logger.warning(f" Failed to init reranker: {e}")
 
-        retriever = HybridRetriever(embedder, vector_store, reranker=reranker)
+        retrieval_config = getattr(config, "retrieval", None)
+        retriever = HybridRetriever(
+            embedder,
+            vector_store,
+            reranker=reranker,
+            min_score=float(getattr(retrieval_config, "min_retrieval_score", 0.0)),
+            context_window_sentences=int(
+                getattr(retrieval_config, "context_window_sentences", 0)
+            ),
+        )
         prompt_manager = MedicalPromptManager()
         confidence_scorer = ConfidenceScorer()
         source_attributor = SourceAttributor(embedder=embedder, similarity_threshold=0.3)
@@ -985,13 +996,22 @@ async def _prepare_and_execute_pipeline(request: QuestionRequest, start_ts: floa
             conversation_context = ctx
 
     # ── 4. Get answer ────────────────────────────────────────────────────
+    # Run synchronous LLM inference in a thread-pool executor so the asyncio
+    # event loop stays free to serve /health, /models, and other fast endpoints
+    # concurrently while TinyLlama/BioMistral generates (60-120s on CPU).
     try:
-        # Unified interface: all pipelines receive the same params
-        response = qa_pipeline.answer(
+        kwargs = dict(
             question=effective_question,
             num_documents=request.num_sources,
             include_explanation=request.include_explanation,
-            **({"conversation_context": conversation_context} if conversation_context and not (request.use_langgraph or request.use_langchain) else {})
+        )
+        if conversation_context and not (request.use_langgraph or request.use_langchain):
+            kwargs["conversation_context"] = conversation_context
+
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(
+            None,  # default ThreadPoolExecutor
+            partial(qa_pipeline.answer, **kwargs),
         )
     except Exception as e:
         raise HTTPException(
