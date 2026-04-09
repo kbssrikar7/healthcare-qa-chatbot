@@ -504,6 +504,15 @@ def main():
         '--quiet', action='store_true',
         help='Suppress per-query output'
     )
+    parser.add_argument(
+        '--by-query-type', action='store_true',
+        help='(retrieval mode) Break down MRR/Recall/NDCG by detected query type'
+    )
+    parser.add_argument(
+        '--output',
+        default=None,
+        help='Override output JSON path (default: evaluation/results/evaluation_summary.json)'
+    )
     
     args = parser.parse_args()
     
@@ -569,18 +578,59 @@ def main():
         print("\n🔎 Running Retrieval Evaluation...")
         ret_results, ret_aggregated = runner.evaluate_retrieval(test_cases, verbose=not args.quiet)
         aggregated.update(ret_aggregated)
-        
+
+        # Enhanced retrieval metrics (MRR, Recall, NDCG, Precision) via retrieval_metrics.py
+        try:
+            from evaluation.retrieval_metrics import (
+                compute_retrieval_metrics,
+                compute_metrics_by_query_type,
+            )
+
+            # Convert test_cases to the format retrieval_metrics expects
+            test_dicts = [
+                {
+                    "question": tc.query if hasattr(tc, "query") else tc.get("question", ""),
+                    "answer": tc.expected_answer if hasattr(tc, "expected_answer") else tc.get("answer", ""),
+                    "keywords": " ".join(tc.expected_keywords) if hasattr(tc, "expected_keywords") else "",
+                }
+                for tc in test_cases
+            ]
+
+            print(f"\n📊 Computing MRR@{args.k} / Recall@{args.k} / NDCG@{args.k}...")
+            rm = compute_retrieval_metrics(retriever, test_dicts, k=args.k)
+            aggregated["retrieval_metrics"] = rm
+            print(
+                f"  MRR@{args.k}={rm[f'mrr@{args.k}']:.4f}  "
+                f"Precision@{args.k}={rm[f'precision@{args.k}']:.4f}  "
+                f"Recall@{args.k}={rm[f'recall@{args.k}']:.4f}  "
+                f"NDCG@{args.k}={rm[f'ndcg@{args.k}']:.4f}  "
+                f"(n={rm['n_queries']})"
+            )
+
+            if args.by_query_type:
+                print(f"\n📊 Breakdown by query type (k={args.k}):")
+                qt_results = compute_metrics_by_query_type(retriever, test_dicts, k=args.k)
+                aggregated["retrieval_metrics_by_query_type"] = qt_results
+
+        except Exception as e:
+            print(f"  ⚠️  Enhanced retrieval metrics failed (non-fatal): {e}")
+
     # Save results
     output_dir = PROJECT_ROOT / "evaluation" / "results"
     output_dir.mkdir(parents=True, exist_ok=True)
-    
-    summary_path = output_dir / "evaluation_summary.json"
+
+    if args.output:
+        summary_path = Path(args.output)
+        summary_path.parent.mkdir(parents=True, exist_ok=True)
+    else:
+        summary_path = output_dir / "evaluation_summary.json"
+
     with open(summary_path, "w") as f:
         json.dump({
             "aggregated": aggregated,
             "results": results
         }, f, indent=2)
-        
+
     print(f"\n✅ Evaluation complete. Results saved to {summary_path}")
 
 if __name__ == '__main__':

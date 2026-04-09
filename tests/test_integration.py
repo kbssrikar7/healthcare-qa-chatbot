@@ -312,3 +312,102 @@ class TestAPIModels:
         assert s.level == "safe"
         assert s.is_emergency is False
         assert s.drug_warnings is None
+
+
+# =============================================================================
+# Test RAG-Engineer improvements: adaptive weights + retrieval metrics
+# =============================================================================
+
+class TestAdaptiveRetrievalWeights:
+    """Query-type detection drives per-type RRF weight selection."""
+
+    def setup_method(self):
+        from unittest.mock import MagicMock
+        from src.retrieval.hybrid_retriever import HybridRetriever
+        self.retriever = HybridRetriever.__new__(HybridRetriever)
+
+    def test_drug_query_detected(self):
+        assert self.retriever._detect_query_type("What is the dosage for metformin?") == "drug"
+        assert self.retriever._detect_query_type("ibuprofen 400mg side effects") == "drug"
+
+    def test_definition_query_detected(self):
+        assert self.retriever._detect_query_type("What is type 2 diabetes?") == "definition"
+        assert self.retriever._detect_query_type("Explain hypertension") == "definition"
+
+    def test_symptom_query_detected(self):
+        assert self.retriever._detect_query_type("I have chest pain and nausea") == "symptom"
+        assert self.retriever._detect_query_type("symptoms of fever") == "symptom"
+
+    def test_comparison_query_detected(self):
+        assert self.retriever._detect_query_type("difference between type 1 and type 2 diabetes") == "comparison"
+
+    def test_default_query_detected(self):
+        assert self.retriever._detect_query_type("how long does recovery take") == "default"
+
+    def test_drug_weights_are_bm25_heavy(self):
+        dense_w, sparse_w = self.retriever._ADAPTIVE_WEIGHTS["drug"]
+        assert sparse_w > dense_w, "Drug queries should be BM25-heavy"
+
+    def test_definition_weights_are_dense_heavy(self):
+        dense_w, sparse_w = self.retriever._ADAPTIVE_WEIGHTS["definition"]
+        assert dense_w > sparse_w, "Definition queries should be dense-heavy"
+
+    def test_all_weights_sum_to_one(self):
+        for qt, (d, s) in self.retriever._ADAPTIVE_WEIGHTS.items():
+            assert abs(d + s - 1.0) < 1e-6, f"{qt} weights don't sum to 1.0"
+
+
+class TestRetrievalMetrics:
+    """Unit tests for MRR, Precision, Recall, NDCG functions."""
+
+    def test_mrr_first_hit(self):
+        from evaluation.retrieval_metrics import _reciprocal_rank
+        assert _reciprocal_rank(["a", "b", "c"], {"a"}) == 1.0
+
+    def test_mrr_second_hit(self):
+        from evaluation.retrieval_metrics import _reciprocal_rank
+        assert _reciprocal_rank(["x", "a", "c"], {"a"}) == pytest.approx(0.5)
+
+    def test_mrr_no_hit(self):
+        from evaluation.retrieval_metrics import _reciprocal_rank
+        assert _reciprocal_rank(["x", "y", "z"], {"a"}) == 0.0
+
+    def test_precision_at_k(self):
+        from evaluation.retrieval_metrics import _precision_at_k
+        assert _precision_at_k(["a", "b", "c", "d", "e"], {"a", "c"}, k=5) == pytest.approx(0.4)
+
+    def test_recall_at_k(self):
+        from evaluation.retrieval_metrics import _recall_at_k
+        assert _recall_at_k(["a", "b", "c"], {"a", "d"}, k=3) == pytest.approx(0.5)
+
+    def test_ndcg_perfect(self):
+        from evaluation.retrieval_metrics import _ndcg_at_k
+        assert _ndcg_at_k(["a", "b"], {"a", "b"}, k=2) == pytest.approx(1.0)
+
+    def test_ndcg_no_hit(self):
+        from evaluation.retrieval_metrics import _ndcg_at_k
+        assert _ndcg_at_k(["x", "y"], {"a"}, k=2) == 0.0
+
+    def test_compute_retrieval_metrics_with_mock(self):
+        from unittest.mock import MagicMock
+        from evaluation.retrieval_metrics import compute_retrieval_metrics
+        from src.retrieval.hybrid_retriever import RetrievedDocument
+
+        mock_retriever = MagicMock()
+        mock_retriever.retrieve.return_value = [
+            RetrievedDocument(content="diabetes symptoms include thirst", source="MedQuAD",
+                              score=0.9, metadata={}, doc_id="doc1"),
+            RetrievedDocument(content="type 2 diabetes management", source="MedQuAD",
+                              score=0.8, metadata={}, doc_id="doc2"),
+        ]
+
+        test_set = [
+            {"question": "What are symptoms of diabetes?",
+             "answer": "thirst fatigue blurred vision urination weight loss"},
+        ]
+        results = compute_retrieval_metrics(mock_retriever, test_set, k=5)
+        assert "mrr@5" in results
+        assert "recall@5" in results
+        assert "ndcg@5" in results
+        assert results["n_queries"] == 1
+

@@ -279,6 +279,53 @@ class HybridRetriever:
         """Pre-initialize BM25 index. Call at startup to avoid first-query delay."""
         self._lazy_init_bm25_from_store()
 
+    # ── Query-type detection ──────────────────────────────────────────────────
+
+    # Compiled patterns for query-type classification (medical domain)
+    _QT_DRUG = re.compile(
+        r'\b(?:drug|medication|medicine|dose|dosage|mg|tablet|capsule|pill|'
+        r'prescri|pharmac|antibiotic|aspirin|ibuprofen|metformin|insulin|'
+        r'interaction|side\s*effect|contraindic)\b',
+        re.IGNORECASE,
+    )
+    _QT_DEFINITION = re.compile(
+        r'^(?:what\s+is|what\s+are|define|explain|describe|tell\s+me\s+about|'
+        r'meaning\s+of|definition\s+of)\b',
+        re.IGNORECASE,
+    )
+    _QT_SYMPTOM = re.compile(
+        r'\b(?:symptom|sign|feel|pain|ache|discomfort|nausea|fever|cough|'
+        r'fatigue|dizzy|swelling|bleed|rash|itch)\b',
+        re.IGNORECASE,
+    )
+    _QT_COMPARISON = re.compile(
+        r'\b(?:difference|vs\.?|versus|compare|better|worse|than|between)\b',
+        re.IGNORECASE,
+    )
+
+    # (dense_weight, sparse_weight) per query type
+    _ADAPTIVE_WEIGHTS = {
+        "drug":       (0.45, 0.55),  # drug names are exact keywords → BM25-heavy
+        "definition": (0.80, 0.20),  # semantic understanding → dense-heavy
+        "symptom":    (0.65, 0.35),  # balanced but slightly dense-heavy
+        "comparison": (0.80, 0.20),  # conceptual similarity → dense-heavy
+        "default":    (0.70, 0.30),  # baseline (matches old hard-coded values)
+    }
+
+    def _detect_query_type(self, query: str) -> str:
+        """Classify query into a retrieval-strategy category."""
+        if self._QT_DRUG.search(query):
+            return "drug"
+        if self._QT_DEFINITION.search(query):
+            return "definition"
+        if self._QT_SYMPTOM.search(query):
+            return "symptom"
+        if self._QT_COMPARISON.search(query):
+            return "comparison"
+        return "default"
+
+    # ── Tokeniser ─────────────────────────────────────────────────────────────
+
     @staticmethod
     def _medical_tokenize(text: str) -> list:
         """Tokenize text for BM25, handling medical terms and punctuation."""
@@ -381,6 +428,14 @@ class HybridRetriever:
         fetch_k = k * 3 if use_reranking else k * 2
         _timings: Dict[str, float] = {}
 
+        # Adaptive RRF weights based on query type
+        query_type = self._detect_query_type(query)
+        dense_w, sparse_w = self._ADAPTIVE_WEIGHTS[query_type]
+        if query_type != "default":
+            logger.debug(
+                f"Query type '{query_type}' → adaptive weights dense={dense_w} sparse={sparse_w}"
+            )
+
         # Dense retrieval
         _t0 = time.perf_counter()
         query_embedding = self.embedder.embed_query(query)
@@ -400,12 +455,12 @@ class HybridRetriever:
             dense_ranked = [(doc_id, score) for _, score, _, doc_id in dense_results]
             sparse_ranked = [(doc_id, score) for _, score, _, doc_id in sparse_results]
 
-            # Apply RRF
+            # Apply RRF with adaptive weights
             _t0 = time.perf_counter()
             fused_scores = reciprocal_rank_fusion(
                 [dense_ranked, sparse_ranked],
                 k=self.rrf_k,
-                weights=[self.dense_weight, self.sparse_weight],
+                weights=[dense_w, sparse_w],
             )
             _timings["rrf_ms"] = (time.perf_counter() - _t0) * 1000
 
