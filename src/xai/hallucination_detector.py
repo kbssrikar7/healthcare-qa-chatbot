@@ -13,25 +13,27 @@ All methods are CPU-safe; heavy NLI model is lazily loaded only if
 """
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
-from typing import List, Dict, Optional, Any
+from typing import Any, Dict, List
+
 from loguru import logger
 
 
 class HallucinationType(Enum):
     FABRICATION = "fabrication"  # Contradicts known medical facts
-    EXTRINSIC   = "extrinsic"   # Not supported by retrieved sources
-    INTRINSIC   = "intrinsic"   # Internally contradicts the answer itself
-    NONE        = "none"
+    EXTRINSIC = "extrinsic"  # Not supported by retrieved sources
+    INTRINSIC = "intrinsic"  # Internally contradicts the answer itself
+    NONE = "none"
 
 
 @dataclass
 class HallucinationResult:
     """Result of hallucination detection analysis."""
+
     has_hallucination: bool
     hallucination_type: HallucinationType
-    hallucination_score: float          # 0.0 = clean, 1.0 = definite hallucination
+    hallucination_score: float  # 0.0 = clean, 1.0 = definite hallucination
     flagged_claims: List[Dict[str, Any]]
     medical_accuracy_flags: List[str]
     explanation: str
@@ -43,27 +45,27 @@ class HallucinationResult:
 def _make_rules() -> List[Dict]:
     return [
         {
-            "pattern":     r"normal\s+(?:body\s+)?temperature[^.]*?(\d+\.?\d*)\s*°?F",
-            "n_groups":    1,
-            "check":       lambda v: 96.0 <= float(v) <= 100.4,
+            "pattern": r"normal\s+(?:body\s+)?temperature[^.]*?(\d+\.?\d*)\s*°?F",
+            "n_groups": 1,
+            "check": lambda v: 96.0 <= float(v) <= 100.4,
             "description": "Normal body temperature (°F)",
         },
         {
-            "pattern":     r"normal\s+(?:body\s+)?temperature[^.]*?(\d+\.?\d*)\s*°?C",
-            "n_groups":    1,
-            "check":       lambda v: 35.5 <= float(v) <= 38.0,
+            "pattern": r"normal\s+(?:body\s+)?temperature[^.]*?(\d+\.?\d*)\s*°?C",
+            "n_groups": 1,
+            "check": lambda v: 35.5 <= float(v) <= 38.0,
             "description": "Normal body temperature (°C)",
         },
         {
-            "pattern":     r"normal\s+(?:resting\s+)?heart\s+rate[^.]*?(\d+)\s*(?:bpm|beats)",
-            "n_groups":    1,
-            "check":       lambda v: 40 <= int(v) <= 130,
+            "pattern": r"normal\s+(?:resting\s+)?heart\s+rate[^.]*?(\d+)\s*(?:bpm|beats)",
+            "n_groups": 1,
+            "check": lambda v: 40 <= int(v) <= 130,
             "description": "Normal heart rate (bpm)",
         },
         {
-            "pattern":     r"normal\s+blood\s+pressure[^.]*?(\d{2,3})\s*/\s*(\d{2,3})",
-            "n_groups":    2,
-            "check":       lambda v: 60 <= int(v[0]) <= 200 and 40 <= int(v[1]) <= 130,
+            "pattern": r"normal\s+blood\s+pressure[^.]*?(\d{2,3})\s*/\s*(\d{2,3})",
+            "n_groups": 2,
+            "check": lambda v: 60 <= int(v[0]) <= 200 and 40 <= int(v[1]) <= 130,
             "description": "Plausible blood pressure (mmHg)",
         },
     ]
@@ -81,18 +83,60 @@ class HallucinationDetector:
     ...     print(result.explanation)
     """
 
-    NEGATION_WORDS = frozenset({
-        "not", "no", "never", "neither", "nor",
-        "cannot", "can't", "don't", "doesn't",
-        "isn't", "aren't", "won't", "without",
-    })
-    STOP_WORDS = frozenset({
-        "the", "a", "an", "is", "are", "was", "were", "be",
-        "have", "has", "had", "do", "does", "did", "will",
-        "would", "could", "should", "may", "might", "shall",
-        "of", "in", "on", "at", "to", "for", "by", "with",
-        "this", "that", "these", "those",
-    })
+    NEGATION_WORDS = frozenset(
+        {
+            "not",
+            "no",
+            "never",
+            "neither",
+            "nor",
+            "cannot",
+            "can't",
+            "don't",
+            "doesn't",
+            "isn't",
+            "aren't",
+            "won't",
+            "without",
+        }
+    )
+    STOP_WORDS = frozenset(
+        {
+            "the",
+            "a",
+            "an",
+            "is",
+            "are",
+            "was",
+            "were",
+            "be",
+            "have",
+            "has",
+            "had",
+            "do",
+            "does",
+            "did",
+            "will",
+            "would",
+            "could",
+            "should",
+            "may",
+            "might",
+            "shall",
+            "of",
+            "in",
+            "on",
+            "at",
+            "to",
+            "for",
+            "by",
+            "with",
+            "this",
+            "that",
+            "these",
+            "those",
+        }
+    )
 
     def __init__(self, use_nli: bool = False):
         """
@@ -110,6 +154,7 @@ class HallucinationDetector:
         if self.use_nli and self._nli_pipeline is None:
             try:
                 from transformers import pipeline as hf_pipeline
+
                 self._nli_pipeline = hf_pipeline(
                     "text-classification",
                     model="microsoft/deberta-base-mnli",
@@ -165,10 +210,12 @@ class HallucinationDetector:
         grounding_score = self._check_source_grounding(answer, context)
         scores.append(1.0 - grounding_score)  # invert: 0 = well-grounded
         if grounding_score < 0.25:
-            flagged_claims.append({
-                "check": "source_grounding",
-                "detail": f"Low overlap with sources ({grounding_score:.2f})",
-            })
+            flagged_claims.append(
+                {
+                    "check": "source_grounding",
+                    "detail": f"Low overlap with sources ({grounding_score:.2f})",
+                }
+            )
 
         # 2. Medical sanity rules
         rule_flags = self._check_medical_sanity(answer)
@@ -216,9 +263,7 @@ class HallucinationDetector:
                     f"Answer poorly grounded in sources (overlap={grounding_score:.0%})."
                 )
             if medical_flags:
-                explanation_parts.append(
-                    f"Medical sanity issues: {', '.join(medical_flags)}"
-                )
+                explanation_parts.append(f"Medical sanity issues: {', '.join(medical_flags)}")
             if any(c.get("check") == "self_contradiction" for c in flagged_claims):
                 explanation_parts.append("Self-contradictory statements detected.")
             if any(c.get("check") == "fabricated_citation" for c in flagged_claims):
@@ -258,15 +303,11 @@ class HallucinationDetector:
                 if rule["n_groups"] == 1:
                     value = match.group(1)
                     if not rule["check"](value):
-                        flags.append(
-                            f"{rule['description']}: {value} is implausible"
-                        )
+                        flags.append(f"{rule['description']}: {value} is implausible")
                 elif rule["n_groups"] == 2:
                     values = (match.group(1), match.group(2))
                     if not rule["check"](values):
-                        flags.append(
-                            f"{rule['description']}: {values} is implausible"
-                        )
+                        flags.append(f"{rule['description']}: {values} is implausible")
             except (ValueError, IndexError):
                 continue
         return flags
@@ -275,13 +316,13 @@ class HallucinationDetector:
     # 3. Self-contradiction detection
     # ------------------------------------------------------------------
     def _check_self_contradiction(self, answer: str) -> List[Dict[str, Any]]:
-        sentences = re.split(r'(?<=[.!?])\s+', answer)
+        sentences = re.split(r"(?<=[.!?])\s+", answer)
         if len(sentences) < 2:
             return []
 
         contradictions: List[Dict[str, Any]] = []
         for i, s1 in enumerate(sentences):
-            for s2 in sentences[i + 1:]:
+            for s2 in sentences[i + 1 :]:
                 terms1 = self._key_terms(s1)
                 terms2 = self._key_terms(s2)
                 if not terms1 or not terms2:
@@ -290,31 +331,35 @@ class HallucinationDetector:
                 neg1 = any(w in s1.lower().split() for w in self.NEGATION_WORDS)
                 neg2 = any(w in s2.lower().split() for w in self.NEGATION_WORDS)
                 if overlap > 0.5 and neg1 != neg2:
-                    contradictions.append({
-                        "check": "self_contradiction",
-                        "sentence_a": s1[:80],
-                        "sentence_b": s2[:80],
-                    })
+                    contradictions.append(
+                        {
+                            "check": "self_contradiction",
+                            "sentence_a": s1[:80],
+                            "sentence_b": s2[:80],
+                        }
+                    )
         return contradictions
 
     # ------------------------------------------------------------------
     # 4. Fabricated citation detection
     # ------------------------------------------------------------------
     _CITATION_PATTERNS = [
-        r'\(\s*[A-Z][a-z]+(?:\s+et\s+al\.?)?,?\s*\d{4}\s*\)',  # (Smith et al., 2023)
-        r'according\s+to\s+(?:a\s+)?(?:recent\s+)?(?:study|research|paper)',
-        r'published\s+in\s+(?:the\s+)?[A-Z]',
-        r'\b(?:doi|DOI)\s*:\s*10\.\d{4,}',
+        r"\(\s*[A-Z][a-z]+(?:\s+et\s+al\.?)?,?\s*\d{4}\s*\)",  # (Smith et al., 2023)
+        r"according\s+to\s+(?:a\s+)?(?:recent\s+)?(?:study|research|paper)",
+        r"published\s+in\s+(?:the\s+)?[A-Z]",
+        r"\b(?:doi|DOI)\s*:\s*10\.\d{4,}",
     ]
 
     def _check_fabricated_citations(self, answer: str) -> List[Dict[str, Any]]:
         flags: List[Dict[str, Any]] = []
         for pattern in self._CITATION_PATTERNS:
             for match in re.finditer(pattern, answer):
-                flags.append({
-                    "check": "fabricated_citation",
-                    "matched": match.group()[:60],
-                })
+                flags.append(
+                    {
+                        "check": "fabricated_citation",
+                        "matched": match.group()[:60],
+                    }
+                )
         return flags
 
     # ------------------------------------------------------------------
@@ -330,6 +375,7 @@ class HallucinationDetector:
         if self._nli_pipeline is None:
             try:
                 from transformers import pipeline as hf_pipeline
+
                 # microsoft/deberta-base-mnli is cached locally under ~/.cache/huggingface/hub/
                 # Labels: CONTRADICTION / NEUTRAL / ENTAILMENT
                 self._nli_pipeline = hf_pipeline(
@@ -341,7 +387,7 @@ class HallucinationDetector:
                 logger.warning(f"NLI pipeline load failed, returning neutral score: {e}")
                 return 0.5  # neutral fallback
 
-        sentences = [s.strip() for s in re.split(r'(?<=[.!?])\s+', answer) if len(s.strip()) > 15]
+        sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", answer) if len(s.strip()) > 15]
         if not sentences:
             return 0.5
 

@@ -1,18 +1,19 @@
 """
 Feedback module for user feedback collection.
 """
+
 from src.feedback.collector import (
     FeedbackCollector,
-    UserFeedback,
     FeedbackStats,
-    SimpleFeedback
+    SimpleFeedback,
+    UserFeedback,
 )
 from src.feedback.trajectory_logger import TrajectoryLogger
 
 __all__ = [
-    'FeedbackCollector',
-    'UserFeedback',
-    'FeedbackStats',
-    'SimpleFeedback',
-    'TrajectoryLogger'
+    "FeedbackCollector",
+    "UserFeedback",
+    "FeedbackStats",
+    "SimpleFeedback",
+    "TrajectoryLogger",
 ]

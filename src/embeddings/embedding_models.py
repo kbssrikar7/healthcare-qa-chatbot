@@ -1,14 +1,14 @@
 """
 Medical embedding models for semantic search.
 """
-from loguru import logger
-import torch
-import numpy as np
-from typing import List, Union, Optional
-from sentence_transformers import SentenceTransformer
-from pathlib import Path
-import os
+
 from collections import OrderedDict
+from typing import List, Optional, Union
+
+import numpy as np
+import torch
+from loguru import logger
+from sentence_transformers import SentenceTransformer
 
 
 class MedicalEmbedder:

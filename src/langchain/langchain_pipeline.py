@@ -21,13 +21,13 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from loguru import logger
 
 from langchain_core.documents import Document
 from langchain_core.runnables import (
     Runnable,
     RunnableLambda,
 )
+from loguru import logger
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
@@ -54,9 +54,7 @@ from src.pipeline.qa_pipeline import QAResponse
 # Shared context builder (single source of truth — eliminates duplication
 # between the LangChain and LangGraph pipelines).
 # ---------------------------------------------------------------------------
-from src.utils.context_builder import (
-    build_safe_context_lc as _build_safe_context_lc,  # noqa: E402
-)
+from src.utils.context_builder import build_safe_context_lc as _build_safe_context_lc  # noqa: E402
 
 # ---------------------------------------------------------------------------
 
@@ -137,6 +135,7 @@ class LangChainHealthcareQAPipeline:
 
         # Cache GPU availability at init (avoids per-call import torch overhead)
         import torch
+
         self._skip_rationale = not torch.cuda.is_available()
 
         # Create LangChain wrappers
@@ -212,9 +211,7 @@ class LangChainHealthcareQAPipeline:
             self.absolute_score_floor, self.adaptive_threshold_ratio * top_score
         )
 
-        relevant_docs = [
-            doc for doc in docs if doc.metadata.get("score", 0) >= adaptive_threshold
-        ]
+        relevant_docs = [doc for doc in docs if doc.metadata.get("score", 0) >= adaptive_threshold]
 
         is_answerable = len(relevant_docs) >= self.min_relevant_docs
 
@@ -338,9 +335,7 @@ class LangChainHealthcareQAPipeline:
                         }
                         for doc in docs
                     ]
-                    attributions_list = self.source_attributor.attribute_answer(
-                        answer, doc_dicts
-                    )
+                    attributions_list = self.source_attributor.attribute_answer(answer, doc_dicts)
                     attributions = [
                         {
                             "claim": a.claim,
@@ -414,9 +409,11 @@ class LangChainHealthcareQAPipeline:
         sources = [
             {
                 "source": doc.metadata.get("source", "Unknown"),
-                "content": doc.page_content[:200] + "..."
-                if len(doc.page_content) > 200
-                else doc.page_content,
+                "content": (
+                    doc.page_content[:200] + "..."
+                    if len(doc.page_content) > 200
+                    else doc.page_content
+                ),
                 "score": doc.metadata.get("score", 0.0),
                 "url": doc.metadata.get("url", ""),
             }
@@ -427,8 +424,7 @@ class LangChainHealthcareQAPipeline:
             question=result.question,
             answer=result.answer,
             sources=sources,
-            confidence=result.confidence
-            or {"score": 0.7, "level": "medium", "explanation": ""},
+            confidence=result.confidence or {"score": 0.7, "level": "medium", "explanation": ""},
             attributions=result.attributions or [],
             disclaimer=result.disclaimer,
             rationale=result.rationale,

@@ -62,11 +62,11 @@ class MultiSignalConfidenceScorer:
     # - Entity coverage *hurts* calibration (removing it: ECE 0.2417→0.2079)
     # - Consistency slightly hurts (removing it: ECE 0.2417→0.2272)
     DEFAULT_WEIGHTS: Dict[str, float] = {
-        "retrieval": 0.40,          # High weight
-        "source_agreement": 0.30,   # High weight
-        "generation": 0.20,         # Medium weight
-        "consistency": 0.10,        # Low weight
-        "entity_coverage": 0.00,    # Removed (weight = 0)
+        "retrieval": 0.40,  # High weight
+        "source_agreement": 0.30,  # High weight
+        "generation": 0.20,  # Medium weight
+        "consistency": 0.10,  # Low weight
+        "entity_coverage": 0.00,  # Removed (weight = 0)
     }
 
     def __init__(
@@ -124,9 +124,7 @@ class MultiSignalConfidenceScorer:
         bd.generation_confidence = self._generation_confidence(generation_probabilities)
         bd.consistency_score = self._self_consistency_score(answer, alternative_answers)
         bd.source_agreement = self._source_agreement_score(answer, retrieved_documents)
-        bd.medical_entity_coverage = self._entity_coverage_score(
-            query, answer, retrieved_documents
-        )
+        bd.medical_entity_coverage = self._entity_coverage_score(query, answer, retrieved_documents)
 
         raw = (
             self.weights.get("retrieval", 0) * bd.retrieval_confidence
@@ -195,7 +193,8 @@ class MultiSignalConfidenceScorer:
         return float(
             np.clip(
                 0.3 * top_score + 0.2 * mean_score + 0.25 * dropoff + 0.25 * coverage,
-                0.0, 1.0,
+                0.0,
+                1.0,
             )
         )
 
@@ -213,9 +212,7 @@ class MultiSignalConfidenceScorer:
         max_ent = float(np.log2(len(probs) + 1))
         norm_cert = 1.0 - entropy / (max_ent + 1e-8)
 
-        return float(
-            np.clip(0.5 * geo_mean + 0.2 * min_prob + 0.3 * norm_cert, 0.0, 1.0)
-        )
+        return float(np.clip(0.5 * geo_mean + 0.2 * min_prob + 0.3 * norm_cert, 0.0, 1.0))
 
     def _self_consistency_score(
         self, primary_answer: str, alternatives: Optional[List[str]]
@@ -260,7 +257,9 @@ class MultiSignalConfidenceScorer:
             # PascalCase proper nouns (e.g. "Myocardial Infarction")
             entities.update(re.findall(r"\b[A-Z][a-z]+(?:\s[A-Z][a-z]+)+\b", text))
             # Dosages (case-insensitive)
-            entities.update(re.findall(r"\b\d+\s*(?:mg|ml|mcg|units|mmol|g)\b", text, re.IGNORECASE))
+            entities.update(
+                re.findall(r"\b\d+\s*(?:mg|ml|mcg|units|mmol|g)\b", text, re.IGNORECASE)
+            )
             # Expanded medical conditions (case-insensitive)
             medical_pattern = (
                 r"\b(?:type\s*[12]\s*diabetes|diabetes\s*(?:mellitus|insipidus)?|"
@@ -283,9 +282,7 @@ class MultiSignalConfidenceScorer:
             return 0.5  # neutral when no entities found
 
         coverage = len(query_ent & answer_ent) / len(query_ent)
-        grounding = (
-            len(answer_ent & source_ent) / len(answer_ent) if answer_ent else 0.5
-        )
+        grounding = len(answer_ent & source_ent) / len(answer_ent) if answer_ent else 0.5
         return float(0.5 * coverage + 0.5 * grounding)
 
     # ------------------------------------------------------------------
@@ -298,9 +295,7 @@ class MultiSignalConfidenceScorer:
         calibrated = 1.0 / (1.0 + np.exp(-logit))
         return float(np.clip(calibrated, 0.0, 1.0))
 
-    def fit_calibration(
-        self, predictions: List[float], labels: List[int]
-    ) -> Dict[str, float]:
+    def fit_calibration(self, predictions: List[float], labels: List[int]) -> Dict[str, float]:
         """Fit Platt scaling parameters on validation data.
 
         Parameters
@@ -322,9 +317,7 @@ class MultiSignalConfidenceScorer:
             p = np.clip(1.0 / (1.0 + np.exp(-(a * preds + b))), 1e-7, 1 - 1e-7)
             return -float(np.mean(labels * np.log(p) + (1 - labels) * np.log(1 - p)))
 
-        result = minimize(
-            nll, [1.0, 0.0], method="Nelder-Mead", options={"xatol": 1e-6}
-        )
+        result = minimize(nll, [1.0, 0.0], method="Nelder-Mead", options={"xatol": 1e-6})
         self.platt_a, self.platt_b = float(result.x[0]), float(result.x[1])
         return {"a": self.platt_a, "b": self.platt_b}
 

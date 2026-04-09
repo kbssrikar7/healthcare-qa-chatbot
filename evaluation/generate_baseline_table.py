@@ -15,29 +15,30 @@ Outputs
 - Reads all metrics_*.json from evaluation/results/
 - Ordered: No-RAG → Dense-only → No-XAI → QLoRA → TinyLlama (full) → BioMistral
 """
+
 import argparse
 import json
 import sys
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).parent.parent
-RESULTS_DIR  = PROJECT_ROOT / "evaluation" / "results"
+RESULTS_DIR = PROJECT_ROOT / "evaluation" / "results"
 
 # Display order + human-readable labels
 VARIANT_ORDER = [
-    ("no_rag",              "No RAG (LLM only)"),
-    ("dense_only",          "Dense-only (no BM25)"),
-    ("no_xai",              "Full RAG, no XAI"),
-    ("qlora_tinyllama",     "Full RAG + QLoRA"),
-    ("standard_tinyllama",  "Full RAG + TinyLlama \\textbf{(ours)}"),
+    ("no_rag", "No RAG (LLM only)"),
+    ("dense_only", "Dense-only (no BM25)"),
+    ("no_xai", "Full RAG, no XAI"),
+    ("qlora_tinyllama", "Full RAG + QLoRA"),
+    ("standard_tinyllama", "Full RAG + TinyLlama \\textbf{(ours)}"),
     ("standard_biomistral", "Full RAG + BioMistral-7B"),
 ]
 
 METRICS = [
-    ("keyword_coverage_mean", "Kw.Cov.↑",  ".3f"),
-    ("rougeL_mean",           "ROUGE-L↑",  ".3f"),
-    ("bertscore_f1_mean",     "BERTScore↑", ".3f"),
-    ("latency_mean_ms",       "Latency (s)↑", None),  # custom formatter
+    ("keyword_coverage_mean", "Kw.Cov.↑", ".3f"),
+    ("rougeL_mean", "ROUGE-L↑", ".3f"),
+    ("bertscore_f1_mean", "BERTScore↑", ".3f"),
+    ("latency_mean_ms", "Latency (s)↑", None),  # custom formatter
 ]
 
 # CI keys follow pattern metric_key + "_ci_lo" / "_ci_hi"
@@ -62,7 +63,7 @@ def _fmt(val, fmt: str | None) -> str:
         return "—"
     if fmt is None:
         # latency: ms → seconds
-        return f"{float(val)/1000:.1f}"
+        return f"{float(val) / 1000:.1f}"
     return format(float(val), fmt)
 
 
@@ -110,7 +111,9 @@ def build_latex(data: dict, with_ci: bool = False) -> str:
         # Bold the best value in each metric column (mark TinyLlama row)
         if "ours" in label:
             # Row-level bold for the recommended system
-            row_str = " & ".join(f"\\textbf{{{c}}}" if i > 0 else c for i, c in enumerate(cells))
+            row_str = " & ".join(
+                f"\\textbf{{{c}}}" if i > 0 else c for i, c in enumerate(cells)
+            )
         else:
             row_str = " & ".join(cells)
 
@@ -127,27 +130,31 @@ def build_latex(data: dict, with_ci: bool = False) -> str:
         f"↑ = higher is better. Latency measured on CPU (Intel i7, no GPU)."
     )
 
-    table = "\n".join([
-        "\\begin{table}[htbp]",
-        "  \\centering",
-        f"  \\caption{{{caption}}}",
-        "  \\label{tab:system_comparison}",
-        f"  \\begin{{tabular}}{{{col_spec}}}",
-        "    \\toprule",
-        f"    {header_row} \\\\",
-        "    \\midrule",
-        *rows,
-        "    \\bottomrule",
-        "  \\end{tabular}",
-        "\\end{table}",
-    ])
+    table = "\n".join(
+        [
+            "\\begin{table}[htbp]",
+            "  \\centering",
+            f"  \\caption{{{caption}}}",
+            "  \\label{tab:system_comparison}",
+            f"  \\begin{{tabular}}{{{col_spec}}}",
+            "    \\toprule",
+            f"    {header_row} \\\\",
+            "    \\midrule",
+            *rows,
+            "    \\bottomrule",
+            "  \\end{tabular}",
+            "\\end{table}",
+        ]
+    )
     return table
 
 
 def build_markdown(data: dict, with_ci: bool = False) -> str:
     headers = ["System"] + [lbl for _, lbl, _ in METRICS]
-    lines   = ["| " + " | ".join(headers) + " |",
-               "| " + " | ".join(["---"] * len(headers)) + " |"]
+    lines = [
+        "| " + " | ".join(headers) + " |",
+        "| " + " | ".join(["---"] * len(headers)) + " |",
+    ]
 
     for variant_key, label in VARIANT_ORDER:
         d = data.get(variant_key)
@@ -170,10 +177,12 @@ def build_markdown(data: dict, with_ci: bool = False) -> str:
 def main():
     parser = argparse.ArgumentParser(description="Generate baseline comparison table")
     parser.add_argument("--format", choices=["latex", "markdown"], default="latex")
-    parser.add_argument("--ci",     action="store_true",
-                        help="Include 95%% bootstrap confidence intervals")
-    parser.add_argument("--output", default=None,
-                        help="Write to file (default: stdout)")
+    parser.add_argument(
+        "--ci", action="store_true", help="Include 95%% bootstrap confidence intervals"
+    )
+    parser.add_argument(
+        "--output", default=None, help="Write to file (default: stdout)"
+    )
     args = parser.parse_args()
 
     data = _load_all()

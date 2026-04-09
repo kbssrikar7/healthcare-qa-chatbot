@@ -9,7 +9,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.xai.confidence_scorer import ConfidenceResult, ConfidenceScorer
+from src.xai.confidence_scorer import ConfidenceScorer
 from src.xai.source_attribution import Attribution, SourceAttributor
 
 
@@ -127,9 +127,7 @@ class TestSourceAttributor:
 
     def test_attribute_answer(self, attributor):
         """Test full answer attribution."""
-        answer = (
-            "Diabetes causes high blood sugar. It can lead to serious complications."
-        )
+        answer = "Diabetes causes high blood sugar. It can lead to serious complications."
         documents = [
             {
                 "content": "Diabetes is characterized by high blood sugar levels",
@@ -149,15 +147,9 @@ class TestSourceAttributor:
     def test_attribution_coverage(self, attributor):
         """Test attribution coverage calculation."""
         attributions = [
-            Attribution(
-                claim="Claim 1", source="Source1", evidence="Ev1", similarity_score=0.8
-            ),
-            Attribution(
-                claim="Claim 2", source="Unsupported", evidence="", similarity_score=0.0
-            ),
-            Attribution(
-                claim="Claim 3", source="Source2", evidence="Ev2", similarity_score=0.7
-            ),
+            Attribution(claim="Claim 1", source="Source1", evidence="Ev1", similarity_score=0.8),
+            Attribution(claim="Claim 2", source="Unsupported", evidence="", similarity_score=0.0),
+            Attribution(claim="Claim 3", source="Source2", evidence="Ev2", similarity_score=0.7),
         ]
 
         coverage = attributor.calculate_attribution_coverage(attributions)
@@ -366,15 +358,23 @@ class TestMultiSignalConfidenceScorer:
             content: str = ""
 
         # Same relative distribution at different scales → same confidence
-        cosine_docs = [_Doc(0.9, "cosine"), _Doc(0.54, "cosine"), _Doc(0.36, "cosine")]   # cosine similarity scale
-        rrf_docs    = [_Doc(0.03, "rrf"), _Doc(0.018, "rrf"), _Doc(0.012, "rrf")]  # RRF scale (same ratios)
+        cosine_docs = [
+            _Doc(0.9, "cosine"),
+            _Doc(0.54, "cosine"),
+            _Doc(0.36, "cosine"),
+        ]  # cosine similarity scale
+        rrf_docs = [
+            _Doc(0.03, "rrf"),
+            _Doc(0.018, "rrf"),
+            _Doc(0.012, "rrf"),
+        ]  # RRF scale (same ratios)
         r_cosine = scorer._retrieval_confidence(cosine_docs)
-        r_rrf    = scorer._retrieval_confidence(rrf_docs)
+        r_rrf = scorer._retrieval_confidence(rrf_docs)
 
         # Since we modified the RRF scaling (to not divide by max, but rather gentle scale),
         # rrf and cosine are no longer completely scale invariant, they are now normalized differently based on score type!
         assert r_cosine > 0.6  # Cosine confidence should still be quite high
-        assert r_rrf > 0.1     # RRF is much smaller but still > 0.1
+        assert r_rrf > 0.1  # RRF is much smaller but still > 0.1
 
     def test_generation_confidence_high_probs(self, scorer):
         """Very high token probabilities should yield a confidence close to 1."""
@@ -404,9 +404,7 @@ class TestMultiSignalConfidenceScorer:
     def test_self_consistency_no_alternatives(self, scorer):
         """Fewer than two alternatives → neutral score of 0.5."""
         assert scorer._self_consistency_score("any answer", None) == pytest.approx(0.5)
-        assert scorer._self_consistency_score("any answer", ["one"]) == pytest.approx(
-            0.5
-        )
+        assert scorer._self_consistency_score("any answer", ["one"]) == pytest.approx(0.5)
 
     def test_self_consistency_divergent_answers(self, scorer):
         """Very different alternatives should yield a low consistency score."""
@@ -433,9 +431,7 @@ class TestMultiSignalConfidenceScorer:
             score: float = 0.8
 
         answer = "Diabetes is characterised by elevated blood glucose levels."
-        docs = [
-            _Doc(content="Diabetes is characterised by elevated blood glucose levels.")
-        ]
+        docs = [_Doc(content="Diabetes is characterised by elevated blood glucose levels.")]
         result = scorer._source_agreement_score(answer, docs)
         assert result > 0.0
 
@@ -464,7 +460,7 @@ class TestMultiSignalConfidenceScorer:
         # Testing the new default parameters explicitly for correctness
         scorer.platt_a = 14.44
         scorer.platt_b = -11.25
-        result = scorer._platt_calibrate(0.779) # 14.44 * 0.779 - 11.25 = 0
+        result = scorer._platt_calibrate(0.779)  # 14.44 * 0.779 - 11.25 = 0
         assert result == pytest.approx(0.5, abs=0.01)
 
     def test_platt_calibrate_output_range(self, scorer):
@@ -612,18 +608,21 @@ class TestMultiSignalConfidenceScorer:
 
 # ── Attention Visualizer tests ───────────────────────────────────────────────
 
+
 class TestTokenImportance:
     """Tests for TokenImportance dataclass and attention visualizer fallback."""
 
     def test_token_importance_defaults(self):
         """is_computed defaults to True."""
         from src.xai.attention_visualizer import TokenImportance
+
         ti = TokenImportance(token="aspirin", importance=0.8, position=0)
         assert ti.is_computed is True
 
     def test_token_importance_not_computed(self):
         """is_computed can be set to False for placeholder scores."""
         from src.xai.attention_visualizer import TokenImportance
+
         ti = TokenImportance(token="aspirin", importance=0.5, position=0, is_computed=False)
         assert ti.is_computed is False
         assert ti.importance == 0.5
@@ -631,7 +630,9 @@ class TestTokenImportance:
     def test_fallback_scores_marked_not_computed(self):
         """When gradient computation fails, all tokens must have is_computed=False."""
         import unittest.mock as mock
+
         import torch
+
         from src.xai.attention_visualizer import TokenImportanceAnalyzer
 
         # Minimal mock model/tokenizer that raises on forward pass
@@ -649,11 +650,14 @@ class TestTokenImportance:
         results = analyzer.compute_token_importance("What is aspirin")
 
         assert len(results) == 3
-        assert all(not r.is_computed for r in results), "Fallback tokens must have is_computed=False"
+        assert all(
+            not r.is_computed for r in results
+        ), "Fallback tokens must have is_computed=False"
         assert all(r.importance == 0.5 for r in results), "Fallback scores must be uniform 0.5"
 
 
 # ── RationaleGenerator tests ─────────────────────────────────────────────────
+
 
 class TestRationaleGenerator:
     """Tests for RationaleGenerator template and CoT paths."""
@@ -661,6 +665,7 @@ class TestRationaleGenerator:
     def test_template_rationale_no_extras(self):
         """Template rationale works with just question and answer."""
         from src.xai.rationale_generator import RationaleGenerator
+
         gen = RationaleGenerator(llm=None)
         rationale = gen.generate_template_rationale(
             question="What is hypertension?",
@@ -673,6 +678,7 @@ class TestRationaleGenerator:
     def test_template_rationale_with_confidence(self):
         """Confidence level and score appear in template rationale."""
         from src.xai.rationale_generator import RationaleGenerator
+
         gen = RationaleGenerator(llm=None)
         rationale = gen.generate_template_rationale(
             question="What is aspirin used for?",
@@ -686,6 +692,7 @@ class TestRationaleGenerator:
     def test_generate_rationale_falls_back_without_llm(self):
         """generate_rationale uses template when llm=None."""
         from src.xai.rationale_generator import RationaleGenerator
+
         gen = RationaleGenerator(llm=None)
         rationale = gen.generate_rationale(
             question="What causes diabetes?",

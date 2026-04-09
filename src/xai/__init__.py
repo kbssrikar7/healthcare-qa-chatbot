@@ -25,17 +25,17 @@ try:
 except Exception:
     RationaleGenerator = None  # type: ignore
 
-__all__ = [
-    'ConfidenceScorer',
-    'SourceAttributor', 
-    'RationaleGenerator'
-]
+__all__ = ["ConfidenceScorer", "SourceAttributor", "RationaleGenerator"]
+
 
 # Lazy imports for heavier modules
 def get_attention_visualizer():
-    from .attention_visualizer import TokenImportanceAnalyzer, AttentionExtractor
+    from .attention_visualizer import AttentionExtractor, TokenImportanceAnalyzer
+
     return TokenImportanceAnalyzer, AttentionExtractor
+
 
 def get_counterfactual_explainer():
     from .attention_visualizer import CounterfactualExplainer
+
     return CounterfactualExplainer

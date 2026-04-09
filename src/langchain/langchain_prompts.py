@@ -4,9 +4,12 @@ LangChain prompt templates for Medical QA.
 Provides ChatPromptTemplate versions of the existing prompts
 with proper message roles for chat models.
 """
-from langchain_core.prompts import ChatPromptTemplate, PromptTemplate, MessagesPlaceholder
-from langchain_core.messages import SystemMessage, HumanMessage
 
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.prompts import (
+    ChatPromptTemplate,
+    PromptTemplate,
+)
 
 # Medical QA System Prompt
 MEDICAL_SYSTEM_PROMPT = """You are a knowledgeable medical assistant. Your role is to provide accurate, helpful health information based on the context provided. Always be clear about limitations and recommend consulting healthcare professionals for medical decisions.
@@ -21,21 +24,25 @@ MEDICAL_SYSTEM_PROMPT = """You are a knowledgeable medical assistant. Your role 
 
 
 # Medical QA Chat Template
-MEDICAL_QA_CHAT_TEMPLATE = ChatPromptTemplate.from_messages([
-    SystemMessage(content=MEDICAL_SYSTEM_PROMPT),
-    HumanMessage(content="""### Context:
+MEDICAL_QA_CHAT_TEMPLATE = ChatPromptTemplate.from_messages(
+    [
+        SystemMessage(content=MEDICAL_SYSTEM_PROMPT),
+        HumanMessage(content="""### Context:
 {context}
 
 ### Question:
 {question}
 
-Please provide a helpful, accurate answer based on the context above.""")
-])
+Please provide a helpful, accurate answer based on the context above."""),
+    ]
+)
 
 
 # Explainable QA Chat Template (requests citations and confidence)
-EXPLAINABLE_QA_CHAT_TEMPLATE = ChatPromptTemplate.from_messages([
-    SystemMessage(content="""You are a knowledgeable medical assistant focused on providing transparent, explainable answers.
+EXPLAINABLE_QA_CHAT_TEMPLATE = ChatPromptTemplate.from_messages(
+    [
+        SystemMessage(
+            content="""You are a knowledgeable medical assistant focused on providing transparent, explainable answers.
 
 ### Important Guidelines:
 1. Answer the question based on the provided context
@@ -43,27 +50,27 @@ EXPLAINABLE_QA_CHAT_TEMPLATE = ChatPromptTemplate.from_messages([
 3. Indicate your confidence level (High/Medium/Low)
 4. Note any limitations or uncertainties
 5. Use clear, patient-friendly language
-6. NEVER provide diagnoses or prescriptions"""),
-    HumanMessage(content="""### Context:
+6. NEVER provide diagnoses or prescriptions"""
+        ),
+        HumanMessage(content="""### Context:
 {context}
 
 ### Question:
 {question}
 
-Please provide an answer with citations and confidence level.""")
-])
+Please provide an answer with citations and confidence level."""),
+    ]
+)
 
 
 # Simple QA Template (for fast responses)
-SIMPLE_QA_TEMPLATE = PromptTemplate.from_template(
-    """Context: {context}
+SIMPLE_QA_TEMPLATE = PromptTemplate.from_template("""Context: {context}
 
 Question: {question}
 
 Provide a helpful, accurate answer based on the context above. Be concise but thorough.
 
-Answer:"""
-)
+Answer:""")
 
 
 # Grounding Gate Prompt (checks if context is sufficient)
@@ -109,17 +116,17 @@ MEDICAL_DISCLAIMER = """
 def get_prompt_template(template_name: str = "medical_qa") -> ChatPromptTemplate:
     """
     Get a prompt template by name.
-    
+
     Args:
         template_name: Name of the template (medical_qa, explainable, simple)
-        
+
     Returns:
         The requested prompt template
     """
     templates = {
         "medical_qa": MEDICAL_QA_CHAT_TEMPLATE,
         "explainable": EXPLAINABLE_QA_CHAT_TEMPLATE,
-        "simple": SIMPLE_QA_TEMPLATE
+        "simple": SIMPLE_QA_TEMPLATE,
     }
     return templates.get(template_name, MEDICAL_QA_CHAT_TEMPLATE)
 
@@ -127,35 +134,35 @@ def get_prompt_template(template_name: str = "medical_qa") -> ChatPromptTemplate
 def format_context_for_prompt(documents: list, max_length: int = 2000) -> str:
     """
     Format documents into a context string for prompts.
-    
+
     Args:
         documents: List of LangChain Documents
         max_length: Maximum context length
-        
+
     Returns:
         Formatted context string
     """
     context_parts = []
     total_length = 0
-    
+
     for i, doc in enumerate(documents):
         # Handle both LangChain Documents and dicts
-        if hasattr(doc, 'page_content'):
+        if hasattr(doc, "page_content"):
             content = doc.page_content
-            source = doc.metadata.get("source", f"Source {i+1}")
+            source = doc.metadata.get("source", f"Source {i + 1}")
         elif isinstance(doc, dict):
             content = doc.get("content", str(doc))
-            source = doc.get("source", f"Source {i+1}")
+            source = doc.get("source", f"Source {i + 1}")
         else:
             content = str(doc)
-            source = f"Source {i+1}"
-        
+            source = f"Source {i + 1}"
+
         entry = f"[{source}]: {content}"
-        
+
         if total_length + len(entry) > max_length:
             break
-        
+
         context_parts.append(entry)
         total_length += len(entry)
-    
+
     return "\n\n".join(context_parts)

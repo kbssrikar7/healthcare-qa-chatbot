@@ -10,6 +10,7 @@ Reads evaluation/human_eval_*.csv files and computes:
 Usage:
     python evaluation/compute_human_eval.py
 """
+
 import csv
 import json
 import sys
@@ -41,17 +42,21 @@ def load_annotations(pattern="human_eval_*.csv"):
                     continue
                 try:
                     automated_confidence = row.get("automated_confidence", "")
-                    all_annotations.append({
-                        "question_id": row["question_id"],
-                        "evaluator_id": row.get("evaluator_id", f.stem),
-                        "factual_correctness": int(row["factual_correctness"]),
-                        "relevance": int(row["relevance"]),
-                        "completeness": int(row["completeness"]),
-                        "safety": int(row["safety"]),
-                        "automated_confidence": (
-                            float(automated_confidence) if automated_confidence not in ("", None) else None
-                        ),
-                    })
+                    all_annotations.append(
+                        {
+                            "question_id": row["question_id"],
+                            "evaluator_id": row.get("evaluator_id", f.stem),
+                            "factual_correctness": int(row["factual_correctness"]),
+                            "relevance": int(row["relevance"]),
+                            "completeness": int(row["completeness"]),
+                            "safety": int(row["safety"]),
+                            "automated_confidence": (
+                                float(automated_confidence)
+                                if automated_confidence not in ("", None)
+                                else None
+                            ),
+                        }
+                    )
                 except (ValueError, KeyError):
                     continue
     return all_annotations
@@ -81,8 +86,8 @@ def cohens_kappa(ratings1, ratings2):
     po = sum(matrix[(c, c)] for c in categories) / n
     # Expected agreement
     pe = sum(
-        (sum(1 for r in ratings1 if r == c) / n) *
-        (sum(1 for r in ratings2 if r == c) / n)
+        (sum(1 for r in ratings1 if r == c) / n)
+        * (sum(1 for r in ratings2 if r == c) / n)
         for c in categories
     )
     if pe == 1.0:
@@ -105,7 +110,7 @@ def compute_inter_annotator(annotations):
     dims = ["factual_correctness", "relevance", "completeness", "safety"]
 
     for i, e1 in enumerate(evaluators):
-        for e2 in evaluators[i + 1:]:
+        for e2 in evaluators[i + 1 :]:
             common = set(by_eval[e1].keys()) & set(by_eval[e2].keys())
             if not common:
                 continue
@@ -147,7 +152,9 @@ def main():
     annotations = load_annotations()
     if not annotations:
         print("No annotations found. Fill in evaluation/human_eval_template.csv first.")
-        print("Template columns: question_id, question, model_answer, reference_answer,")
+        print(
+            "Template columns: question_id, question, model_answer, reference_answer,"
+        )
         print("  factual_correctness (1-5), relevance (1-5), completeness (1-5),")
         print("  safety (1-5), evaluator_id")
         sys.exit(0)
@@ -162,7 +169,9 @@ def main():
     agreement = compute_inter_annotator(annotations)
     print(f"\nInter-annotator agreement: {json.dumps(agreement, indent=2)}")
     confidence_correlation = compute_confidence_correlation(annotations)
-    print(f"\nAutomated confidence correlation: {json.dumps(confidence_correlation, indent=2)}")
+    print(
+        f"\nAutomated confidence correlation: {json.dumps(confidence_correlation, indent=2)}"
+    )
 
     # Save results
     out = {

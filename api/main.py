@@ -9,14 +9,17 @@ Enhanced with:
 - Enhanced health-check with system metrics
 - Passage highlighting for XAI
 """
+
+import json
 import os
-from loguru import logger
 import sys
 import time
-import json
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
+
+from loguru import logger
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Use cached models without network round-trips (avoids 40s retry delays when offline)
@@ -24,17 +27,17 @@ os.environ.setdefault("HF_HUB_OFFLINE", "1")
 os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException, Request, Depends, Security
+from typing import Any, Dict, List, Optional
+
+import uvicorn
+from fastapi import Depends, FastAPI, HTTPException, Request, Security
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, Field
-from typing import List, Dict, Optional, Any
-import uvicorn
-
 from slowapi import Limiter
-from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
 from config.settings import AVAILABLE_MODELS
 
@@ -80,6 +83,7 @@ async def lifespan(app: FastAPI):
     # Pre-load NLI model for hallucination detection (avoids 30s delay on first NLI check)
     try:
         from src.xai.hallucination_detector import HallucinationDetector
+
         _detector = HallucinationDetector(use_nli=True)
         _detector.warm_up()
         # Store for reuse by pipelines
@@ -132,7 +136,6 @@ async def lifespan(app: FastAPI):
 
     # Shutdown: save conversation sessions
     try:
-        from src.pipeline.conversation_manager import ConversationManager
         cm = getattr(app.state, "conversation_manager", None)
         if cm:
             cm.save_sessions()
@@ -148,7 +151,10 @@ app = FastAPI(
     lifespan=lifespan,
     openapi_tags=[
         {"name": "Health", "description": "Service health and readiness checks"},
-        {"name": "QA", "description": "Ask medical questions and get explainable answers"},
+        {
+            "name": "QA",
+            "description": "Ask medical questions and get explainable answers",
+        },
         {"name": "Models", "description": "Available LLM model information"},
         {"name": "Sessions", "description": "Conversation session management"},
         {"name": "Feedback", "description": "User feedback and rating collection"},
@@ -162,11 +168,16 @@ app.state.limiter = limiter
 
 @app.exception_handler(RateLimitExceeded)
 async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
-    return JSONResponse(status_code=429, content={"detail": "Rate limit exceeded — please slow down."})
+    return JSONResponse(
+        status_code=429, content={"detail": "Rate limit exceeded — please slow down."}
+    )
+
 
 # CORS
 cors_origins_env = os.getenv("CORS_ORIGINS", "*")
-allow_origins = ["*"] if cors_origins_env == "*" else [o.strip() for o in cors_origins_env.split(",")]
+allow_origins = (
+    ["*"] if cors_origins_env == "*" else [o.strip() for o in cors_origins_env.split(",")]
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allow_origins,
@@ -178,14 +189,17 @@ app.add_middleware(
 
 # ── Error response model ─────────────────────────────────────────────────────
 
+
 class ErrorResponse(BaseModel):
     """Structured error response returned by all error handlers."""
+
     detail: str
     error_code: str = "INTERNAL_ERROR"
     request_id: Optional[str] = None
 
 
 # ── Correlation ID middleware ────────────────────────────────────────────────
+
 
 @app.middleware("http")
 async def add_correlation_id(request: Request, call_next):
@@ -198,6 +212,7 @@ async def add_correlation_id(request: Request, call_next):
 
 
 # ── Global exception handler ────────────────────────────────────────────────
+
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
@@ -227,6 +242,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         ).model_dump(),
     )
 
+
 # ── Global state ─────────────────────────────────────────────────────────────
 
 # Pipeline instances keyed by model name
@@ -250,6 +266,7 @@ trajectory_logger = None
 
 # ── Request / Response models ────────────────────────────────────────────────
 
+
 class QuestionRequest(BaseModel):
     question: str = Field(..., min_length=5, max_length=1000)
     include_explanation: bool = True
@@ -260,7 +277,9 @@ class QuestionRequest(BaseModel):
     )
     use_langchain: bool = Field(default=False, description="Use LangChain LCEL pipeline")
     use_langgraph: bool = Field(default=False, description="Use LangGraph self-correcting RAG")
-    session_id: Optional[str] = Field(default=None, description="Conversation session ID for follow-ups")
+    session_id: Optional[str] = Field(
+        default=None, description="Conversation session ID for follow-ups"
+    )
 
 
 class SourceInfo(BaseModel):
@@ -342,6 +361,7 @@ class FeedbackResponse(BaseModel):
 
 # ── Component loaders ────────────────────────────────────────────────────────
 
+
 def _get_shared_components():
     """Load shared components (embedder, vector store, retriever) once."""
     global _shared_components
@@ -349,14 +369,15 @@ def _get_shared_components():
         return _shared_components
 
     try:
+        from config.settings import config
         from src.embeddings.embedding_models import MedicalEmbedder
         from src.embeddings.vector_store import VectorStore
-        from src.retrieval.hybrid_retriever import HybridRetriever
         from src.generation.prompt_manager import MedicalPromptManager
+        from src.retrieval.hybrid_retriever import HybridRetriever
         from src.xai.confidence_scorer import ConfidenceScorer
         from src.xai.source_attribution import SourceAttributor
-        from config.settings import config
-        pipeline_config = getattr(config, 'pipeline', None) if config else None
+
+        pipeline_config = getattr(config, "pipeline", None) if config else None
 
         logger.info(" Loading shared pipeline components...")
         embedder = MedicalEmbedder(model_name="all-minilm")
@@ -364,12 +385,13 @@ def _get_shared_components():
             collection_name=config.retrieval.collection_name,
             persist_directory=config.retrieval.persist_directory,
         )
-        
+
         # Reranker
         reranker = None
-        if pipeline_config and getattr(pipeline_config, 'enable_reranker', False):
+        if pipeline_config and getattr(pipeline_config, "enable_reranker", False):
             try:
                 from src.retrieval.reranker import CrossEncoderReranker
+
                 reranker = CrossEncoderReranker()
                 logger.info(" Reranker initialized")
             except Exception as e:
@@ -379,41 +401,45 @@ def _get_shared_components():
         prompt_manager = MedicalPromptManager()
         confidence_scorer = ConfidenceScorer()
         source_attributor = SourceAttributor(embedder=embedder, similarity_threshold=0.3)
-        
+
         # Other quality hooks
         query_enhancer = None
         context_compressor = None
         corrective_rag = None
         factual_checker = None
-        
+
         if pipeline_config:
-            if getattr(pipeline_config, 'enable_query_enhancement', False):
+            if getattr(pipeline_config, "enable_query_enhancement", False):
                 try:
                     from src.retrieval.query_enhancer import QueryEnhancer
+
                     query_enhancer = QueryEnhancer()
                     logger.info(" Query enhancer initialized")
                 except Exception as e:
                     logger.warning(f" Failed to init query enhancer: {e}")
-                    
-            if getattr(pipeline_config, 'enable_context_compression', False):
+
+            if getattr(pipeline_config, "enable_context_compression", False):
                 try:
                     from src.pipeline.context_compressor import ContextCompressor
+
                     context_compressor = ContextCompressor()
                     logger.info(" Context compressor initialized")
                 except Exception as e:
                     logger.warning(f" Failed to init context compressor: {e}")
-                    
-            if getattr(pipeline_config, 'enable_corrective_rag', False):
+
+            if getattr(pipeline_config, "enable_corrective_rag", False):
                 try:
                     from src.retrieval.corrective_rag import CorrectiveRAG
+
                     corrective_rag = CorrectiveRAG(retriever=retriever)
                     logger.info(" Corrective RAG initialized")
                 except Exception as e:
                     logger.warning(f" Failed to init corrective RAG: {e}")
-                    
-            if getattr(pipeline_config, 'enable_factual_consistency', False):
+
+            if getattr(pipeline_config, "enable_factual_consistency", False):
                 try:
                     from src.xai.factual_consistency import FactualConsistencyChecker
+
                     factual_checker = FactualConsistencyChecker()
                     logger.info(" Factual consistency checker initialized")
                 except Exception as e:
@@ -432,8 +458,9 @@ def _get_shared_components():
             "factual_consistency_checker": factual_checker,
         }
         logger.info(" Shared components loaded")
-    except Exception as e:
+    except Exception:
         import traceback
+
         logger.error(f" Failed to load shared components:\n{traceback.format_exc()}")
 
     return _shared_components
@@ -458,8 +485,9 @@ def get_pipeline(model_choice: str = "tinyllama", adapter_path: Optional[str] = 
     if cache_key in pipelines:
         return pipelines[cache_key]
 
-    import torch
     import gc
+
+    import torch
 
     # FREE PREVIOUS PIPELINES TO PREVENT MEMORY LEAKS ON LAPTOPS
     for k in list(pipelines.keys()):
@@ -470,7 +498,7 @@ def get_pipeline(model_choice: str = "tinyllama", adapter_path: Optional[str] = 
         except Exception as e:
             logger.warning(f" Error during cleanup of {k}: {e}")
         del pipelines[k]
-    
+
     gc.collect()
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
@@ -483,6 +511,7 @@ def get_pipeline(model_choice: str = "tinyllama", adapter_path: Optional[str] = 
 
     if model_info.get("requires_gpu", False):
         import torch
+
         if not torch.cuda.is_available():
             raise HTTPException(
                 status_code=400,
@@ -559,14 +588,18 @@ def get_pipeline(model_choice: str = "tinyllama", adapter_path: Optional[str] = 
         return None
 
 
-
 def _init_guardrails():
     """Initialize safety guardrails."""
     global guardrails, emergency_detector, drug_checker
     if guardrails is not None:
         return
     try:
-        from src.safety.guardrails import MedicalGuardrails, EmergencyDetector, DrugInteractionChecker
+        from src.safety.guardrails import (
+            DrugInteractionChecker,
+            EmergencyDetector,
+            MedicalGuardrails,
+        )
+
         guardrails = MedicalGuardrails()
         emergency_detector = EmergencyDetector()
         drug_checker = DrugInteractionChecker()
@@ -583,15 +616,14 @@ def _init_conversation_manager():
     try:
         from config.settings import config as _cfg
         from src.conversation.history import ConversationManager
+
         api_cfg = getattr(_cfg, "api", None)
         conversation_manager = ConversationManager(
             storage_path=getattr(
                 api_cfg, "conversation_storage_path", "data/conversations/sessions.json"
             ),
             max_session_age_hours=getattr(api_cfg, "conversation_max_age_hours", 24),
-            cleanup_interval_minutes=getattr(
-                api_cfg, "conversation_cleanup_interval_minutes", 15
-            ),
+            cleanup_interval_minutes=getattr(api_cfg, "conversation_cleanup_interval_minutes", 15),
         )
         logger.info(" Conversation manager initialized")
     except Exception as e:
@@ -608,9 +640,7 @@ def _init_feedback_system():
         from src.feedback.trajectory_logger import TrajectoryLogger
 
         if feedback_collector is None:
-            feedback_collector = FeedbackCollector(
-                storage_path="data/feedback/user_feedback.jsonl"
-            )
+            feedback_collector = FeedbackCollector(storage_path="data/feedback/user_feedback.jsonl")
         if trajectory_logger is None:
             trajectory_logger = TrajectoryLogger(
                 storage_path="data/feedback/response_trajectories.jsonl"
@@ -692,6 +722,7 @@ def _log_response_trajectory(trajectory_payload: Dict[str, Any]) -> None:
 
 # ── Endpoints ────────────────────────────────────────────────────────────────
 
+
 @app.get("/", response_model=HealthResponse, tags=["Health"])
 async def root():
     """Root endpoint."""
@@ -744,7 +775,8 @@ async def health_check():
 async def component_health():
     """Detailed component health status for diagnostics."""
     from config.settings import config as _cfg
-    pipeline_cfg = getattr(_cfg, 'pipeline', None)
+
+    pipeline_cfg = getattr(_cfg, "pipeline", None)
     shared = _shared_components
 
     components = {}
@@ -811,12 +843,19 @@ async def component_health():
             cache_stats = p.cache_manager.get_cache_stats()
             break
     components["cache"] = (
-        {"status": "ok", **cache_stats} if cache_stats
-        else {"status": "enabled" if getattr(pipeline_cfg, 'enable_response_cache', False) else "disabled"}
+        {"status": "ok", **cache_stats}
+        if cache_stats
+        else {
+            "status": (
+                "enabled" if getattr(pipeline_cfg, "enable_response_cache", False) else "disabled"
+            )
+        }
     )
 
     # Pipeline info
-    default_pipe = getattr(pipeline_cfg, 'default_pipeline', 'standard') if pipeline_cfg else 'standard'
+    default_pipe = (
+        getattr(pipeline_cfg, "default_pipeline", "standard") if pipeline_cfg else "standard"
+    )
 
     return {
         "default_pipeline": default_pipe,
@@ -863,7 +902,9 @@ async def get_session(session_id: str):
     return session.to_dict()
 
 
-async def _prepare_and_execute_pipeline(request: QuestionRequest, start_ts: float) -> AnswerResponse:
+async def _prepare_and_execute_pipeline(
+    request: QuestionRequest, start_ts: float
+) -> AnswerResponse:
     """Shared orchestration logic for standard and streaming requests."""
     response_id = str(uuid.uuid4())
     question_id = str(uuid.uuid4())
@@ -889,7 +930,9 @@ async def _prepare_and_execute_pipeline(request: QuestionRequest, start_ts: floa
                 question=request.question,
                 answer=check.redirect_message or "Please seek immediate medical attention.",
                 sources=[],
-                confidence=ConfidenceInfo(score=1.0, level="high", explanation="Emergency detected"),
+                confidence=ConfidenceInfo(
+                    score=1.0, level="high", explanation="Emergency detected"
+                ),
                 attributions=[],
                 disclaimer="If this is a medical emergency, call emergency services (911) immediately.",
                 model_used=request.model_choice or "tinyllama",
@@ -927,7 +970,9 @@ async def _prepare_and_execute_pipeline(request: QuestionRequest, start_ts: floa
                         "factual_consistency": None,
                         "latency_ms": latency,
                     },
-                    "safety": emergency_response.safety.model_dump() if emergency_response.safety else {},
+                    "safety": (
+                        emergency_response.safety.model_dump() if emergency_response.safety else {}
+                    ),
                 }
             )
             return emergency_response
@@ -942,7 +987,8 @@ async def _prepare_and_execute_pipeline(request: QuestionRequest, start_ts: floa
     if not use_langgraph and not use_langchain:
         # Apply configured default pipeline
         from config.settings import config as _cfg
-        default_pipe = getattr(getattr(_cfg, 'pipeline', None), 'default_pipeline', 'standard')
+
+        default_pipe = getattr(getattr(_cfg, "pipeline", None), "default_pipeline", "standard")
         if default_pipe == "langgraph":
             use_langgraph = True
         elif default_pipe == "langchain":
@@ -991,7 +1037,11 @@ async def _prepare_and_execute_pipeline(request: QuestionRequest, start_ts: floa
             question=effective_question,
             num_documents=request.num_sources,
             include_explanation=request.include_explanation,
-            **({"conversation_context": conversation_context} if conversation_context and not (request.use_langgraph or request.use_langchain) else {})
+            **(
+                {"conversation_context": conversation_context}
+                if conversation_context and not (request.use_langgraph or request.use_langchain)
+                else {}
+            ),
         )
     except Exception as e:
         raise HTTPException(
@@ -1004,11 +1054,18 @@ async def _prepare_and_execute_pipeline(request: QuestionRequest, start_ts: floa
         output_check = guardrails.check_output(response.answer)
         if output_check.flags:
             safety_info.flags.extend(output_check.flags)
-        
+
         # If output is blocked, return redirect message instead of raw answer
         if not output_check.passed:
-            response.answer = output_check.redirect_message or "I cannot provide that information. Please consult a healthcare professional."
-            response.confidence = {"score": 0.0, "level": "blocked", "explanation": output_check.message}
+            response.answer = (
+                output_check.redirect_message
+                or "I cannot provide that information. Please consult a healthcare professional."
+            )
+            response.confidence = {
+                "score": 0.0,
+                "level": "blocked",
+                "explanation": output_check.message,
+            }
             safety_info.level = output_check.level
 
     if drug_checker:
@@ -1023,8 +1080,15 @@ async def _prepare_and_execute_pipeline(request: QuestionRequest, start_ts: floa
                 session_id=session_id,
                 question=request.question,
                 answer=response.answer,
-                confidence=response.confidence.get("score", 0) if isinstance(response.confidence, dict) else getattr(response.confidence, "score", 0),
-                sources=[s.get("source", "") if isinstance(s, dict) else getattr(s, "source", "") for s in response.sources],
+                confidence=(
+                    response.confidence.get("score", 0)
+                    if isinstance(response.confidence, dict)
+                    else getattr(response.confidence, "score", 0)
+                ),
+                sources=[
+                    s.get("source", "") if isinstance(s, dict) else getattr(s, "source", "")
+                    for s in response.sources
+                ],
             )
         except Exception:
             pass  # Don't fail the request if history save fails
@@ -1055,9 +1119,42 @@ async def _prepare_and_execute_pipeline(request: QuestionRequest, start_ts: floa
         response_id=response_id,
         question=request.question,
         answer=response.answer,
-        sources=[SourceInfo(**s) if isinstance(s, dict) else SourceInfo(source=s.source, content=s.content, score=s.score, url=getattr(s, "url", ""), highlight_spans=getattr(s, "highlight_spans", None)) for s in response.sources],
-        confidence=ConfidenceInfo(**response.confidence) if isinstance(response.confidence, dict) else ConfidenceInfo(score=response.confidence.score, level=response.confidence.level, explanation=response.confidence.explanation),
-        attributions=[AttributionInfo(**a) if isinstance(a, dict) else AttributionInfo(claim=a.claim, source=a.source, evidence=a.evidence, similarity=a.similarity) for a in response.attributions],
+        sources=[
+            (
+                SourceInfo(**s)
+                if isinstance(s, dict)
+                else SourceInfo(
+                    source=s.source,
+                    content=s.content,
+                    score=s.score,
+                    url=getattr(s, "url", ""),
+                    highlight_spans=getattr(s, "highlight_spans", None),
+                )
+            )
+            for s in response.sources
+        ],
+        confidence=(
+            ConfidenceInfo(**response.confidence)
+            if isinstance(response.confidence, dict)
+            else ConfidenceInfo(
+                score=response.confidence.score,
+                level=response.confidence.level,
+                explanation=response.confidence.explanation,
+            )
+        ),
+        attributions=[
+            (
+                AttributionInfo(**a)
+                if isinstance(a, dict)
+                else AttributionInfo(
+                    claim=a.claim,
+                    source=a.source,
+                    evidence=a.evidence,
+                    similarity=a.similarity,
+                )
+            )
+            for a in response.attributions
+        ],
         disclaimer=response.disclaimer,
         rationale=getattr(response, "rationale", None),
         model_used=model_choice,
@@ -1117,8 +1214,12 @@ async def _prepare_and_execute_pipeline(request: QuestionRequest, start_ts: floa
     return answer_response
 
 
-@app.post("/ask", response_model=AnswerResponse, tags=["QA"],
-          dependencies=[Depends(verify_api_key)])
+@app.post(
+    "/ask",
+    response_model=AnswerResponse,
+    tags=["QA"],
+    dependencies=[Depends(verify_api_key)],
+)
 @limiter.limit("60/minute")
 async def ask_question(request: Request, body: QuestionRequest):
     """
@@ -1231,16 +1332,16 @@ async def feedback_stats():
 async def ask_stream(request: QuestionRequest):
     """Stream a medical answer token by token (NDJSON)."""
     start_ts = time.time()
-    
+
     async def generate():
         try:
             response = await _prepare_and_execute_pipeline(request, start_ts)
-            
+
             # Send metadata first (omit full answer to stream it separately)
             meta = response.model_dump()
             meta["answer"] = ""
             yield json.dumps({"type": "meta", "data": meta}) + "\n"
-            
+
             # Simulated token stream (useful for LLMs that don't natively stream, maintaining UX)
             words = response.answer.split()
             chunk_size = 3
@@ -1249,9 +1350,9 @@ async def ask_stream(request: QuestionRequest):
                 if i + chunk_size < len(words):
                     chunk += " "
                 yield json.dumps({"type": "token", "data": chunk}) + "\n"
-                
+
             yield json.dumps({"type": "done", "data": ""}) + "\n"
-            
+
         except HTTPException as e:
             yield json.dumps({"type": "error", "data": e.detail}) + "\n"
         except Exception as e:
@@ -1282,9 +1383,10 @@ async def clear_cache():
 
 # ── Alternative pipeline loaders ─────────────────────────────────────────────
 
+
 def _get_langchain_pipeline(model_choice: str = "tinyllama", adapter_path: Optional[str] = None):
     """Lazy load LangChain pipeline with specified model.
-    
+
     Args:
         model_choice: Model to use (tinyllama or biomistral)
     """
@@ -1296,10 +1398,11 @@ def _get_langchain_pipeline(model_choice: str = "tinyllama", adapter_path: Optio
         shared = _get_shared_components()
         if not shared:
             return None
+        import torch as _torch
+
         from src.generation.llm_wrapper import MedicalLLM
         from src.langchain import create_langchain_pipeline
 
-        import torch as _torch
         llm = MedicalLLM(
             model_name=model_choice,  # Use requested model instead of hardcoded tinyllama
             adapter_path=resolved_adapter_path,
@@ -1321,7 +1424,7 @@ def _get_langchain_pipeline(model_choice: str = "tinyllama", adapter_path: Optio
 
 def _get_langgraph_pipeline(model_choice: str = "tinyllama", adapter_path: Optional[str] = None):
     """Lazy load LangGraph pipeline with specified model.
-    
+
     Args:
         model_choice: Model to use (tinyllama or biomistral)
     """
@@ -1333,11 +1436,12 @@ def _get_langgraph_pipeline(model_choice: str = "tinyllama", adapter_path: Optio
         shared = _get_shared_components()
         if not shared:
             return None
+        import torch as _torch
+
         from config.settings import config as _cfg
         from src.generation.llm_wrapper import MedicalLLM
         from src.langgraph import create_langgraph_pipeline
 
-        import torch as _torch
         pipeline_cfg = getattr(_cfg, "pipeline", None)
         llm = MedicalLLM(
             model_name=model_choice,  # Use requested model instead of hardcoded tinyllama

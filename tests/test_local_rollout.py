@@ -1,9 +1,10 @@
 """
 Focused regression tests for the local-safe rollout changes.
 """
+
+import time
 from collections import OrderedDict
 from pathlib import Path
-import time
 
 import numpy as np
 
@@ -57,6 +58,7 @@ def test_vector_store_embedding_metadata_sidecar_and_legacy_fallback(tmp_path):
 
 def test_retriever_exposes_deterministic_stage_timings():
     """Retriever should publish the named timing keys used by the pipeline."""
+
     class DummyEmbedder:
         def embed_query(self, query):
             return np.array([0.1, 0.2, 0.3], dtype=np.float32)

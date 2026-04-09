@@ -9,44 +9,48 @@ RecursiveSentenceChunker
     Improved recursive chunker that respects sentence boundaries using a
     separator hierarchy.  This is the chunker to use for KB v2 builds.
 """
-from typing import List, Dict, Any, Optional
-from dataclasses import dataclass
+
 import re
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
+
 
 @dataclass
 class Chunk:
     """Represents a document chunk."""
+
     content: str
     source: str
     chunk_id: int
     total_chunks: int
     metadata: Dict[str, Any]
 
+
 class MedicalTextChunker:
     """
     Chunk medical documents while preserving context.
-    
+
     Features (Phase 2 improvements):
     - Domain-adaptive chunk sizes based on document type
     - Sentence-boundary awareness (never splits mid-sentence)
     - Recursive chunking with overlaps
     """
-    
+
     # Domain-specific chunk sizes (in tokens, approximate)
     DOMAIN_CHUNK_SIZES = {
-        "pubmedqa": 256,           # Dense abstracts
-        "medmcqa": 128,            # Short Q&A pairs
-        "healthcaremagic": 512,    # Long consultations
+        "pubmedqa": 256,  # Dense abstracts
+        "medmcqa": 128,  # Short Q&A pairs
+        "healthcaremagic": 512,  # Long consultations
         "clinical_guideline": 768,  # Context-heavy guidelines
         "default": 512,
     }
-    
+
     def __init__(
         self,
         chunk_size: int = None,  # Now optional - auto-determined by source
         chunk_overlap: int = 50,
         min_chunk_size: int = 100,
-        use_domain_adaptive: bool = True
+        use_domain_adaptive: bool = True,
     ):
         self.default_chunk_size = chunk_size or 512
         # Keep a stable base chunk size on the instance. Domain-adaptive chunking
@@ -56,28 +60,28 @@ class MedicalTextChunker:
         self.chunk_overlap = chunk_overlap
         self.min_chunk_size = min_chunk_size
         self.use_domain_adaptive = use_domain_adaptive
-        
+
         # Separators in order of priority
         self.separators = [
             "\n\n",  # Paragraphs
-            "\n",    # Lines
-            ". ",    # Sentences
-            "; ",    # Clauses
-            ", ",    # Phrases
-            " "      # Words
+            "\n",  # Lines
+            ". ",  # Sentences
+            "; ",  # Clauses
+            ", ",  # Phrases
+            " ",  # Words
         ]
-    
+
     def _get_chunk_size_for_source(self, source: str) -> int:
         """Determine optimal chunk size based on document source."""
         if not self.use_domain_adaptive:
             return self.default_chunk_size
-        
+
         source_lower = source.lower()
         for key, size in self.DOMAIN_CHUNK_SIZES.items():
             if key in source_lower:
                 return size
         return self.DOMAIN_CHUNK_SIZES["default"]
-    
+
     def chunk_text(self, text: str) -> List[str]:
         """Split text into chunks."""
         if not text:
@@ -87,20 +91,20 @@ class MedicalTextChunker:
 
         if len(text) <= chunk_size:
             return [text] if len(text) >= self.min_chunk_size else []
-        
+
         chunks = []
         current_chunk = ""
-        
+
         # Split by sentences first
-        sentences = re.split(r'(?<=[.!?])\s+', text)
-        
+        sentences = re.split(r"(?<=[.!?])\s+", text)
+
         for sentence in sentences:
             if len(current_chunk) + len(sentence) <= chunk_size:
                 current_chunk += (" " if current_chunk else "") + sentence
             else:
                 if current_chunk:
                     chunks.append(current_chunk.strip())
-                
+
                 # Handle very long sentences
                 if len(sentence) > chunk_size:
                     # Split by words
@@ -115,61 +119,67 @@ class MedicalTextChunker:
                             current_chunk = word
                 else:
                     current_chunk = sentence
-        
+
         if current_chunk and len(current_chunk) >= self.min_chunk_size:
             chunks.append(current_chunk.strip())
-        
+
         # Add overlap
         if self.chunk_overlap > 0 and len(chunks) > 1:
             chunks = self._add_overlap(chunks)
-        
+
         return chunks
-    
+
     def _add_overlap(self, chunks: List[str]) -> List[str]:
         """Add overlap between consecutive chunks."""
         overlapped = []
-        
+
         for i, chunk in enumerate(chunks):
             if i == 0:
                 overlapped.append(chunk)
             else:
                 # Get last N characters from previous chunk
                 prev_chunk = chunks[i - 1]
-                overlap_text = prev_chunk[-self.chunk_overlap:] if len(prev_chunk) > self.chunk_overlap else prev_chunk
-                
+                overlap_text = (
+                    prev_chunk[-self.chunk_overlap :]
+                    if len(prev_chunk) > self.chunk_overlap
+                    else prev_chunk
+                )
+
                 # Find word boundary
-                space_idx = overlap_text.find(' ')
+                space_idx = overlap_text.find(" ")
                 if space_idx > 0:
-                    overlap_text = overlap_text[space_idx + 1:]
-                
+                    overlap_text = overlap_text[space_idx + 1 :]
+
                 overlapped.append(overlap_text + " " + chunk)
-        
+
         return overlapped
-    
+
     def chunk_document(self, document: Dict[str, Any]) -> List[Chunk]:
         """
         Chunk a document with metadata.
-        
+
         Uses domain-adaptive chunk sizing: determines optimal chunk size
         based on document source type (e.g., PubMedQA vs HealthCareMagic).
         """
         content = document.get("content", "")
         source = document.get("source", "unknown")
         metadata = document.get("metadata", {})
-        
+
         # Domain-adaptive chunk size
-        original_chunk_size = self.chunk_size if hasattr(self, "chunk_size") else self.default_chunk_size
+        original_chunk_size = (
+            self.chunk_size if hasattr(self, "chunk_size") else self.default_chunk_size
+        )
         if self.use_domain_adaptive:
             self.chunk_size = self._get_chunk_size_for_source(source)
         else:
             self.chunk_size = self.default_chunk_size
-        
+
         text_chunks = self.chunk_text(content)
-        
+
         # Restore original if needed (for reusability across sources)
         if self.use_domain_adaptive:
             self.chunk_size = self.default_chunk_size
-        
+
         return [
             Chunk(
                 content=chunk,
@@ -180,12 +190,16 @@ class MedicalTextChunker:
                     **metadata,
                     "url": document.get("url", ""),
                     "chunk_length": len(chunk),
-                    "adaptive_chunk_size": self._get_chunk_size_for_source(source) if self.use_domain_adaptive else original_chunk_size
-                }
+                    "adaptive_chunk_size": (
+                        self._get_chunk_size_for_source(source)
+                        if self.use_domain_adaptive
+                        else original_chunk_size
+                    ),
+                },
             )
             for i, chunk in enumerate(text_chunks)
         ]
-    
+
     def chunk_documents(self, documents: List[Dict[str, Any]]) -> List[Chunk]:
         """Chunk multiple documents."""
         all_chunks = []
@@ -197,6 +211,7 @@ class MedicalTextChunker:
 # ---------------------------------------------------------------------------
 # RecursiveSentenceChunker — improved chunker for KB v2
 # ---------------------------------------------------------------------------
+
 
 class RecursiveSentenceChunker:
     """
@@ -224,11 +239,11 @@ class RecursiveSentenceChunker:
 
     # Domain-specific chunk sizes (characters, ~4 chars/token)
     _DOMAIN_SIZES: Dict[str, int] = {
-        "pubmedqa":         256 * 4,   # ~1 024 chars
-        "medmcqa":          128 * 4,   # ~  512 chars
-        "healthcaremagic":  512 * 4,   # ~2 048 chars
-        "clinical_guideline": 768 * 4, # ~3 072 chars
-        "default":          512 * 4,   # ~2 048 chars
+        "pubmedqa": 256 * 4,  # ~1 024 chars
+        "medmcqa": 128 * 4,  # ~  512 chars
+        "healthcaremagic": 512 * 4,  # ~2 048 chars
+        "clinical_guideline": 768 * 4,  # ~3 072 chars
+        "default": 512 * 4,  # ~2 048 chars
     }
 
     def __init__(
@@ -307,7 +322,7 @@ class RecursiveSentenceChunker:
         for candidate in separators:
             if candidate == "" or candidate in text:
                 sep = candidate
-                remaining_seps = separators[separators.index(candidate) + 1:]
+                remaining_seps = separators[separators.index(candidate) + 1 :]
                 break
 
         # Split on chosen separator
@@ -315,11 +330,10 @@ class RecursiveSentenceChunker:
             pieces = re.split(re.escape(sep), text)
             if self._keep_separator and sep.strip():
                 # Re-attach the separator to the end of each piece
-                pieces = [p + sep if i < len(pieces) - 1 else p
-                          for i, p in enumerate(pieces)]
+                pieces = [p + sep if i < len(pieces) - 1 else p for i, p in enumerate(pieces)]
         else:
             # No separator left → character-level fallback
-            return [text[i:i + chunk_size] for i in range(0, len(text), chunk_size)]
+            return [text[i : i + chunk_size] for i in range(0, len(text), chunk_size)]
 
         # Recurse on pieces that are still too large
         good: List[str] = []
@@ -360,10 +374,10 @@ class RecursiveSentenceChunker:
             return chunks
         result: List[str] = [chunks[0]]
         for i in range(1, len(chunks)):
-            tail = chunks[i - 1][-self._chunk_overlap:]
+            tail = chunks[i - 1][-self._chunk_overlap :]
             # Trim to word boundary to avoid splitting mid-word
             space = tail.find(" ")
             if space > 0:
-                tail = tail[space + 1:]
+                tail = tail[space + 1 :]
             result.append((tail + " " + chunks[i]).strip())
         return result

@@ -2,9 +2,11 @@
 Tests for CacheManager component.
 Tests cache hit, miss, TTL expiration, and invalidation.
 """
-import pytest
+
 import time
-from pathlib import Path
+
+import pytest
+
 from src.utils.cache_manager import CacheManager
 
 

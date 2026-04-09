@@ -5,7 +5,8 @@ Provides two generation paths:
 - LLM-based chain-of-thought rationale (when GPU/LLM is available)
 - Template-based rationale (always available, CPU-safe fallback)
 """
-from typing import List, Dict, Optional
+
+from typing import Dict, List, Optional
 
 
 class RationaleGenerator:
@@ -77,6 +78,7 @@ Step 3 (Explanation):"""
                 return result.response.strip()
             except Exception as e:
                 from loguru import logger
+
                 logger.warning(f"LLM rationale generation failed, falling back to template: {e}")
 
         return self.generate_template_rationale(question, answer, context=context)
@@ -112,9 +114,7 @@ Step 3 (Explanation):"""
         if confidence:
             score = confidence.get("score", 0)
             level = confidence.get("level", "moderate")
-            parts.append(
-                f"This answer was generated with {level} confidence ({score:.0%})."
-            )
+            parts.append(f"This answer was generated with {level} confidence ({score:.0%}).")
         else:
             parts.append("This answer is based on retrieved medical literature.")
 
@@ -126,9 +126,7 @@ Step 3 (Explanation):"""
             )
         elif context:
             word_count = len(context.split())
-            parts.append(
-                f"It is grounded in {word_count} words of retrieved medical context."
-            )
+            parts.append(f"It is grounded in {word_count} words of retrieved medical context.")
 
         # Attribution statement
         if attributions:
@@ -138,8 +136,6 @@ Step 3 (Explanation):"""
                 f"were directly verified against source passages."
             )
 
-        parts.append(
-            "Always verify medical information with a qualified healthcare professional."
-        )
+        parts.append("Always verify medical information with a qualified healthcare professional.")
 
         return " ".join(parts)

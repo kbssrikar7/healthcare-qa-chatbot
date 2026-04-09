@@ -7,6 +7,7 @@ Usage:
     python evaluation/build_test_set.py
     python evaluation/build_test_set.py --output evaluation/test_set_v2.json --n 120
 """
+
 import json
 import re
 import sys
@@ -24,13 +25,38 @@ MEDQA_CATEGORIES = {
     "step3": ["management", "emergency", "prevention"],
 }
 
-SYMPTOM_KEYWORDS = ["symptom", "present", "complain", "feel", "suffer",
-                    "pain", "ache", "nausea", "fever", "cough", "fatigue"]
+SYMPTOM_KEYWORDS = [
+    "symptom",
+    "present",
+    "complain",
+    "feel",
+    "suffer",
+    "pain",
+    "ache",
+    "nausea",
+    "fever",
+    "cough",
+    "fatigue",
+]
 DIAGNOSIS_KEYWORDS = ["diagnos", "most likely", "cause", "etiology", "what is"]
-TREATMENT_KEYWORDS = ["treat", "manag", "therap", "medication", "drug",
-                      "prescrib", "administer", "dosage"]
-PREVENTION_KEYWORDS = ["prevent", "avoid", "reduce risk", "protective",
-                       "vaccine", "screen"]
+TREATMENT_KEYWORDS = [
+    "treat",
+    "manag",
+    "therap",
+    "medication",
+    "drug",
+    "prescrib",
+    "administer",
+    "dosage",
+]
+PREVENTION_KEYWORDS = [
+    "prevent",
+    "avoid",
+    "reduce risk",
+    "protective",
+    "vaccine",
+    "screen",
+]
 
 
 def _classify(text: str) -> str:
@@ -49,15 +75,72 @@ def _classify(text: str) -> str:
 def _extract_keywords(text: str, n: int = 6) -> list:
     """Pull the most informative nouns/medical terms from answer text."""
     # Remove short words, stopwords, keep medical-ish terms
-    STOP = {"the", "a", "an", "is", "are", "was", "were", "be", "been",
-            "have", "has", "had", "do", "does", "did", "will", "would",
-            "could", "should", "may", "might", "shall", "of", "in", "on",
-            "at", "to", "for", "by", "with", "this", "that", "it", "its",
-            "which", "who", "what", "when", "where", "and", "or", "but",
-            "not", "no", "can", "also", "used", "most", "more", "than",
-            "than", "from", "as", "if", "such", "one", "two", "three",
-            "patient", "patients", "doctor", "medical", "health"}
-    words = re.findall(r'\b[a-z][a-z\-]{3,}\b', text.lower())
+    STOP = {
+        "the",
+        "a",
+        "an",
+        "is",
+        "are",
+        "was",
+        "were",
+        "be",
+        "been",
+        "have",
+        "has",
+        "had",
+        "do",
+        "does",
+        "did",
+        "will",
+        "would",
+        "could",
+        "should",
+        "may",
+        "might",
+        "shall",
+        "of",
+        "in",
+        "on",
+        "at",
+        "to",
+        "for",
+        "by",
+        "with",
+        "this",
+        "that",
+        "it",
+        "its",
+        "which",
+        "who",
+        "what",
+        "when",
+        "where",
+        "and",
+        "or",
+        "but",
+        "not",
+        "no",
+        "can",
+        "also",
+        "used",
+        "most",
+        "more",
+        "than",
+        "than",
+        "from",
+        "as",
+        "if",
+        "such",
+        "one",
+        "two",
+        "three",
+        "patient",
+        "patients",
+        "doctor",
+        "medical",
+        "health",
+    }
+    words = re.findall(r"\b[a-z][a-z\-]{3,}\b", text.lower())
     seen: dict = {}
     for w in words:
         if w not in STOP:
@@ -68,6 +151,7 @@ def _extract_keywords(text: str, n: int = 6) -> list:
 
 def load_medqa(path: Path, n: int = 45, seed: int = 42) -> list:
     import pandas as pd
+
     df = pd.read_parquet(path)
     rng = random.Random(seed)
     indices = rng.sample(range(len(df)), min(n * 3, len(df)))  # oversample then trim
@@ -82,27 +166,30 @@ def load_medqa(path: Path, n: int = 45, seed: int = 42) -> list:
         if len(q.split()) < 10 or len(a.split()) < 5:
             continue
         # Shorten question if it has a long clinical vignette (keep last sentence)
-        sentences = re.split(r'(?<=[.?])\s+', q)
+        sentences = re.split(r"(?<=[.?])\s+", q)
         if len(sentences) > 4:
             short_q = " ".join(sentences[-2:]).strip()
         else:
             short_q = q
         meta = str(row.get("meta_info", "step1"))
         case_id = f"medqa_{len(cases) + 1:03d}"
-        cases.append({
-            "id": case_id,
-            "query": short_q,
-            "reference_answer": a,
-            "expected_keywords": _extract_keywords(a, 6),
-            "category": _classify(q),
-            "source": f"MedQA-USMLE-{meta}",
-            "relevant_ids": [case_id + "_src"],
-        })
+        cases.append(
+            {
+                "id": case_id,
+                "query": short_q,
+                "reference_answer": a,
+                "expected_keywords": _extract_keywords(a, 6),
+                "category": _classify(q),
+                "source": f"MedQA-USMLE-{meta}",
+                "relevant_ids": [case_id + "_src"],
+            }
+        )
     return cases
 
 
 def load_pubmedqa(path: Path, n: int = 40, seed: int = 42) -> list:
     import pandas as pd
+
     df = pd.read_parquet(path)
     # Filter to yes/no final_decision so we have clear answers
     df_yn = df[df["final_decision"].isin(["yes", "no"])].reset_index(drop=True)
@@ -119,20 +206,23 @@ def load_pubmedqa(path: Path, n: int = 40, seed: int = 42) -> list:
         # Combine decision + long answer as reference
         ref = f"{decision.capitalize()}. {long_ans}" if long_ans else decision
         case_id = f"pubmed_{i + 1:03d}"
-        cases.append({
-            "id": case_id,
-            "query": q,
-            "reference_answer": ref[:600],   # keep concise
-            "expected_keywords": _extract_keywords(long_ans, 6),
-            "category": "research",
-            "source": "PubMedQA",
-            "relevant_ids": [case_id + "_src"],
-        })
+        cases.append(
+            {
+                "id": case_id,
+                "query": q,
+                "reference_answer": ref[:600],  # keep concise
+                "expected_keywords": _extract_keywords(long_ans, 6),
+                "category": "research",
+                "source": "PubMedQA",
+                "relevant_ids": [case_id + "_src"],
+            }
+        )
     return cases
 
 
 def load_chatdoctor(path: Path, n: int = 25, seed: int = 42) -> list:
     import pandas as pd
+
     df = pd.read_parquet(path)
     rng = random.Random(seed)
     indices = rng.sample(range(len(df)), min(n * 5, len(df)))
@@ -146,17 +236,21 @@ def load_chatdoctor(path: Path, n: int = 25, seed: int = 42) -> list:
         if len(q.split()) < 8 or len(a.split()) < 20:
             continue
         # Trim greetings from answer
-        clean_a = re.sub(r'^(Hi[,.]?|Hello[,.]?|Thank you[^.]*\.|Dear[^.]*\.)\s*', '', a)
+        clean_a = re.sub(
+            r"^(Hi[,.]?|Hello[,.]?|Thank you[^.]*\.|Dear[^.]*\.)\s*", "", a
+        )
         case_id = f"chatdoc_{len(cases) + 1:03d}"
-        cases.append({
-            "id": case_id,
-            "query": q[:300],
-            "reference_answer": clean_a[:500],
-            "expected_keywords": _extract_keywords(clean_a, 5),
-            "category": _classify(q),
-            "source": "ChatDoctor-HealthCareMagic",
-            "relevant_ids": [case_id + "_src"],
-        })
+        cases.append(
+            {
+                "id": case_id,
+                "query": q[:300],
+                "reference_answer": clean_a[:500],
+                "expected_keywords": _extract_keywords(clean_a, 5),
+                "category": _classify(q),
+                "source": "ChatDoctor-HealthCareMagic",
+                "relevant_ids": [case_id + "_src"],
+            }
+        )
     return cases
 
 
@@ -200,10 +294,12 @@ def build_test_set(n: int = 110, seed: int = 42) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(description="Build expanded test set")
-    parser.add_argument("--output", default="evaluation/test_set_v2.json",
-                        help="Output JSON path")
-    parser.add_argument("--n", type=int, default=110,
-                        help="Number of test cases to generate")
+    parser.add_argument(
+        "--output", default="evaluation/test_set_v2.json", help="Output JSON path"
+    )
+    parser.add_argument(
+        "--n", type=int, default=110, help="Number of test cases to generate"
+    )
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
 
@@ -217,6 +313,7 @@ def main():
 
     # Print category breakdown
     from collections import Counter
+
     cats = Counter(c["category"] for c in data["test_cases"])
     srcs = Counter(c["source"] for c in data["test_cases"])
     print(f"\nTest set built: {len(data['test_cases'])} cases → {out_path}")

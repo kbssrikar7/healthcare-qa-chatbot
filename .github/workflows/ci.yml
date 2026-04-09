@@ -29,10 +29,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          pip install -r requirements.txt
           pip install pytest pytest-cov pytest-asyncio
-          pip install torch --index-url https://download.pytorch.org/whl/cpu
-          pip install transformers sentence-transformers chromadb rank-bm25
-          pip install fastapi uvicorn streamlit pandas pyyaml python-dotenv loguru
       
       - name: Create project structure
         run: |
@@ -60,8 +58,10 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       
-      - name: Install linters
+      - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
           pip install black isort flake8
       
       - name: Run Black

@@ -27,7 +27,7 @@ Usage
 from __future__ import annotations
 
 import re
-from typing import Any, List, Union
+from typing import Any, List
 
 # ---------------------------------------------------------------------------
 # Public API

@@ -1,8 +1,9 @@
 """
 Tests for RL trajectory logging utilities.
 """
-from pathlib import Path
+
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -42,4 +43,3 @@ def test_log_requires_response_id(tmp_path):
 
     with pytest.raises(ValueError):
         logger.log({"question_id": "q_1"})
-

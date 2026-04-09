@@ -1,9 +1,9 @@
 """
 Tests for offline RL dataset builder script.
 """
-from pathlib import Path
-import importlib.util
 
+import importlib.util
+from pathlib import Path
 
 SCRIPT_PATH = Path(__file__).parent.parent / "scripts" / "build_rl_dataset.py"
 SPEC = importlib.util.spec_from_file_location("build_rl_dataset", SCRIPT_PATH)
@@ -53,4 +53,3 @@ def test_deterministic_split_is_stable():
     second = MODULE._deterministic_split("sample_key", 0.2)
     assert first == second
     assert first in {"train", "val"}
-

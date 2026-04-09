@@ -2,37 +2,46 @@
 LLM wrapper for medical question answering.
 Uses TinyLlama as the sole model backend via Hugging Face transformers.
 """
-import re
-import torch
-from pathlib import Path
-from typing import List, Optional, Dict, Any
-from dataclasses import dataclass
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+
 import gc
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Dict, List, Optional
+
+import torch
 from loguru import logger
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
 
 # Custom exceptions for granular error handling
 class LLMError(Exception):
     """Base exception for LLM errors."""
+
     pass
+
 
 class ModelNotFoundError(LLMError):
     """Raised when model cannot be found/downloaded."""
+
     pass
+
 
 class GPUOutOfMemoryError(LLMError):
     """Raised when GPU runs out of memory."""
+
     pass
+
 
 class GenerationError(LLMError):
     """Raised when generation fails."""
+
     pass
 
 
 @dataclass
 class GenerationResult:
     """Result from LLM generation."""
+
     response: str
     input_tokens: int
     generated_tokens: int
@@ -53,22 +62,43 @@ class MedicalLLM:
 
     # Patterns that indicate the model has leaked training data
     STOP_PATTERNS = [
-        r'\nQuestion:', r'\nQ:', r'\nAnswer:',
-        r'Best regards', r'Kind regards', r'Sincerely',
-        r'Yours truly', r'Warm regards', r'With best wishes',
-        r'\[Your Name\]', r"\[Doctor'?s? Name\]",
-        r'Chat Doctor', r'ChatDoctor', r'HealthCareMagic',
-        r'Thank you for choosing', r'Thank you for using',
-        r'Thank you for reaching out', r'Thank you for contacting',
-        r'If you have any further questions',
-        r'please do not hesitate', r"don't hesitate to ask",
-        r'I hope this (?:helps|information|answers)',
-        r'Wishing you (?:good|the best)', r'Take care',
-        r'\nHi,?\s', r'\nHello,?\s', r'\nDear ',
-        r'\nHi doctor', r'\nHello doctor', r'\nHi,\s*\n',
-        r'\[\d+\]\s*Source:',
-        r'\n---', r'<\|', r'\[/INST\]', r'</s>',
-        r'<\|im_end\|>', r'<\|endoftext\|>',
+        r"\nQuestion:",
+        r"\nQ:",
+        r"\nAnswer:",
+        r"Best regards",
+        r"Kind regards",
+        r"Sincerely",
+        r"Yours truly",
+        r"Warm regards",
+        r"With best wishes",
+        r"\[Your Name\]",
+        r"\[Doctor'?s? Name\]",
+        r"Chat Doctor",
+        r"ChatDoctor",
+        r"HealthCareMagic",
+        r"Thank you for choosing",
+        r"Thank you for using",
+        r"Thank you for reaching out",
+        r"Thank you for contacting",
+        r"If you have any further questions",
+        r"please do not hesitate",
+        r"don't hesitate to ask",
+        r"I hope this (?:helps|information|answers)",
+        r"Wishing you (?:good|the best)",
+        r"Take care",
+        r"\nHi,?\s",
+        r"\nHello,?\s",
+        r"\nDear ",
+        r"\nHi doctor",
+        r"\nHello doctor",
+        r"\nHi,\s*\n",
+        r"\[\d+\]\s*Source:",
+        r"\n---",
+        r"<\|",
+        r"\[/INST\]",
+        r"</s>",
+        r"<\|im_end\|>",
+        r"<\|endoftext\|>",
     ]
 
     def __init__(
@@ -109,6 +139,7 @@ class MedicalLLM:
             # Resolve via AVAILABLE_MODELS config
             try:
                 from config.settings import AVAILABLE_MODELS
+
                 return AVAILABLE_MODELS["biomistral"]["model_name"]
             except Exception as e:
                 logger.warning(f"Could not resolve biomistral model path from config: {e}")
@@ -139,12 +170,17 @@ class MedicalLLM:
             )
 
         import os
+
         n_threads = min(4, os.cpu_count() or 4)
-        logger.info("Loading GGUF model from {} (n_ctx=4096, n_threads={})", model_path, n_threads)
+        logger.info(
+            "Loading GGUF model from {} (n_ctx=4096, n_threads={})",
+            model_path,
+            n_threads,
+        )
         n_gpu_layers = -1 if torch.cuda.is_available() else 0  # -1 = all layers on GPU
         self._gguf_llm = Llama(
             model_path=str(model_path),
-            n_ctx=4096,        # Mistral-7B supports 4096; 2048 caused prompt truncation with RAG context
+            n_ctx=4096,  # Mistral-7B supports 4096; 2048 caused prompt truncation with RAG context
             n_threads=n_threads,
             n_gpu_layers=n_gpu_layers,
             verbose=False,
@@ -170,16 +206,16 @@ class MedicalLLM:
                 )
             except Exception as e:
                 quantization_config = None
-                logger.warning(f"BitsAndBytes quantization config failed, loading without quantization: {e}")
+                logger.warning(
+                    f"BitsAndBytes quantization config failed, loading without quantization: {e}"
+                )
         else:
             quantization_config = None
 
         # Tokenizer
         tokenizer_path = adapter_path if adapter_path else model_path
         try:
-            self.tokenizer = AutoTokenizer.from_pretrained(
-                tokenizer_path, trust_remote_code=True
-            )
+            self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_path, trust_remote_code=True)
         except OSError as e:
             if "not found" in str(e).lower() or "does not appear" in str(e).lower():
                 raise ModelNotFoundError(
@@ -195,6 +231,7 @@ class MedicalLLM:
         try:
             if self.device == "cpu":
                 import os
+
                 threads = min(4, os.cpu_count() or 4)
                 torch.set_num_threads(threads)
 
@@ -225,6 +262,7 @@ class MedicalLLM:
             if adapter_path:
                 try:
                     from peft import PeftModel
+
                     logger.info("Loading PEFT adapter from {}", adapter_path)
                     self.model = PeftModel.from_pretrained(self.model, adapter_path)
                     logger.info("Adapter loaded successfully")
@@ -327,9 +365,9 @@ class MedicalLLM:
         return_probabilities: bool = False,
     ) -> GenerationResult:
         """Generate using HuggingFace transformers backend."""
-        inputs = self.tokenizer(
-            prompt, return_tensors="pt", truncation=True, max_length=2048
-        ).to(self.model.device)
+        inputs = self.tokenizer(prompt, return_tensors="pt", truncation=True, max_length=2048).to(
+            self.model.device
+        )
 
         input_length = inputs.input_ids.shape[1]
 
@@ -352,6 +390,7 @@ class MedicalLLM:
         probabilities = None
         if return_probabilities and hasattr(outputs, "scores") and outputs.scores:
             import math
+
             log_probs = []
             for i, score in enumerate(outputs.scores):
                 probs = torch.softmax(score[0], dim=-1)
@@ -420,6 +459,7 @@ class MedicalLLM:
         Delegates to the shared text cleaning utility.
         """
         from src.utils.text_cleaning import clean_llm_response
+
         return clean_llm_response(response)
 
     # ------------------------------------------------------------------
