@@ -62,11 +62,11 @@ class MultiSignalConfidenceScorer:
     # - Entity coverage *hurts* calibration (removing it: ECE 0.2417→0.2079)
     # - Consistency slightly hurts (removing it: ECE 0.2417→0.2272)
     DEFAULT_WEIGHTS: Dict[str, float] = {
-        "retrieval": 0.30,
-        "generation": 0.25,
-        "consistency": 0.15,
-        "source_agreement": 0.25,
-        "entity_coverage": 0.05,
+        "retrieval": 0.40,          # High weight
+        "source_agreement": 0.30,   # High weight
+        "generation": 0.20,         # Medium weight
+        "consistency": 0.10,        # Low weight
+        "entity_coverage": 0.00,    # Removed (weight = 0)
     }
 
     def __init__(
@@ -87,12 +87,10 @@ class MultiSignalConfidenceScorer:
             self.weights = {k: v / total for k, v in self.weights.items()}
 
         # Platt scaling:  sigmoid(a * raw_score + b)
-        # Default params adjusted so raw [0,1] maps to meaningful calibrated range
-        # With a=3, b=-1.5: raw=0→0.18, raw=0.5→0.5, raw=0.8→0.82, raw=1→0.95
-        # This makes "high" confidence (≥0.75) achievable with strong evidence
+        # Use parameters from calibration.json as specified in IMPROVEMENT_PLAN
         cp = calibration_params or {}
-        self.platt_a: float = cp.get("a", 3.0)
-        self.platt_b: float = cp.get("b", -1.5)
+        self.platt_a: float = cp.get("a", 14.44)
+        self.platt_b: float = cp.get("b", -11.25)
 
     # ------------------------------------------------------------------
     # Public API
@@ -163,22 +161,34 @@ class MultiSignalConfidenceScorer:
         if not scores:
             return 0.0
 
-        # Normalize scores to [0, 1] by dividing by max (handles any scale)
-        max_raw = max(scores)
-        if max_raw > 0:
-            norm_scores = [s / max_raw for s in scores]
-        else:
-            norm_scores = scores
+        # For RRF scores, we shouldn't normalize by dividing by the max
+        # RRF scores are naturally small, dividing by max inflates them and
+        # destroys the absolute magnitude indicating relevance.
 
-        top_score = norm_scores[0]  # best doc (always 1.0 after normalization)
+        score_type = getattr(documents[0], "score_type", "cosine")
+        if score_type == "rrf":
+            # RRF is usually sum(1 / (k + rank)). Max possible for 1 list is ~0.016 (with k=60)
+            # Max for 2 lists (dense + sparse) is ~0.032. We can scale it gently but not divide by max.
+            norm_scores = [min(s * 25.0, 1.0) for s in scores]
+        else:
+            # Cosine scores: Normalize scores to [0, 1] if max > 1, otherwise leave as is.
+            max_raw = max(scores)
+            if max_raw > 1.0:
+                norm_scores = [s / max_raw for s in scores]
+            else:
+                norm_scores = scores
+
+        top_score = norm_scores[0]
         mean_score = float(np.mean(norm_scores))
+
         # Score dropoff: large gap between top and last → high confidence
         dropoff = (
             (norm_scores[0] - norm_scores[-1]) / (norm_scores[0] + 1e-8)
             if len(norm_scores) > 1
             else 0.5
         )
-        # Number of strong docs (>50% of top score)
+
+        # Number of strong docs
         n_strong = sum(1 for s in norm_scores if s > 0.5)
         coverage = min(n_strong / max(len(norm_scores), 1), 1.0)
 
