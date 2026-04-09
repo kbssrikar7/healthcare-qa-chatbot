@@ -10,6 +10,7 @@ Enhanced with:
 - Passage highlighting for XAI
 """
 
+import asyncio
 import json
 import os
 import sys
@@ -1053,6 +1054,8 @@ async def _prepare_and_execute_pipeline(
                 else {}
             ),
         )
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(None, partial(qa_pipeline.answer, **kwargs))
     except Exception as e:
         raise HTTPException(
             status_code=500,
