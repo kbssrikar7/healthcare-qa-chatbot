@@ -35,8 +35,8 @@ from loguru import logger
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from src.langgraph.langgraph_state import HealthcareRAGState
-from src.utils.context_builder import (
-    build_safe_context_lg as _build_safe_context_shared,  # noqa: E402
+from src.utils.context_builder import (  # noqa: E402
+    build_safe_context_lg as _build_safe_context_shared,
 )
 
 # ---------------------------------------------------------------------------
@@ -222,9 +222,7 @@ class HealthcareRAGNodes:
         self.adaptive_threshold_ratio: float = (
             adaptive_threshold_ratio
             if adaptive_threshold_ratio is not None
-            else float(
-                getattr(_pipeline, "adaptive_threshold_ratio", ADAPTIVE_THRESHOLD_RATIO)
-            )
+            else float(getattr(_pipeline, "adaptive_threshold_ratio", ADAPTIVE_THRESHOLD_RATIO))
         )
         self.min_relevant_docs: int = (
             min_relevant_docs
@@ -234,6 +232,7 @@ class HealthcareRAGNodes:
 
         # Cache GPU availability at init (avoids per-call import torch overhead)
         import torch
+
         self._skip_rationale = not torch.cuda.is_available()
 
     # ------------------------------------------------------------------
@@ -257,13 +256,9 @@ class HealthcareRAGNodes:
             for doc in docs:
                 lc_docs.append(
                     Document(
-                        page_content=doc.content
-                        if hasattr(doc, "content")
-                        else str(doc),
+                        page_content=doc.content if hasattr(doc, "content") else str(doc),
                         metadata={
-                            "source": doc.source
-                            if hasattr(doc, "source")
-                            else "unknown",
+                            "source": doc.source if hasattr(doc, "source") else "unknown",
                             "score": doc.score if hasattr(doc, "score") else 0.0,
                             "url": getattr(doc, "url", ""),
                         },
@@ -394,9 +389,7 @@ class HealthcareRAGNodes:
                 )
                 result = self.llm.generate(refine_prompt, max_new_tokens=40)
                 candidate = (
-                    result.response.strip()
-                    if hasattr(result, "response")
-                    else str(result).strip()
+                    result.response.strip() if hasattr(result, "response") else str(result).strip()
                 )
                 # Accept only if it's actually different and non-empty
                 if candidate and candidate.lower() != original_query.lower():
@@ -742,9 +735,7 @@ class HealthcareRAGNodes:
                 "score": 0.0 if not is_answerable else 0.7,
                 "level": "low" if not is_answerable else "medium",
                 "explanation": (
-                    "Insufficient context."
-                    if not is_answerable
-                    else "Default confidence."
+                    "Insufficient context." if not is_answerable else "Default confidence."
                 ),
             }
 
@@ -835,8 +826,7 @@ class HealthcareRAGNodes:
         return _sanitize_state(
             {
                 "answer": (
-                    f"I encountered an issue processing your question. "
-                    f"{UNANSWERABLE_RESPONSE}"
+                    f"I encountered an issue processing your question. " f"{UNANSWERABLE_RESPONSE}"
                 ),
                 "is_answerable": False,
                 "confidence": {

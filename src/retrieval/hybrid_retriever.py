@@ -134,11 +134,11 @@ class HybridRetriever:
         # Initialize BM25 for sparse retrieval if corpus provided
         if corpus:
             self._init_bm25(corpus)
-    
+
     def warm_up(self) -> None:
         """
         Pre-initialize BM25 index from vector store.
-        
+
         Call this during API startup to avoid 20-60s first-query lag.
         If BM25 is already initialized (via corpus= at __init__), this is a no-op.
         """
@@ -244,9 +244,7 @@ class HybridRetriever:
             if self._try_load_bm25_cache(total):
                 return
 
-            logger.info(
-                f" Building BM25 index from vector store ({total:,} docs)..."
-            )
+            logger.info(f" Building BM25 index from vector store ({total:,} docs)...")
             corpus = []
             offset = 0
 
@@ -260,15 +258,11 @@ class HybridRetriever:
                     break
 
                 ids = batch.get("ids", [])
-                for j, (doc_text, meta) in enumerate(
-                    zip(batch["documents"], batch["metadatas"])
-                ):
+                for j, (doc_text, meta) in enumerate(zip(batch["documents"], batch["metadatas"])):
                     corpus.append(
                         {
                             "content": doc_text,
-                            "source": meta.get("source", "unknown")
-                            if meta
-                            else "unknown",
+                            "source": meta.get("source", "unknown") if meta else "unknown",
                             "id": ids[j] if j < len(ids) else _stable_doc_id(doc_text),
                             "metadata": meta or {},
                         }
@@ -291,33 +285,33 @@ class HybridRetriever:
 
     # Compiled patterns for query-type classification (medical domain)
     _QT_DRUG = re.compile(
-        r'\b(?:drug|medication|medicine|dose|dosage|mg|tablet|capsule|pill|'
-        r'prescri|pharmac|antibiotic|aspirin|ibuprofen|metformin|insulin|'
-        r'interaction|side\s*effect|contraindic)\b',
+        r"\b(?:drug|medication|medicine|dose|dosage|mg|tablet|capsule|pill|"
+        r"prescri|pharmac|antibiotic|aspirin|ibuprofen|metformin|insulin|"
+        r"interaction|side\s*effect|contraindic)\b",
         re.IGNORECASE,
     )
     _QT_DEFINITION = re.compile(
-        r'^(?:what\s+is|what\s+are|define|explain|describe|tell\s+me\s+about|'
-        r'meaning\s+of|definition\s+of)\b',
+        r"^(?:what\s+is|what\s+are|define|explain|describe|tell\s+me\s+about|"
+        r"meaning\s+of|definition\s+of)\b",
         re.IGNORECASE,
     )
     _QT_SYMPTOM = re.compile(
-        r'\b(?:symptom|sign|feel|pain|ache|discomfort|nausea|fever|cough|'
-        r'fatigue|dizzy|swelling|bleed|rash|itch)\b',
+        r"\b(?:symptom|sign|feel|pain|ache|discomfort|nausea|fever|cough|"
+        r"fatigue|dizzy|swelling|bleed|rash|itch)\b",
         re.IGNORECASE,
     )
     _QT_COMPARISON = re.compile(
-        r'\b(?:difference|vs\.?|versus|compare|better|worse|than|between)\b',
+        r"\b(?:difference|vs\.?|versus|compare|better|worse|than|between)\b",
         re.IGNORECASE,
     )
 
     # (dense_weight, sparse_weight) per query type
     _ADAPTIVE_WEIGHTS = {
-        "drug":       (0.45, 0.55),  # drug names are exact keywords → BM25-heavy
+        "drug": (0.45, 0.55),  # drug names are exact keywords → BM25-heavy
         "definition": (0.80, 0.20),  # semantic understanding → dense-heavy
-        "symptom":    (0.65, 0.35),  # balanced but slightly dense-heavy
+        "symptom": (0.65, 0.35),  # balanced but slightly dense-heavy
         "comparison": (0.80, 0.20),  # conceptual similarity → dense-heavy
-        "default":    (0.70, 0.30),  # baseline (matches old hard-coded values)
+        "default": (0.70, 0.30),  # baseline (matches old hard-coded values)
     }
 
     def _detect_query_type(self, query: str) -> str:
@@ -339,7 +333,7 @@ class HybridRetriever:
         """Tokenize text for BM25, handling medical terms and punctuation."""
         text = text.lower()
         # Keep hyphens in compounds (e.g. "non-insulin") but remove other punctuation
-        text = re.sub(r'[^\w\s\-]', ' ', text)
+        text = re.sub(r"[^\w\s\-]", " ", text)
         tokens = text.split()
         return [t for t in tokens if len(t) >= 2]
 
@@ -357,9 +351,7 @@ class HybridRetriever:
             ):
                 similarity = 1 - distance
                 doc_id = (
-                    ids[idx]
-                    if idx < len(ids)
-                    else _stable_doc_id(doc, metadata.get("source", ""))
+                    ids[idx] if idx < len(ids) else _stable_doc_id(doc, metadata.get("source", ""))
                 )
                 documents.append((doc, float(similarity), metadata, doc_id))
         return documents
@@ -379,9 +371,7 @@ class HybridRetriever:
         results = self.vector_store.search(query_embedding.tolist(), n_results=k)
         return self._format_dense_results(results)
 
-    def _sparse_retrieve(
-        self, query: str, k: int
-    ) -> List[Tuple[str, float, Dict, str]]:
+    def _sparse_retrieve(self, query: str, k: int) -> List[Tuple[str, float, Dict, str]]:
         """
         Perform sparse BM25 retrieval.
         Returns list of (content, score, metadata, doc_id) tuples.
@@ -523,9 +513,11 @@ class HybridRetriever:
                 documents = [
                     RetrievedDocument(
                         content=d.text if hasattr(d, "text") else d.content,
-                        source=d.metadata.get("source", "unknown")
-                        if hasattr(d, "metadata")
-                        else "unknown",
+                        source=(
+                            d.metadata.get("source", "unknown")
+                            if hasattr(d, "metadata")
+                            else "unknown"
+                        ),
                         score=d.score if hasattr(d, "score") else 0.0,
                         metadata=d.metadata if hasattr(d, "metadata") else {},
                         doc_id=getattr(d, "doc_id", ""),
@@ -564,9 +556,7 @@ class HybridRetriever:
             documents = [d for d in documents if d.score >= self.min_score]
             dropped = before - len(documents)
             if dropped:
-                logger.debug(
-                    f"Score threshold {self.min_score}: dropped {dropped}/{before} docs"
-                )
+                logger.debug(f"Score threshold {self.min_score}: dropped {dropped}/{before} docs")
 
         # Context window expansion (small-to-big retrieval).
         # Each retrieved chunk is expanded with surrounding sentences so the LLM
@@ -582,7 +572,8 @@ class HybridRetriever:
     def _sentence_split(text: str) -> List[str]:
         """Split text into sentences on . ! ? boundaries."""
         import re as _re
-        parts = _re.split(r'(?<=[.!?])\s+', text.strip())
+
+        parts = _re.split(r"(?<=[.!?])\s+", text.strip())
         return [p for p in parts if p]
 
     def _expand_context_windows(
@@ -617,9 +608,7 @@ class HybridRetriever:
             neighbour_range = range(max(0, idx - 1), min(len(self.corpus), idx + 2))
             all_sentences: List[str] = []
             for ni in neighbour_range:
-                all_sentences.extend(
-                    self._sentence_split(self.corpus[ni].get("content", ""))
-                )
+                all_sentences.extend(self._sentence_split(self.corpus[ni].get("content", "")))
 
             # Find the sentences that belong to this chunk, then take ±n around them
             chunk_sentences = self._sentence_split(doc.content)
@@ -629,12 +618,16 @@ class HybridRetriever:
 
             try:
                 first_idx = next(
-                    i for i, s in enumerate(all_sentences)
-                    if chunk_sentences[0][:40] in s
+                    i for i, s in enumerate(all_sentences) if chunk_sentences[0][:40] in s
                 )
-                last_idx = len(all_sentences) - 1 - next(
-                    i for i, s in enumerate(reversed(all_sentences))
-                    if chunk_sentences[-1][:40] in s
+                last_idx = (
+                    len(all_sentences)
+                    - 1
+                    - next(
+                        i
+                        for i, s in enumerate(reversed(all_sentences))
+                        if chunk_sentences[-1][:40] in s
+                    )
                 )
                 start = max(0, first_idx - n)
                 end = min(len(all_sentences), last_idx + n + 1)
@@ -683,9 +676,7 @@ class HybridRetriever:
         safe, flagged = [], []
         for doc in documents:
             content_lower = doc.content.lower()
-            is_harmful = any(
-                p.search(content_lower) for p in self._HARMFUL_PATTERNS_RE
-            )
+            is_harmful = any(p.search(content_lower) for p in self._HARMFUL_PATTERNS_RE)
             if is_harmful:
                 doc.metadata["safety_flagged"] = True
                 logger.debug(f"Safety-flagged retrieved chunk from '{doc.source}'")

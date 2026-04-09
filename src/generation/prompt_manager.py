@@ -3,19 +3,23 @@ Prompt management for medical question answering.
 
 Uses TinyLlama chat template format for proper instruction following.
 """
-from typing import List, Dict, Optional
+
 from dataclasses import dataclass
+from typing import Dict, List, Optional
+
 
 @dataclass
 class PromptTemplate:
     """A prompt template with formatting."""
+
     template: str
     name: str
     description: str
 
+
 class MedicalPromptManager:
     """Manage prompts for medical QA."""
-    
+
     MEDICAL_QA_PROMPT = (
         "<|system|>\n"
         "You are a medical fact extractor. Read the REFERENCE TEXT and answer the question.\n"
@@ -87,21 +91,21 @@ class MedicalPromptManager:
             "medical_qa": PromptTemplate(
                 template=self.MEDICAL_QA_PROMPT,
                 name="Medical QA",
-                description="Strict context-grounded medical QA prompt"
+                description="Strict context-grounded medical QA prompt",
             ),
             "explainable": PromptTemplate(
                 template=self.EXPLAINABLE_QA_PROMPT,
                 name="Explainable QA",
-                description="Context-grounded prompt with citation requests"
+                description="Context-grounded prompt with citation requests",
             ),
             "simple": PromptTemplate(
                 template=self.SIMPLE_QA_PROMPT,
                 name="Simple QA",
-                description="Minimal strict-grounding prompt for fast responses"
-            )
+                description="Minimal strict-grounding prompt for fast responses",
+            ),
         }
         self.default_prompt = default_prompt
-    
+
     def build_prompt(
         self,
         question: str,
@@ -120,39 +124,32 @@ class MedicalPromptManager:
             )
         else:
             template = self.templates.get(template_name, self.templates["medical_qa"])
-            prompt = template.template.format(
-                question=question,
-                context=context
-            )
-        
+            prompt = template.template.format(question=question, context=context)
+
         if additional_instructions:
             prompt += f"\n\nAdditional instructions: {additional_instructions}"
-        
+
         return prompt
-    
-    def build_context_from_documents(
-        self,
-        documents: List[Dict],
-        max_length: int = 2000
-    ) -> str:
+
+    def build_context_from_documents(self, documents: List[Dict], max_length: int = 2000) -> str:
         """Build context string from retrieved documents."""
         context_parts = []
         total_length = 0
-        
+
         for i, doc in enumerate(documents):
             content = doc.get("content", str(doc))
             source = doc.get("source", f"Source {i+1}")
-            
+
             entry = f"[{source}]: {content}"
-            
+
             if total_length + len(entry) > max_length:
                 break
-            
+
             context_parts.append(entry)
             total_length += len(entry)
-        
+
         return "\n\n".join(context_parts)
-    
+
     def get_medical_disclaimer(self) -> str:
         """Get the standard medical disclaimer."""
         return (
@@ -163,11 +160,7 @@ class MedicalPromptManager:
             "condition. Never disregard professional medical advice or delay in "
             "seeking it because of something you have read here."
         )
-    
+
     def add_template(self, name: str, template: str, description: str = ""):
         """Add a custom prompt template."""
-        self.templates[name] = PromptTemplate(
-            template=template,
-            name=name,
-            description=description
-        )
+        self.templates[name] = PromptTemplate(template=template, name=name, description=description)

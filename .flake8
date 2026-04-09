@@ -1,0 +1,22 @@
+[flake8]
+max-line-length = 100
+extend-ignore =
+    # Black compatibility — Black formats slices as x[1 : 2], flake8 wants x[1:2]
+    E203,
+    # Line too long — Black handles this
+    E501,
+    # Line break before binary operator — Black style
+    W503,
+    # Module level import not at top — expected in files that manipulate sys.path
+    E402,
+    # Missing whitespace around arithmetic — Black handles spacing
+    E226,
+    # Trailing whitespace — pre-commit or editor should handle this, not flake8
+    W291,
+    W293,
+per-file-ignores =
+    # API entry points manipulate sys.path before imports
+    api/main.py: E402
+    api/demo_server.py: E402
+    # Test files use wildcard and conditional imports
+    tests/*: F401, F811

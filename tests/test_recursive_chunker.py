@@ -7,14 +7,15 @@ Validates:
 - Overlap prepends tail of previous chunk
 - Empty / tiny documents are handled gracefully
 """
+
 import pytest
 
-from src.data_pipeline.preprocessors.chunker import RecursiveSentenceChunker, Chunk
-
+from src.data_pipeline.preprocessors.chunker import Chunk, RecursiveSentenceChunker
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def chunker():
@@ -24,6 +25,7 @@ def chunker():
 # ---------------------------------------------------------------------------
 # Sentence boundary tests
 # ---------------------------------------------------------------------------
+
 
 def test_no_chunk_ends_mid_sentence(chunker):
     """Every chunk must end at a sentence boundary (period, !, ?) or be the last chunk."""
@@ -43,9 +45,7 @@ def test_no_chunk_ends_mid_sentence(chunker):
     for chunk in chunks[:-1]:  # last chunk may naturally end without punctuation
         # The content (stripped of overlap prefix) should end with punctuation
         text = chunk.content.rstrip()
-        assert text[-1] in ".!?;", (
-            f"Chunk ends mid-sentence: '...{text[-60:]}'"
-        )
+        assert text[-1] in ".!?;", f"Chunk ends mid-sentence: '...{text[-60:]}'"
 
 
 def test_chunks_contain_no_empty_strings(chunker):
@@ -60,11 +60,15 @@ def test_chunks_contain_no_empty_strings(chunker):
 # Domain-adaptive sizes
 # ---------------------------------------------------------------------------
 
-@pytest.mark.parametrize("source,expected_max_chars", [
-    ("PubMedQA_labeled", 256 * 4 + 50),    # 1024 + overlap buffer
-    ("MedMCQA_train",    128 * 4 + 50),    # 512 + overlap buffer
-    ("HealthCareMagic",  512 * 4 + 50),    # 2048 + overlap buffer
-])
+
+@pytest.mark.parametrize(
+    "source,expected_max_chars",
+    [
+        ("PubMedQA_labeled", 256 * 4 + 50),  # 1024 + overlap buffer
+        ("MedMCQA_train", 128 * 4 + 50),  # 512 + overlap buffer
+        ("HealthCareMagic", 512 * 4 + 50),  # 2048 + overlap buffer
+    ],
+)
 def test_domain_adaptive_chunk_size(source, expected_max_chars):
     """Chunks for a given domain source should not exceed the domain size (+overlap)."""
     # Build a text that is definitely larger than any single domain size
@@ -86,6 +90,7 @@ def test_domain_adaptive_chunk_size(source, expected_max_chars):
 # ---------------------------------------------------------------------------
 # Edge cases
 # ---------------------------------------------------------------------------
+
 
 def test_empty_content_returns_no_chunks(chunker):
     doc = {"content": "", "source": "test"}

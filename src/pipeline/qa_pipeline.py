@@ -9,16 +9,18 @@ Enhanced with:
 - Optional factual consistency check (post-generation)
 - Cache context key including model/pipeline/KB fingerprint
 """
-from loguru import logger
+
 import sys
-import re
 from pathlib import Path
+
+from loguru import logger
+
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from typing import List, Dict, Optional
-from dataclasses import dataclass, field
 import asyncio
 import time
+from dataclasses import dataclass
+from typing import Dict, List, Optional
 
 # Import configuration
 try:
@@ -51,6 +53,7 @@ except ImportError:
 @dataclass
 class QAResponse:
     """Complete response from the QA pipeline."""
+
     question: str
     answer: str
     sources: List[Dict]
@@ -62,14 +65,14 @@ class QAResponse:
     from_cache: bool = False
     factual_consistency: Optional[Dict] = None
     confidence_breakdown: Optional[Dict] = None  # 5-signal XAI breakdown
-    hallucination: Optional[Dict] = None          # NLI-based hallucination result
+    hallucination: Optional[Dict] = None  # NLI-based hallucination result
     stage_latencies: Optional[Dict[str, float]] = None  # per-stage wall-clock ms
 
 
 class HealthcareQAPipeline:
     """
     Main pipeline orchestrating retrieval, generation, and XAI.
-    
+
     Stages (each skippable when component is None):
       1. Query enhancement (pre-retrieval)
       2. Retrieval (+ reranking inside HybridRetriever)
@@ -81,12 +84,12 @@ class HealthcareQAPipeline:
       8. Source attribution & confidence scoring
       9. Cache response
     """
-    
+
     UNANSWERABLE_RESPONSE = (
         "I don't have enough information in my knowledge base to answer this question accurately. "
         "Please consult a healthcare professional for specific medical advice."
     )
-    
+
     def __init__(
         self,
         retriever,
@@ -114,7 +117,7 @@ class HealthcareQAPipeline:
         self.confidence_scorer = confidence_scorer
         self.source_attributor = source_attributor
         self.rationale_generator = rationale_generator
-        
+
         # MCP Configuration
         self.enable_mcp_search = False
         self.mcp_search_cmd = "npx"
@@ -122,15 +125,17 @@ class HealthcareQAPipeline:
         if config and hasattr(config, "pipeline"):
             self.enable_mcp_search = getattr(config.pipeline, "enable_mcp_search", False)
             self.mcp_search_cmd = getattr(config.pipeline, "mcp_search_cmd", "npx")
-            self.mcp_search_args = getattr(config.pipeline, "mcp_search_args", "-y @modelcontextprotocol/server-brave-search")
-        
+            self.mcp_search_args = getattr(
+                config.pipeline, "mcp_search_args", "-y @modelcontextprotocol/server-brave-search"
+            )
+
         # Enhanced pipeline components
         self.query_enhancer = query_enhancer
         self.context_compressor = context_compressor
         self.corrective_rag = corrective_rag
         self.factual_consistency_checker = factual_consistency_checker
         self.cache_context_key = cache_context_key
-        
+
         # Initialize rationale generator if not provided but class is available
         if self.rationale_generator is None and RationaleGenerator is not None and self.llm:
             self.rationale_generator = RationaleGenerator(self.llm)
@@ -140,61 +145,81 @@ class HealthcareQAPipeline:
         _platt_params = None
         try:
             import json as _json
-            _cal_path = Path(__file__).parent.parent.parent / "evaluation" / "results" / "calibration.json"
+
+            _cal_path = (
+                Path(__file__).parent.parent.parent / "evaluation" / "results" / "calibration.json"
+            )
             if _cal_path.exists():
                 _cal = _json.loads(_cal_path.read_text())
                 if "platt_a" in _cal and "platt_b" in _cal:
                     _platt_params = {"a": float(_cal["platt_a"]), "b": float(_cal["platt_b"])}
-                    logger.info(f"Loaded Platt calibration: a={_platt_params['a']:.3f}, b={_platt_params['b']:.3f}")
+                    logger.info(
+                        f"Loaded Platt calibration: a={_platt_params['a']:.3f}, b={_platt_params['b']:.3f}"
+                    )
         except Exception as e:
             logger.warning(f"Could not load calibration params, using defaults: {e}")
         self.multi_signal_scorer = (
             MultiSignalConfidenceScorer(calibration_params=_platt_params)
-            if MultiSignalConfidenceScorer else None
+            if MultiSignalConfidenceScorer
+            else None
         )
 
         # Hallucination detector with DeBERTa NLI enabled (model cached locally)
-        self.hallucination_detector = HallucinationDetector(use_nli=True) if HallucinationDetector else None
+        self.hallucination_detector = (
+            HallucinationDetector(use_nli=True) if HallucinationDetector else None
+        )
 
         # Load from config with fallbacks
-        pipeline_config = getattr(config, 'pipeline', None) if config else None
-        
-        self.enable_grounding_gate = enable_grounding_gate if enable_grounding_gate is not None else (
-            getattr(pipeline_config, 'enable_grounding_gate', True) if pipeline_config else True
+        pipeline_config = getattr(config, "pipeline", None) if config else None
+
+        self.enable_grounding_gate = (
+            enable_grounding_gate
+            if enable_grounding_gate is not None
+            else (
+                getattr(pipeline_config, "enable_grounding_gate", True) if pipeline_config else True
+            )
         )
-        self.min_retrieval_score = min_retrieval_score if min_retrieval_score is not None else (
-            getattr(pipeline_config, 'min_retrieval_score', 0.3) if pipeline_config else 0.3
+        self.min_retrieval_score = (
+            min_retrieval_score
+            if min_retrieval_score is not None
+            else (getattr(pipeline_config, "min_retrieval_score", 0.3) if pipeline_config else 0.3)
         )
-        self.min_relevant_docs = min_relevant_docs if min_relevant_docs is not None else (
-            getattr(pipeline_config, 'min_relevant_docs', 1) if pipeline_config else 1
+        self.min_relevant_docs = (
+            min_relevant_docs
+            if min_relevant_docs is not None
+            else (getattr(pipeline_config, "min_relevant_docs", 1) if pipeline_config else 1)
         )
         # Adaptive thresholds
-        self.adaptive_threshold_ratio = getattr(pipeline_config, 'adaptive_threshold_ratio', 0.5) if pipeline_config else 0.5
-        self.absolute_score_floor = getattr(pipeline_config, 'absolute_score_floor', 0.01) if pipeline_config else 0.01
-        
+        self.adaptive_threshold_ratio = (
+            getattr(pipeline_config, "adaptive_threshold_ratio", 0.5) if pipeline_config else 0.5
+        )
+        self.absolute_score_floor = (
+            getattr(pipeline_config, "absolute_score_floor", 0.01) if pipeline_config else 0.01
+        )
+
         # Initialize cache manager
         self.cache_manager = cache_manager
         if self.cache_manager is None and CacheManager is not None:
-            if pipeline_config and getattr(pipeline_config, 'enable_response_cache', False):
+            if pipeline_config and getattr(pipeline_config, "enable_response_cache", False):
                 self.cache_manager = CacheManager(
-                    cache_dir=getattr(pipeline_config, 'cache_dir', 'data/cache'),
-                    ttl_seconds=getattr(pipeline_config, 'cache_ttl_seconds', 3600),
-                    max_memory_items=getattr(pipeline_config, 'max_cache_items', 1000)
+                    cache_dir=getattr(pipeline_config, "cache_dir", "data/cache"),
+                    ttl_seconds=getattr(pipeline_config, "cache_ttl_seconds", 3600),
+                    max_memory_items=getattr(pipeline_config, "max_cache_items", 1000),
                 )
-    
+
     def answer(
         self,
         question: str,
         num_documents: int = 5,
         include_explanation: bool = True,
         template_name: str = "medical_qa",
-        conversation_context: str = None
+        conversation_context: str = None,
     ) -> QAResponse:
         """
         Answer a medical question with explanations.
-        
+
         Full pipeline: enhance → retrieve → correct → gate → compress → generate → verify.
-        
+
         Args:
             question: The user's question.
             num_documents: Number of documents to retrieve.
@@ -207,6 +232,7 @@ class HealthcareQAPipeline:
         context_hash = ""
         if conversation_context:
             import hashlib
+
             context_hash = "_ctx" + hashlib.md5(conversation_context.encode()).hexdigest()[:8]
         dynamic_context_key = f"{self.cache_context_key}_srcs{num_documents}_expl{include_explanation}_{template_name}{context_hash}"
 
@@ -221,18 +247,18 @@ class HealthcareQAPipeline:
             )
             if cached:
                 return QAResponse(
-                    question=cached.get('question', question),
-                    answer=cached.get('answer', ''),
-                    sources=cached.get('sources', []),
-                    confidence=cached.get('confidence', {}),
-                    attributions=cached.get('attributions', []),
-                    disclaimer=cached.get('disclaimer', ''),
-                    rationale=cached.get('rationale', None),
-                    is_answerable=cached.get('is_answerable', True),
+                    question=cached.get("question", question),
+                    answer=cached.get("answer", ""),
+                    sources=cached.get("sources", []),
+                    confidence=cached.get("confidence", {}),
+                    attributions=cached.get("attributions", []),
+                    disclaimer=cached.get("disclaimer", ""),
+                    rationale=cached.get("rationale", None),
+                    is_answerable=cached.get("is_answerable", True),
                     from_cache=True,
-                    factual_consistency=cached.get('factual_consistency', None),
+                    factual_consistency=cached.get("factual_consistency", None),
                 )
-        
+
         # 1. QUERY ENHANCEMENT (pre-retrieval)
         _s = time.perf_counter()
         retrieval_query = question
@@ -245,7 +271,7 @@ class HealthcareQAPipeline:
             try:
                 enhanced = self.query_enhancer.enhance(question)
                 # enhance() returns an EnhancedQuery dataclass with .all_queries
-                if hasattr(enhanced, 'all_queries') and enhanced.all_queries:
+                if hasattr(enhanced, "all_queries") and enhanced.all_queries:
                     retrieval_query = enhanced.all_queries[0]
                 elif isinstance(enhanced, str) and enhanced:
                     retrieval_query = enhanced
@@ -255,16 +281,13 @@ class HealthcareQAPipeline:
 
         # 2. RETRIEVE relevant documents
         _s = time.perf_counter()
-        documents, context = self.retriever.retrieve_with_context(
-            retrieval_query,
-            k=num_documents
-        )
+        documents, context = self.retriever.retrieve_with_context(retrieval_query, k=num_documents)
         _t["retrieval_ms"] = (time.perf_counter() - _s) * 1000
         # Merge per-stage retriever timings (dense, sparse, rrf, rerank sub-ms)
         if hasattr(self.retriever, "last_timings") and self.retriever.last_timings:
             for sub_key, sub_val in self.retriever.last_timings.items():
                 _t[f"retrieval_{sub_key}"] = sub_val
-        
+
         # 3. CORRECTIVE RAG (post-retrieval quality check)
         _s = time.perf_counter()
         if self.corrective_rag and documents:
@@ -294,52 +317,61 @@ class HealthcareQAPipeline:
         is_answerable = True
         if self.enable_grounding_gate:
             is_answerable = self._check_answerability(documents)
-        
+
         if not is_answerable:
             # Fallback to MCP Search if enabled
             if self.enable_mcp_search:
                 logger.info("Local knowledge insufficient. Falling back to MCP Web Search...")
                 try:
                     from src.mcp_client.agent import execute_mcp_tool_oneshot
-                    
+
                     mcp_args = self.mcp_search_args.split(" ")
                     coro = execute_mcp_tool_oneshot(
                         server_cmd=self.mcp_search_cmd,
                         server_args=mcp_args,
                         tool_name="brave_web_search",
-                        tool_args={"query": question, "count": 3}
+                        tool_args={"query": question, "count": 3},
                     )
-                    
+
                     # Safe async execution: handle both sync and async calling contexts.
                     # asyncio.run() crashes inside FastAPI because the event loop is already running.
                     try:
-                        loop = asyncio.get_running_loop()
+                        asyncio.get_running_loop()
                         # We're inside an async context (e.g. FastAPI) — use a new thread
                         import concurrent.futures
+
                         with concurrent.futures.ThreadPoolExecutor() as pool:
                             mcp_result = pool.submit(asyncio.run, coro).result(timeout=30)
                     except RuntimeError:
                         # No event loop running — safe to use asyncio.run()
                         mcp_result = asyncio.run(coro)
-                    
+
                     if mcp_result and not mcp_result.startswith("[MCP Error"):
                         context = f"CONTEXT FROM LIVE WEB SEARCH:\n{mcp_result}"
                         is_answerable = True
                         # Build a complete document object that matches the interface
                         # downstream code expects: .source, .content, .score, .metadata
-                        mcp_doc = type('MCPDocument', (object,), {
-                            'source': 'MCP Web Search',
-                            'content': context[:500],
-                            'score': 0.5,  # lower than KB docs — web results are less curated
-                            'metadata': {'url': '', 'source': 'MCP Web Search', 'source_type': 'mcp_web_search'}
-                        })()
+                        mcp_doc = type(
+                            "MCPDocument",
+                            (object,),
+                            {
+                                "source": "MCP Web Search",
+                                "content": context[:500],
+                                "score": 0.5,  # lower than KB docs — web results are less curated
+                                "metadata": {
+                                    "url": "",
+                                    "source": "MCP Web Search",
+                                    "source_type": "mcp_web_search",
+                                },
+                            },
+                        )()
                         documents = [mcp_doc]
                         logger.info("MCP Web Search succeeded")
                     else:
                         logger.warning(f"MCP Web Search failed or returned nothing: {mcp_result}")
                 except Exception as e:
                     logger.warning(f"MCP Web Search exception: {e}")
-                    
+
             # If still not answerable after MCP fallback attempt
             if not is_answerable:
                 disclaimer = self.prompt_manager.get_medical_disclaimer()
@@ -350,14 +382,14 @@ class HealthcareQAPipeline:
                     confidence={
                         "score": 0.0,
                         "level": "low",
-                        "explanation": "Insufficient relevant context found in knowledge base and web search"
+                        "explanation": "Insufficient relevant context found in knowledge base and web search",
                     },
                     attributions=[],
                     disclaimer=disclaimer,
                     rationale=None,
-                    is_answerable=False
+                    is_answerable=False,
                 )
-        
+
         # 5. CONTEXT COMPRESSION (before generation)
         generation_context = context
         if self.context_compressor:
@@ -373,7 +405,7 @@ class HealthcareQAPipeline:
                     )
             except Exception as e:
                 logger.warning(f"Context compression failed, using full context: {e}")
-        
+
         # 6. BUILD PROMPT & GENERATE ANSWER
         _s = time.perf_counter()
         prompt = self.prompt_manager.build_prompt(
@@ -382,13 +414,11 @@ class HealthcareQAPipeline:
             template_name=template_name,
             model_name=getattr(self.llm, "model_name", None),
         )
-        
+
         generation_result = self.llm.generate(
-            prompt,
-            max_new_tokens=512,
-            return_probabilities=include_explanation
+            prompt, max_new_tokens=512, return_probabilities=include_explanation
         )
-        
+
         answer = self._clean_answer(generation_result.response)
         _t["generation_ms"] = (time.perf_counter() - _s) * 1000
 
@@ -397,25 +427,26 @@ class HealthcareQAPipeline:
         if self.factual_consistency_checker and answer:
             try:
                 fc = self.factual_consistency_checker.check_consistency(
-                    answer=answer,
-                    context=context
+                    answer=answer, context=context
                 )
                 factual_result = {
-                    "is_consistent": fc.is_consistent if hasattr(fc, 'is_consistent') else True,
-                    "score": fc.consistency_score if hasattr(fc, 'consistency_score') else 1.0,
-                    "details": [vars(c) if hasattr(c, '__dict__') else c for c in fc.claim_results] if hasattr(fc, 'claim_results') else [],
+                    "is_consistent": fc.is_consistent if hasattr(fc, "is_consistent") else True,
+                    "score": fc.consistency_score if hasattr(fc, "consistency_score") else 1.0,
+                    "details": (
+                        [vars(c) if hasattr(c, "__dict__") else c for c in fc.claim_results]
+                        if hasattr(fc, "claim_results")
+                        else []
+                    ),
                 }
             except Exception as e:
                 logger.warning(f" Factual consistency check failed: {e}")
-        
+
         # 7b. HALLUCINATION DETECTION (DeBERTa NLI + rule-based)
         _s = time.perf_counter()
         hallucination_result = None
         if self.hallucination_detector and include_explanation and answer:
             try:
-                doc_dicts_for_hal = [
-                    {"content": doc.content} for doc in documents
-                ]
+                doc_dicts_for_hal = [{"content": doc.content} for doc in documents]
                 hal = self.hallucination_detector.detect(
                     answer=answer,
                     retrieved_documents=doc_dicts_for_hal,
@@ -470,7 +501,7 @@ class HealthcareQAPipeline:
                 confidence_result = self.confidence_scorer.calculate_confidence(
                     generation_probs=generation_result.probabilities,
                     retrieval_scores=retrieval_scores,
-                    num_sources=len(documents)
+                    num_sources=len(documents),
                 )
                 confidence = {
                     "score": confidence_result.calibrated_score,
@@ -483,7 +514,7 @@ class HealthcareQAPipeline:
                     "level": "medium",
                     "explanation": "Confidence scoring not available",
                 }
-        
+
         _t["confidence_ms"] = (time.perf_counter() - _s) * 1000
 
         # 9. SOURCE ATTRIBUTION
@@ -498,21 +529,19 @@ class HealthcareQAPipeline:
                     "claim": a.claim,
                     "source": a.source,
                     "evidence": a.evidence,
-                    "similarity": a.similarity_score
+                    "similarity": a.similarity_score,
                 }
                 for a in attributions_list
             ]
         else:
             attributions = []
-        
+
         # 10. RATIONALE
         rationale = None
         if self.rationale_generator and include_explanation:
             combined_context = "\n".join([d.content for d in documents])
             rationale = self.rationale_generator.generate_rationale(
-                question=question,
-                answer=answer,
-                context=combined_context
+                question=question, answer=answer, context=combined_context
             )
 
         # 11. BUILD SOURCE LIST
@@ -521,11 +550,11 @@ class HealthcareQAPipeline:
                 "source": doc.source,
                 "content": doc.content,
                 "score": doc.score,
-                "url": doc.metadata.get("url", "")
+                "url": doc.metadata.get("url", ""),
             }
             for doc in documents
         ]
-        
+
         disclaimer = self.prompt_manager.get_medical_disclaimer()
 
         _t["total_ms"] = (time.perf_counter() - _t0) * 1000
@@ -545,29 +574,29 @@ class HealthcareQAPipeline:
             hallucination=hallucination_result,
             stage_latencies=_t,
         )
-        
+
         # 12. CACHE THE RESPONSE (with context key)
         if self.cache_manager:
             self.cache_manager.cache_response(
                 question,
                 {
-                    'question': question,
-                    'answer': answer,
-                    'sources': sources,
-                    'confidence': confidence,
-                    'attributions': attributions,
-                    'disclaimer': disclaimer,
-                    'rationale': rationale,
-                    'is_answerable': True,
-                    'factual_consistency': factual_result,
-                    'confidence_breakdown': confidence_breakdown,
-                    'hallucination': hallucination_result,
+                    "question": question,
+                    "answer": answer,
+                    "sources": sources,
+                    "confidence": confidence,
+                    "attributions": attributions,
+                    "disclaimer": disclaimer,
+                    "rationale": rationale,
+                    "is_answerable": True,
+                    "factual_consistency": factual_result,
+                    "confidence_breakdown": confidence_breakdown,
+                    "hallucination": hallucination_result,
                 },
                 context_key=dynamic_context_key,
             )
-        
+
         return response
-    
+
     def _check_answerability(self, documents: List) -> bool:
         """
         Adaptive grounding gate: doc is relevant if
@@ -600,19 +629,16 @@ class HealthcareQAPipeline:
             return False
 
         return True
-    
+
     def _clean_answer(self, answer: str) -> str:
         """
         Pipeline-level answer cleaning to strip training data artifacts.
         Delegates to the shared text cleaning utility.
         """
         from src.utils.text_cleaning import clean_llm_response
+
         return clean_llm_response(answer)
-    
-    def batch_answer(
-        self,
-        questions: List[str],
-        **kwargs
-    ) -> List[QAResponse]:
+
+    def batch_answer(self, questions: List[str], **kwargs) -> List[QAResponse]:
         """Answer multiple questions."""
         return [self.answer(q, **kwargs) for q in questions]

@@ -4,20 +4,21 @@ LangGraph State Schema for Healthcare RAG Pipeline.
 Defines the state structure that flows through all nodes in the graph.
 Uses TypedDict with Annotated reducers for proper state accumulation.
 """
-from typing import List, Dict, Optional, Any, Annotated, Literal
-from typing_extensions import TypedDict
+
 import operator
+from typing import Annotated, Any, Dict, List, Literal, Optional
 
 from langchain_core.documents import Document
+from typing_extensions import TypedDict
 
 
 class HealthcareRAGState(TypedDict, total=False):
     """
     State schema for the Healthcare RAG graph.
-    
+
     This state flows through all nodes, each node reading what it needs
     and returning partial updates.
-    
+
     Attributes:
         question: The user's medical question
         documents: Retrieved documents from the knowledge base
@@ -34,29 +35,30 @@ class HealthcareRAGState(TypedDict, total=False):
         needs_review: Whether human review is required
         error: Any error message
     """
+
     # Input
     question: str
-    
+
     # Retrieval phase
     documents: List[Document]
     doc_grades: Annotated[List[Dict], operator.add]  # Accumulates grades
     query_history: Annotated[List[str], operator.add]  # Accumulates refined queries
     retry_count: int
-    
+
     # Generation phase
     context: str
     answer: str
-    
+
     # XAI enrichment
     confidence: Dict[str, Any]
     attributions: List[Dict]
     rationale: Optional[str]
-    
+
     # Control flow flags
     is_answerable: bool
     is_grounded: bool
     needs_review: bool
-    
+
     # Error handling
     error: Optional[str]
 
@@ -65,10 +67,10 @@ class HealthcareRAGState(TypedDict, total=False):
 def create_initial_state(question: str) -> HealthcareRAGState:
     """
     Create initial state for a new query.
-    
+
     Args:
         question: The user's medical question
-        
+
     Returns:
         Initial state with defaults set
     """
@@ -86,7 +88,7 @@ def create_initial_state(question: str) -> HealthcareRAGState:
         is_answerable=True,
         is_grounded=True,
         needs_review=False,
-        error=None
+        error=None,
     )
 
 

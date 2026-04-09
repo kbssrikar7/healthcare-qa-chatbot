@@ -4,10 +4,12 @@ Trajectory logging utilities for RL policy optimization.
 Stores response trajectories as JSONL so feedback can be linked
 to concrete state/action/outcome tuples.
 """
+
+import json
 from collections import OrderedDict
 from pathlib import Path
 from typing import Any, Dict, Optional
-import json
+
 from loguru import logger
 
 
@@ -85,4 +87,3 @@ class TrajectoryLogger:
             if len(self._recent_index) > self.max_index_size:
                 self._recent_index.popitem(last=False)
         return found
-

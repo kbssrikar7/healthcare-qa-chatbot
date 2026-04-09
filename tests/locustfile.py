@@ -12,8 +12,10 @@ Or open the Locust web UI:
     locust -f tests/locustfile.py --host http://localhost:8000
     # then open http://localhost:8089
 """
+
 import random
-from locust import HttpUser, task, between, events
+
+from locust import HttpUser, between, events, task
 from locust.runners import MasterRunner
 
 # ---------------------------------------------------------------------------
@@ -58,8 +60,11 @@ DEFAULT_QUESTIONS = [
 ]
 
 ALL_QUESTIONS = (
-    DRUG_QUESTIONS + DEFINITION_QUESTIONS +
-    SYMPTOM_QUESTIONS + COMPARISON_QUESTIONS + DEFAULT_QUESTIONS
+    DRUG_QUESTIONS
+    + DEFINITION_QUESTIONS
+    + SYMPTOM_QUESTIONS
+    + COMPARISON_QUESTIONS
+    + DEFAULT_QUESTIONS
 )
 
 
@@ -69,6 +74,7 @@ class LightweightUser(HttpUser):
     /health, /models, /feedback, /components
     Good for measuring API overhead without LLM latency.
     """
+
     wait_time = between(0.5, 2)
     weight = 3  # 3x more lightweight users than heavy users
 
@@ -112,6 +118,7 @@ class MedicalChatbotUser(HttpUser):
     - Occasional session-based follow-ups
     - Feedback submission after some answers
     """
+
     wait_time = between(2, 6)  # think time between requests
     weight = 1  # fewer heavy LLM users
     session_id: str = None
