@@ -1,0 +1,56 @@
+# Large data / model artifacts — not needed at image build time
+data/
+models/
+outputs/
+*.gguf
+*.bin
+*.safetensors
+*.pt
+*.pth
+*.pkl
+
+# Vector store (rebuilt at runtime)
+chroma_db/
+*.index
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Dev / editor
+.git/
+.github/
+.venv/
+venv/
+env/
+.env
+*.env
+.DS_Store
+*.swp
+*.swo
+
+# Jupyter / research
+*.ipynb
+paper/
+notebooks/
+images/
+evaluation/figures/
+evaluation/results/
+
+# Test artifacts
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# CI config
+.flake8
+.pre-commit-config.yaml
+AUDIT_AND_REMEDIATION_PLAN.md
