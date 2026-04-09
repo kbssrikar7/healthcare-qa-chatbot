@@ -20,7 +20,9 @@ ANSWER_PREFIXES = [
 
 # Patterns that are ALWAYS truncated wherever they appear (min_pos=0).
 # These indicate exam-format leakage from MedMCQA / board-exam context chunks.
+# Always truncated at any position — definitive exam/dataset leakage markers.
 AGGRESSIVE_STOP_PATTERNS = [
+    # MedMCQA board-exam format
     r"Per the (?:Joint National|American Heart|WHO|CDC|European)",
     r"of the following (?:combinations|options|choices|drugs|statements)",
     r"[Ww]hich (?:of the following|can be considered|is the most effective|is the best)",
@@ -28,14 +30,22 @@ AGGRESSIVE_STOP_PATTERNS = [
     r"[Hh]is (?:temperature|blood pressure|pulse|heart rate) is \d",
     r"[Hh]er (?:temperature|blood pressure|pulse|heart rate) is \d",
     r"(?:^|\n)###\s*(?:Question|Answer|Q|A)\s*:",
-]
-
-# Patterns indicating leaked training data, new Q&A, or sign-offs.
-# If found beyond min_match_pos, the response is truncated there.
-STOP_PATTERNS = [
-    # Board-exam / MedMCQA leakage — catch with or without preceding newline
-    r"(?:\n|\.\s+|\?\s+)(?:Question|Q)\s*:",
-    r"(?:\n|\.\s+|\?\s+)Answer\s*:",
+    # HealthCareMagic / ChatDoctor sign-off loops — cut wherever they appear
+    r"[Tt]hank(?:s| you) for (?:your|the) (?:question|query|message|email|time|concern)",
+    r"[Tt]hank(?:s| you) for (?:choosing|using|reaching out|contacting|writing|asking)",
+    r"I hope this ",
+    r"I hope (?:I have|I've|that) (?:helps|helped|answered|answers|clarified)",
+    r"[Ll]et me know if (?:you have|I can|there)",
+    r"[Ff]eel free to (?:ask|reach out|contact)",
+    r"If you have any further questions",
+    r"please do not hesitate",
+    r"don't hesitate to ask",
+    r"Chat\s*Doctor",
+    r"ChatDoctor",
+    r"HealthCareMagic",
+    r"### End of Chat",
+    r"Take care[,\.]",
+    r"\bRegards[,\.]",
     r"Best regards",
     r"Kind regards",
     r"Sincerely",
@@ -43,28 +53,21 @@ STOP_PATTERNS = [
     r"Warm regards",
     r"With best wishes",
     r"\[Your Name\]",
-    r"[Doctor'?s? Name]",
-    r"Chat Doctor",
-    r"ChatDoctor",
-    r"HealthCareMagic",
+]
+
+# Truncated only after min_match_pos characters of real content.
+STOP_PATTERNS = [
+    # Board-exam Q&A continuation
+    r"(?:\n|\.\s+|\?\s+)(?:Question|Q)\s*:",
+    r"(?:\n|\.\s+|\?\s+)Answer\s*:",
+    # Repetitive summary phrases
     r"\bIn conclusion[,\s]",
     r"\bTo summarize[,\s]",
     r"\bIn summary[,\s]",
     r"[Tt]he (?:patient|physician|doctor) should\b",
     r"[Tt]his patient should\b",
     r"[Tt]herefore, (?:the|this)",
-    r"[Tt]hank(?:s| you) for (?:your|the) (?:question|query|message|email|time|concern)",
-    r"[Tt]hank(?:s| you) for (?:choosing|using|reaching out|contacting|writing|asking)",
-    r"If you have any further questions",
-    r"please do not hesitate",
-    r"don't hesitate to ask",
-    r"I hope this ",
-    r"I hope (?:I have|I've|that) (?:helps|helped|answered|answers|clarified)",
-    r"[Ll]et me know if (?:you have|I can|there)",
-    r"[Ff]eel free to (?:ask|reach out|contact)",
     r"Wishing you (?:good|the best)",
-    r"[Pp]lease (?:consult|see|visit) (?:your|a) (?:doctor|physician|healthcare)",
-    r"Take care",
     r"\nHi,?\s",
     r"\nHello,?\s",
     r"\nDear ",
