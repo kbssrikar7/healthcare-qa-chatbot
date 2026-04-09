@@ -143,7 +143,11 @@ class LangGraphHealthcareQAPipeline:
         builder.add_conditional_edges(
             "grade",
             route_after_grading,
-            {"generate": "generate", "refine": "refine", "unanswerable": "unanswerable"},
+            {
+                "generate": "generate",
+                "refine": "refine",
+                "unanswerable": "unanswerable",
+            },
         )
 
         # After verification: re-route to refine if not grounded, else proceed

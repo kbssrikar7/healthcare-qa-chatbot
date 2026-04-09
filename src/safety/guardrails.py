@@ -203,7 +203,10 @@ This chatbot cannot provide emergency medical assistance.
             )
 
         return SafetyCheckResult(
-            level=SafetyLevel.SAFE, passed=True, flags=[], message="Input passed safety checks"
+            level=SafetyLevel.SAFE,
+            passed=True,
+            flags=[],
+            message="Input passed safety checks",
         )
 
     def check_output(self, text: str) -> SafetyCheckResult:
@@ -248,7 +251,10 @@ This chatbot cannot provide emergency medical assistance.
             )
 
         return SafetyCheckResult(
-            level=SafetyLevel.SAFE, passed=True, flags=[], message="Output passed safety checks"
+            level=SafetyLevel.SAFE,
+            passed=True,
+            flags=[],
+            message="Output passed safety checks",
         )
 
     def add_disclaimer(self, text: str, level: SafetyLevel) -> str:
@@ -297,7 +303,10 @@ class ContentFilter:
 
         for pattern in self.blocked_patterns:
             if pattern.search(text_lower):
-                return True, "This type of content is not supported by this medical chatbot."
+                return (
+                    True,
+                    "This type of content is not supported by this medical chatbot.",
+                )
 
         return False, None
 
@@ -324,7 +333,12 @@ class EmergencyDetector:
             "sudden numbness",
             "sudden confusion",
         ],
-        "allergic": ["anaphylaxis", "throat swelling", "can't swallow", "severe allergic"],
+        "allergic": [
+            "anaphylaxis",
+            "throat swelling",
+            "can't swallow",
+            "severe allergic",
+        ],
         "mental": ["suicide", "suicidal", "want to die", "kill myself", "end my life"],
         "trauma": [
             "severe bleeding",
@@ -439,7 +453,15 @@ class DrugInteractionChecker:
             "Metformin + alcohol/contrast can cause lactic acidosis",
         ),
         (
-            {"ssri", "antidepressant", "prozac", "zoloft", "lexapro", "paxil", "celexa"},
+            {
+                "ssri",
+                "antidepressant",
+                "prozac",
+                "zoloft",
+                "lexapro",
+                "paxil",
+                "celexa",
+            },
             {"maoi", "tramadol", "fentanyl", "meperidine"},
             "severe",
             "SSRIs + MAOIs/opioids can cause serotonin syndrome",
@@ -519,7 +541,12 @@ class DrugInteractionChecker:
         text_lower = text.lower()
         warnings = []
 
-        for drug_set_1, drug_set_2, severity, description in self.HIGH_RISK_INTERACTIONS:
+        for (
+            drug_set_1,
+            drug_set_2,
+            severity,
+            description,
+        ) in self.HIGH_RISK_INTERACTIONS:
             found_1 = [
                 drug
                 for drug in drug_set_1

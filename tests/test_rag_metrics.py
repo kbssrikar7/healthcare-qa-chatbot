@@ -5,8 +5,6 @@ Unit tests for RAG metrics module.
 import sys
 from pathlib import Path
 
-import pytest
-
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.utils.rag_metrics import (
@@ -17,7 +15,6 @@ from src.utils.rag_metrics import (
     calculate_ndcg_at_k,
     calculate_precision_at_k,
     calculate_recall_at_k,
-    calculate_retrieval_metrics,
 )
 
 

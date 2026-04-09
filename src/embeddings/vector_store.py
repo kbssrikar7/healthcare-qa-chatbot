@@ -184,7 +184,12 @@ class VectorStore:
                 self.collection.add(
                     ids=[sentinel_id],
                     documents=["__embedding_metadata_sentinel__"],
-                    metadatas=[{"embedding_model": model_name, "embedding_dimension": dimension}],
+                    metadatas=[
+                        {
+                            "embedding_model": model_name,
+                            "embedding_dimension": dimension,
+                        }
+                    ],
                     embeddings=[[0.0] * dimension],
                 )
         except Exception as e:
@@ -226,7 +231,10 @@ class VectorStore:
             clean_metadatas.append(clean_meta)
 
         self.collection.add(
-            ids=ids, embeddings=embeddings, documents=documents, metadatas=clean_metadatas
+            ids=ids,
+            embeddings=embeddings,
+            documents=documents,
+            metadatas=clean_metadatas,
         )
 
         return ids
@@ -292,8 +300,7 @@ class VectorStore:
             # Fallback to regular search if embeddings not available
             return self.search(query_embedding, n_results=k, filter_metadata=filter_metadata)
 
-        # Convert query to numpy
-        np.array(query_embedding)
+        # Convert doc embeddings to numpy
         doc_embeddings = np.array(embeddings)
 
         # Calculate similarity to query (convert distance to similarity)

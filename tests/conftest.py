@@ -8,7 +8,6 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional
-from unittest.mock import MagicMock, Mock
 
 import numpy as np
 import pytest
@@ -108,7 +107,8 @@ class MockLLM:
         for keyword, response in self.responses.items():
             if keyword.lower() in prompt.lower():
                 return MockGenerationResult(
-                    response=response, probabilities=[0.9] * 10 if return_probabilities else None
+                    response=response,
+                    probabilities=[0.9] * 10 if return_probabilities else None,
                 )
 
         return MockGenerationResult(

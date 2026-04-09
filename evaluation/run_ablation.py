@@ -14,7 +14,11 @@ Usage:
     python evaluation/run_ablation.py --n 15
     python evaluation/run_ablation.py --n 15 --out-dir evaluation/results
 """
-import os, sys, json, argparse, statistics
+
+import os
+import sys
+import json
+import argparse
 from pathlib import Path
 
 os.environ.setdefault("HF_HUB_OFFLINE", "1")
@@ -23,22 +27,30 @@ os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-SIGNALS = ["retrieval", "generation", "consistency", "source_agreement", "entity_coverage"]
+SIGNALS = [
+    "retrieval",
+    "generation",
+    "consistency",
+    "source_agreement",
+    "entity_coverage",
+]
 
 ABLATION_VARIANTS = {
-    "all_signals":        {s: 1.0 for s in SIGNALS},
-    "ablate_retrieval":   {s: (0.0 if s == "retrieval"       else 1.0) for s in SIGNALS},
-    "ablate_generation":  {s: (0.0 if s == "generation"      else 1.0) for s in SIGNALS},
-    "ablate_consistency": {s: (0.0 if s == "consistency"     else 1.0) for s in SIGNALS},
-    "ablate_source_agr":  {s: (0.0 if s == "source_agreement" else 1.0) for s in SIGNALS},
-    "ablate_entity_cov":  {s: (0.0 if s == "entity_coverage" else 1.0) for s in SIGNALS},
+    "all_signals": {s: 1.0 for s in SIGNALS},
+    "ablate_retrieval": {s: (0.0 if s == "retrieval" else 1.0) for s in SIGNALS},
+    "ablate_generation": {s: (0.0 if s == "generation" else 1.0) for s in SIGNALS},
+    "ablate_consistency": {s: (0.0 if s == "consistency" else 1.0) for s in SIGNALS},
+    "ablate_source_agr": {
+        s: (0.0 if s == "source_agreement" else 1.0) for s in SIGNALS
+    },
+    "ablate_entity_cov": {s: (0.0 if s == "entity_coverage" else 1.0) for s in SIGNALS},
 }
 
 SIGNAL_MAP = {
-    "retrieval":       "retrieval_confidence",
-    "generation":      "generation_confidence",
-    "consistency":     "consistency_score",
-    "source_agreement":"source_agreement",
+    "retrieval": "retrieval_confidence",
+    "generation": "generation_confidence",
+    "consistency": "consistency_score",
+    "source_agreement": "source_agreement",
     "entity_coverage": "medical_entity_coverage",
 }
 
@@ -47,6 +59,7 @@ from evaluation.eval_utils import keyword_coverage, is_correct, bootstrap_ci
 
 def recompute_conf(breakdown: dict, weights: dict) -> float:
     import numpy as np
+
     total = sum(weights.values()) or 1.0
     w = {k: v / total for k, v in weights.items()}
     raw = sum(w.get(sig, 0) * breakdown.get(SIGNAL_MAP[sig], 0.0) for sig in SIGNALS)
@@ -55,6 +68,7 @@ def recompute_conf(breakdown: dict, weights: dict) -> float:
 
 def compute_ece(confidences: list, labels: list, n_bins: int = 10) -> float:
     import numpy as np
+
     if not confidences:
         return float("nan")
     ca = np.array(confidences)
@@ -71,8 +85,12 @@ def compute_ece(confidences: list, labels: list, n_bins: int = 10) -> float:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--n", type=int, default=15,
-                        help="Number of questions to run (15 ≈ 25 min on CPU)")
+    parser.add_argument(
+        "--n",
+        type=int,
+        default=15,
+        help="Number of questions to run (15 ≈ 25 min on CPU)",
+    )
     parser.add_argument("--test-set", default="evaluation/test_set_v2.json")
     parser.add_argument("--out-dir", default="evaluation/results")
     args = parser.parse_args()
@@ -81,11 +99,12 @@ def main():
     ts_path = PROJECT_ROOT / args.test_set
     with open(ts_path) as f:
         all_cases = json.load(f)["test_cases"]
-    cases = all_cases[:args.n]
+    cases = all_cases[: args.n]
     print(f"Ablation study: {len(cases)} questions, {len(ABLATION_VARIANTS)} variants")
     print("Loading pipeline (this takes ~280s cold) …")
 
     from api.main import get_pipeline
+
     pipeline = get_pipeline("tinyllama")
     print("Pipeline loaded.\n")
 
@@ -102,15 +121,19 @@ def main():
             kw_cov = keyword_coverage(answer, kws)
             kw_label = 1 if is_correct(kw_cov) else 0
 
-            records.append({
-                "query": case["query"],
-                "answer": answer,
-                "breakdown": bd,
-                "kw_coverage": kw_cov,
-                "kw_label": kw_label,
-            })
-            print(f"  [{i}/{len(cases)}] conf_raw={bd.get('retrieval_confidence', '?'):.2f} "
-                  f"kw_cov={kw_cov:.2f}  '{case['query'][:50]}'")
+            records.append(
+                {
+                    "query": case["query"],
+                    "answer": answer,
+                    "breakdown": bd,
+                    "kw_coverage": kw_cov,
+                    "kw_label": kw_label,
+                }
+            )
+            print(
+                f"  [{i}/{len(cases)}] conf_raw={bd.get('retrieval_confidence', '?'):.2f} "
+                f"kw_cov={kw_cov:.2f}  '{case['query'][:50]}'"
+            )
         except Exception as e:
             print(f"  [{i}/{len(cases)}] ERROR: {e}")
 
@@ -129,23 +152,27 @@ def main():
         ece = compute_ece(confs, labels)
         conf_mean, conf_lo, conf_hi = bootstrap_ci(confs)
         kw_mean, kw_lo, kw_hi = bootstrap_ci(kw_covs)
-        ablation_results.append({
-            "variant": variant_name,
-            "name": variant_name,
-            "n": len(records),
-            "mean_confidence": round(conf_mean, 4),
-            "confidence_ci_95": [round(conf_lo, 4), round(conf_hi, 4)],
-            "mean_kw_coverage": round(kw_mean, 4),
-            "kw_coverage_ci_95": [round(kw_lo, 4), round(kw_hi, 4)],
-            "ece": round(ece, 4),
-        })
+        ablation_results.append(
+            {
+                "variant": variant_name,
+                "name": variant_name,
+                "n": len(records),
+                "mean_confidence": round(conf_mean, 4),
+                "confidence_ci_95": [round(conf_lo, 4), round(conf_hi, 4)],
+                "mean_kw_coverage": round(kw_mean, 4),
+                "kw_coverage_ci_95": [round(kw_lo, 4), round(kw_hi, 4)],
+                "ece": round(ece, 4),
+            }
+        )
 
     # Print table
     print(f"{'Variant':<25} {'Mean Conf':>10} {'Mean KW-Cov':>12} {'ECE':>8}")
     print("-" * 58)
     for row in ablation_results:
-        print(f"{row['variant']:<25} {row['mean_confidence']:>10.4f} "
-              f"{row['mean_kw_coverage']:>12.4f} {row['ece']:>8.4f}")
+        print(
+            f"{row['variant']:<25} {row['mean_confidence']:>10.4f} "
+            f"{row['mean_kw_coverage']:>12.4f} {row['ece']:>8.4f}"
+        )
 
     out_dir = PROJECT_ROOT / args.out_dir
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -157,11 +184,15 @@ def main():
     # Step 3: Bar chart
     try:
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
         import numpy as np
 
-        labels_x = [r["variant"].replace("ablate_", "-").replace("_", " ") for r in ablation_results]
+        labels_x = [
+            r["variant"].replace("ablate_", "-").replace("_", " ")
+            for r in ablation_results
+        ]
         x = np.arange(len(labels_x))
         confs_vals = [r["mean_confidence"] for r in ablation_results]
         ece_vals = [r["ece"] for r in ablation_results]
@@ -184,11 +215,19 @@ def main():
             bars[0].set_edgecolor("gold")
             bars[0].set_linewidth(2)
             for bar, v in zip(bars, vals):
-                ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.005,
-                        f"{v:.3f}", ha="center", va="bottom", fontsize=8)
+                ax.text(
+                    bar.get_x() + bar.get_width() / 2,
+                    bar.get_height() + 0.005,
+                    f"{v:.3f}",
+                    ha="center",
+                    va="bottom",
+                    fontsize=8,
+                )
 
-        fig.suptitle(f"Confidence Signal Ablation Study  (n={len(records)} questions)",
-                     fontsize=13)
+        fig.suptitle(
+            f"Confidence Signal Ablation Study  (n={len(records)} questions)",
+            fontsize=13,
+        )
         fig.tight_layout()
         out_path = out_dir / "ablation_plot.png"
         fig.savefig(out_path, dpi=150)

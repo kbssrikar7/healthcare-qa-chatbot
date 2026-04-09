@@ -10,10 +10,11 @@ Usage:
     results = compute_retrieval_metrics(retriever, test_set, k=5)
     print(results)  # {"mrr@5": 0.72, "recall@5": 0.81, ...}
 """
+
 from __future__ import annotations
 
 import math
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from loguru import logger
 
@@ -21,6 +22,7 @@ from loguru import logger
 # ---------------------------------------------------------------------------
 # Core metric functions (pure, no I/O)
 # ---------------------------------------------------------------------------
+
 
 def _reciprocal_rank(retrieved_ids: List[str], relevant_ids: set) -> float:
     """Return 1/rank of the first relevant doc, or 0 if none found."""
@@ -57,6 +59,7 @@ def _ndcg_at_k(retrieved_ids: List[str], relevant_ids: set, k: int) -> float:
 # ---------------------------------------------------------------------------
 # Aggregation over a test set
 # ---------------------------------------------------------------------------
+
 
 def compute_retrieval_metrics(
     retriever,
@@ -117,7 +120,8 @@ def compute_retrieval_metrics(
             relevant_ids = {
                 d.doc_id
                 for d in docs
-                if len(answer_kw & set(d.content.lower().split())) / len(answer_kw) >= 0.6
+                if len(answer_kw & set(d.content.lower().split())) / len(answer_kw)
+                >= 0.6
             }
             if not relevant_ids:
                 # No doc passes threshold — use top-1 as pseudo-relevant
@@ -131,23 +135,30 @@ def compute_retrieval_metrics(
     n = len(mrr_scores)
     if n == 0:
         logger.warning("No valid queries evaluated — check test set format.")
-        return {"mrr@k": 0.0, "precision@k": 0.0, "recall@k": 0.0, "ndcg@k": 0.0, "n_queries": 0}
+        return {
+            "mrr@k": 0.0,
+            "precision@k": 0.0,
+            "recall@k": 0.0,
+            "ndcg@k": 0.0,
+            "n_queries": 0,
+        }
 
     logger.info(f"Retrieval eval: {n} queries evaluated, {skipped} skipped (k={k})")
 
     return {
-        f"mrr@{k}":       round(sum(mrr_scores)  / n, 4),
+        f"mrr@{k}": round(sum(mrr_scores) / n, 4),
         f"precision@{k}": round(sum(prec_scores) / n, 4),
-        f"recall@{k}":    round(sum(rec_scores)  / n, 4),
-        f"ndcg@{k}":      round(sum(ndcg_scores) / n, 4),
-        "n_queries":      n,
-        "n_skipped":      skipped,
+        f"recall@{k}": round(sum(rec_scores) / n, 4),
+        f"ndcg@{k}": round(sum(ndcg_scores) / n, 4),
+        "n_queries": n,
+        "n_skipped": skipped,
     }
 
 
 # ---------------------------------------------------------------------------
 # Per-query-type breakdown
 # ---------------------------------------------------------------------------
+
 
 def compute_metrics_by_query_type(
     retriever,

@@ -9,7 +9,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.xai.confidence_scorer import ConfidenceResult, ConfidenceScorer
+from src.xai.confidence_scorer import ConfidenceScorer
 from src.xai.source_attribution import Attribution, SourceAttributor
 
 

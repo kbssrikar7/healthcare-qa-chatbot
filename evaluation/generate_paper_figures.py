@@ -8,25 +8,28 @@ matplotlib figures saved as both PNG (300 DPI) and PDF (vector).
 Usage:
     python evaluation/generate_paper_figures.py
 """
+
 import json
-import sys
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-plt.rcParams.update({
-    "font.size": 12,
-    "font.family": "serif",
-    "figure.figsize": (8, 5),
-    "figure.dpi": 300,
-    "axes.grid": True,
-    "grid.alpha": 0.3,
-    "axes.spines.top": False,
-    "axes.spines.right": False,
-})
+plt.rcParams.update(
+    {
+        "font.size": 12,
+        "font.family": "serif",
+        "figure.figsize": (8, 5),
+        "figure.dpi": 300,
+        "axes.grid": True,
+        "grid.alpha": 0.3,
+        "axes.spines.top": False,
+        "axes.spines.right": False,
+    }
+)
 
 PROJECT_ROOT = Path(__file__).parent.parent
 RESULTS_DIR = PROJECT_ROOT / "evaluation" / "results"
@@ -84,16 +87,34 @@ def fig_metric_comparison():
     for i, r in enumerate(rows):
         if "keyword_coverage_ci_95" in r or "keyword_coverage_ci" in r:
             ci = r.get("keyword_coverage_ci_95", r.get("keyword_coverage_ci"))
-            ax.errorbar(x[i] - width, kw[i], yerr=[[kw[i] - ci[0]], [ci[1] - kw[i]]],
-                       fmt="none", color="black", capsize=3)
+            ax.errorbar(
+                x[i] - width,
+                kw[i],
+                yerr=[[kw[i] - ci[0]], [ci[1] - kw[i]]],
+                fmt="none",
+                color="black",
+                capsize=3,
+            )
         if "rougeL_ci_95" in r or "rougeL_ci" in r:
             ci = r.get("rougeL_ci_95", r.get("rougeL_ci"))
-            ax.errorbar(x[i], rl[i], yerr=[[rl[i] - ci[0]], [ci[1] - rl[i]]],
-                       fmt="none", color="black", capsize=3)
+            ax.errorbar(
+                x[i],
+                rl[i],
+                yerr=[[rl[i] - ci[0]], [ci[1] - rl[i]]],
+                fmt="none",
+                color="black",
+                capsize=3,
+            )
         if "bertscore_ci_95" in r or "bertscore_f1_ci" in r:
             ci = r.get("bertscore_ci_95", r.get("bertscore_f1_ci"))
-            ax.errorbar(x[i] + width, bs[i], yerr=[[bs[i] - ci[0]], [ci[1] - bs[i]]],
-                       fmt="none", color="black", capsize=3)
+            ax.errorbar(
+                x[i] + width,
+                bs[i],
+                yerr=[[bs[i] - ci[0]], [ci[1] - bs[i]]],
+                fmt="none",
+                color="black",
+                capsize=3,
+            )
 
     ax.set_xlabel("Pipeline Variant")
     ax.set_ylabel("Score")
@@ -129,8 +150,15 @@ def fig_reliability_diagram():
 
         ax.plot([0, 1], [0, 1], "k--", linewidth=1.2, label="Perfect calibration")
         if bcs:
-            ax.bar(bcs, bas, width=0.08, alpha=0.75, color=COLORS["primary"],
-                   edgecolor="black", label="Model")
+            ax.bar(
+                bcs,
+                bas,
+                width=0.08,
+                alpha=0.75,
+                color=COLORS["primary"],
+                edgecolor="black",
+                label="Model",
+            )
             for x, y, cnt in zip(bcs, bas, bns):
                 ax.text(x, y + 0.02, str(cnt), ha="center", fontsize=8)
         ax.set_xlim(0, 1)
@@ -243,8 +271,7 @@ def fig_latency():
     bottom = np.zeros(len(variants))
     for i, stage in enumerate(stage_keys):
         vals = [r.get(f"{stage}_mean", 0) for r in rows]
-        ax.barh(variants, vals, left=bottom, label=stage,
-                color=colors[i % len(colors)])
+        ax.barh(variants, vals, left=bottom, label=stage, color=colors[i % len(colors)])
         bottom += np.array(vals)
 
     ax.set_xlabel("Latency (ms)")
@@ -277,8 +304,12 @@ def fig_confidence_distribution():
 
     fig, ax = plt.subplots(figsize=(8, 5))
     ax.hist(confs, bins=20, color=COLORS["primary"], edgecolor="black", alpha=0.8)
-    ax.axvline(np.mean(confs), color=COLORS["danger"], linestyle="--",
-               label=f"Mean = {np.mean(confs):.3f}")
+    ax.axvline(
+        np.mean(confs),
+        color=COLORS["danger"],
+        linestyle="--",
+        label=f"Mean = {np.mean(confs):.3f}",
+    )
     ax.set_xlabel("Confidence Score")
     ax.set_ylabel("Frequency")
     ax.set_title("Distribution of AI Confidence Scores")

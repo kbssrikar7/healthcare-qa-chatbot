@@ -6,7 +6,10 @@ with proper message roles for chat models.
 """
 
 from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
+from langchain_core.prompts import (
+    ChatPromptTemplate,
+    PromptTemplate,
+)
 
 # Medical QA System Prompt
 MEDICAL_SYSTEM_PROMPT = """You are a knowledgeable medical assistant. Your role is to provide accurate, helpful health information based on the context provided. Always be clear about limitations and recommend consulting healthcare professionals for medical decisions.
@@ -146,13 +149,13 @@ def format_context_for_prompt(documents: list, max_length: int = 2000) -> str:
         # Handle both LangChain Documents and dicts
         if hasattr(doc, "page_content"):
             content = doc.page_content
-            source = doc.metadata.get("source", f"Source {i+1}")
+            source = doc.metadata.get("source", f"Source {i + 1}")
         elif isinstance(doc, dict):
             content = doc.get("content", str(doc))
-            source = doc.get("source", f"Source {i+1}")
+            source = doc.get("source", f"Source {i + 1}")
         else:
             content = str(doc)
-            source = f"Source {i+1}"
+            source = f"Source {i + 1}"
 
         entry = f"[{source}]: {content}"
 

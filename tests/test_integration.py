@@ -10,11 +10,9 @@ Tests cover:
 """
 
 import sys
-from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -354,8 +352,6 @@ class TestAdaptiveRetrievalWeights:
     """Query-type detection drives per-type RRF weight selection."""
 
     def setup_method(self):
-        from unittest.mock import MagicMock
-
         from src.retrieval.hybrid_retriever import HybridRetriever
 
         self.retriever = HybridRetriever.__new__(HybridRetriever)
@@ -433,8 +429,6 @@ class TestRetrievalMetrics:
         assert _ndcg_at_k(["x", "y"], {"a"}, k=2) == 0.0
 
     def test_compute_retrieval_metrics_with_mock(self):
-        from unittest.mock import MagicMock
-
         from evaluation.retrieval_metrics import compute_retrieval_metrics
         from src.retrieval.hybrid_retriever import RetrievedDocument
 

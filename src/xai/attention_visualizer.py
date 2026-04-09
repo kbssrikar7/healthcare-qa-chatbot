@@ -152,7 +152,9 @@ class AttentionExtractor:
         self.tokenizer = tokenizer
 
     def extract_attention(
-        self, text: str, layer: int = -1  # -1 for last layer
+        self,
+        text: str,
+        layer: int = -1,  # -1 for last layer
     ) -> AttentionVisualization:
         """
         Extract attention weights for visualization.

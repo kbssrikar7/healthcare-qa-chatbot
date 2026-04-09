@@ -9,4 +9,9 @@ from src.conversation.history import (
     FollowUpDetector,
 )
 
-__all__ = ["Conversation", "ConversationTurn", "ConversationManager", "FollowUpDetector"]
+__all__ = [
+    "Conversation",
+    "ConversationTurn",
+    "ConversationManager",
+    "FollowUpDetector",
+]

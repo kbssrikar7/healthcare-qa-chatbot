@@ -111,7 +111,18 @@ class PassageHighlighter:
         """Split text into sentences, handling medical abbreviations."""
         # Protect common abbreviations from splitting
         protected = text
-        abbreviations = ["Dr.", "Mr.", "Mrs.", "Ms.", "mg.", "ml.", "vs.", "i.e.", "e.g.", "etc."]
+        abbreviations = [
+            "Dr.",
+            "Mr.",
+            "Mrs.",
+            "Ms.",
+            "mg.",
+            "ml.",
+            "vs.",
+            "i.e.",
+            "e.g.",
+            "etc.",
+        ]
         for abbr in abbreviations:
             protected = protected.replace(abbr, abbr.replace(".", "<DOT>"))
 

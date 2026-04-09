@@ -14,7 +14,11 @@ Usage:
     python evaluation/compute_calibration.py
     python evaluation/compute_calibration.py --out-dir evaluation/results
 """
-import os, sys, json, argparse
+
+import os
+import sys
+import json
+import argparse
 from pathlib import Path
 import re
 
@@ -153,11 +157,9 @@ def build_calibration_pairs(trajectories: list, test_cases: dict) -> tuple:
     return confidences, labels, sources
 
 
-
-
 def compute_ece(confidences: list, labels: list, n_bins: int = 10) -> tuple:
     """Return (ece, bin_confs, bin_accs, bin_counts)."""
-    import numpy as np
+
     conf_arr = labels_arr = None
     conf_arr = __import__("numpy").array(confidences)
     labels_arr = __import__("numpy").array(labels)
@@ -193,31 +195,41 @@ def fit_platt(confidences: list, labels: list) -> tuple:
         p = np.clip(1.0 / (1.0 + np.exp(-(a * preds + b))), 1e-7, 1 - 1e-7)
         return -float(np.mean(labs * np.log(p) + (1 - labs) * np.log(1 - p)))
 
-    result = minimize(nll, [1.0, 0.0], method="Nelder-Mead",
-                      options={"xatol": 1e-6, "fatol": 1e-6})
+    result = minimize(
+        nll, [1.0, 0.0], method="Nelder-Mead", options={"xatol": 1e-6, "fatol": 1e-6}
+    )
     a, b = float(result.x[0]), float(result.x[1])
     return a, b
 
 
 def apply_platt(confidences: list, a: float, b: float) -> list:
     import numpy as np
+
     arr = np.array(confidences)
     return list(np.clip(1.0 / (1.0 + np.exp(-(a * arr + b))), 0.0, 1.0))
 
 
-def save_reliability_diagram(bin_confs, bin_accs, bin_counts, ece,
-                              title: str, out_path: Path):
+def save_reliability_diagram(
+    bin_confs, bin_accs, bin_counts, ece, title: str, out_path: Path
+):
     try:
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
-        import numpy as np
 
         fig, ax = plt.subplots(figsize=(5, 5))
         ax.plot([0, 1], [0, 1], "k--", linewidth=1.2, label="Perfect calibration")
         if bin_confs:
-            ax.bar(bin_confs, bin_accs, width=0.08, alpha=0.75,
-                   color="#4f46e5", edgecolor="black", label="Model")
+            ax.bar(
+                bin_confs,
+                bin_accs,
+                width=0.08,
+                alpha=0.75,
+                color="#4f46e5",
+                edgecolor="black",
+                label="Model",
+            )
             # Annotate with counts
             for x, y, cnt in zip(bin_confs, bin_accs, bin_counts):
                 ax.text(x, y + 0.02, str(cnt), ha="center", fontsize=8)
@@ -238,8 +250,11 @@ def save_reliability_diagram(bin_confs, bin_accs, bin_counts, ece,
 
 # ── main ──────────────────────────────────────────────────────────────────────
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Fast calibration from trajectory data")
+    parser = argparse.ArgumentParser(
+        description="Fast calibration from trajectory data"
+    )
     parser.add_argument("--traj", default="data/feedback/response_trajectories.jsonl")
     parser.add_argument("--test-set", default="evaluation/test_set_v2.json")
     parser.add_argument("--out-dir", default="evaluation/results")
@@ -262,18 +277,22 @@ def main():
     print(f"Loaded {len(trajectories)} trajectory rows")
 
     confidences, labels, sources = build_calibration_pairs(trajectories, test_cases)
-    print(f"Usable pairs: {len(confidences)}  "
-          f"(NLI-based={sources.count('nli')}, heuristic={sources.count('heuristic')})")
-
+    print(
+        f"Usable pairs: {len(confidences)}  "
+        f"(NLI-based={sources.count('nli')}, heuristic={sources.count('heuristic')})"
+    )
 
     if len(confidences) < 5:
         print("Too few pairs for calibration — run more queries through the API first.")
         sys.exit(1)
 
     import statistics
-    print(f"Confidence  — mean={statistics.mean(confidences):.3f}  "
-          f"min={min(confidences):.3f}  max={max(confidences):.3f}")
-    print(f"Label rate  — {sum(labels)/len(labels):.2%} positive")
+
+    print(
+        f"Confidence  — mean={statistics.mean(confidences):.3f}  "
+        f"min={min(confidences):.3f}  max={max(confidences):.3f}"
+    )
+    print(f"Label rate  — {sum(labels) / len(labels):.2%} positive")
 
     # Raw (uncalibrated) ECE
     ece_raw, bc_raw, ba_raw, bn_raw = compute_ece(confidences, labels)
@@ -290,31 +309,65 @@ def main():
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # Save reliability diagrams
-    save_reliability_diagram(bc_raw, ba_raw, bn_raw, ece_raw,
-                             "Reliability Diagram (Raw)",
-                             out_dir / "reliability_diagram_raw.png")
-    save_reliability_diagram(bc_cal, ba_cal, bn_cal, ece_cal,
-                             "Reliability Diagram (Platt-calibrated)",
-                             out_dir / "reliability_diagram_calibrated.png")
+    save_reliability_diagram(
+        bc_raw,
+        ba_raw,
+        bn_raw,
+        ece_raw,
+        "Reliability Diagram (Raw)",
+        out_dir / "reliability_diagram_raw.png",
+    )
+    save_reliability_diagram(
+        bc_cal,
+        ba_cal,
+        bn_cal,
+        ece_cal,
+        "Reliability Diagram (Platt-calibrated)",
+        out_dir / "reliability_diagram_calibrated.png",
+    )
 
     # Combined figure (side-by-side)
     try:
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 
         fig, axes = plt.subplots(1, 2, figsize=(10, 5))
-        for ax, (bcs, bas, bns, ece, title) in zip(axes, [
-            (bc_raw, ba_raw, bn_raw, ece_raw, f"Before Platt Scaling\nECE={ece_raw:.4f}"),
-            (bc_cal, ba_cal, bn_cal, ece_cal, f"After Platt Scaling\nECE={ece_cal:.4f}"),
-        ]):
+        for ax, (bcs, bas, bns, ece, title) in zip(
+            axes,
+            [
+                (
+                    bc_raw,
+                    ba_raw,
+                    bn_raw,
+                    ece_raw,
+                    f"Before Platt Scaling\nECE={ece_raw:.4f}",
+                ),
+                (
+                    bc_cal,
+                    ba_cal,
+                    bn_cal,
+                    ece_cal,
+                    f"After Platt Scaling\nECE={ece_cal:.4f}",
+                ),
+            ],
+        ):
             ax.plot([0, 1], [0, 1], "k--", linewidth=1.2, label="Perfect")
             if bcs:
-                ax.bar(bcs, bas, width=0.08, alpha=0.75, color="#4f46e5",
-                       edgecolor="black", label="Model")
+                ax.bar(
+                    bcs,
+                    bas,
+                    width=0.08,
+                    alpha=0.75,
+                    color="#4f46e5",
+                    edgecolor="black",
+                    label="Model",
+                )
                 for x, y, cnt in zip(bcs, bas, bns):
                     ax.text(x, y + 0.02, str(cnt), ha="center", fontsize=8)
-            ax.set_xlim(0, 1); ax.set_ylim(0, 1.1)
+            ax.set_xlim(0, 1)
+            ax.set_ylim(0, 1.1)
             ax.set_xlabel("Mean predicted confidence", fontsize=11)
             ax.set_ylabel("Fraction correct", fontsize=11)
             ax.set_title(title, fontsize=12)

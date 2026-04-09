@@ -10,7 +10,6 @@ Enhanced with:
 - Passage highlighting for XAI
 """
 
-import asyncio
 import json
 import os
 import sys
@@ -138,8 +137,6 @@ async def lifespan(app: FastAPI):
 
     # Shutdown: save conversation sessions
     try:
-        pass
-
         cm = getattr(app.state, "conversation_manager", None)
         if cm:
             cm.save_sessions()
@@ -155,7 +152,10 @@ app = FastAPI(
     lifespan=lifespan,
     openapi_tags=[
         {"name": "Health", "description": "Service health and readiness checks"},
-        {"name": "QA", "description": "Ask medical questions and get explainable answers"},
+        {
+            "name": "QA",
+            "description": "Ask medical questions and get explainable answers",
+        },
         {"name": "Models", "description": "Available LLM model information"},
         {"name": "Sessions", "description": "Conversation session management"},
         {"name": "Feedback", "description": "User feedback and rating collection"},
@@ -1047,14 +1047,11 @@ async def _prepare_and_execute_pipeline(
             question=effective_question,
             num_documents=request.num_sources,
             include_explanation=request.include_explanation,
-        )
-        if conversation_context and not (request.use_langgraph or request.use_langchain):
-            kwargs["conversation_context"] = conversation_context
-
-        loop = asyncio.get_event_loop()
-        response = await loop.run_in_executor(
-            None,  # default ThreadPoolExecutor
-            partial(qa_pipeline.answer, **kwargs),
+            **(
+                {"conversation_context": conversation_context}
+                if conversation_context and not (request.use_langgraph or request.use_langchain)
+                else {}
+            ),
         )
     except Exception as e:
         raise HTTPException(
@@ -1160,7 +1157,10 @@ async def _prepare_and_execute_pipeline(
                 AttributionInfo(**a)
                 if isinstance(a, dict)
                 else AttributionInfo(
-                    claim=a.claim, source=a.source, evidence=a.evidence, similarity=a.similarity
+                    claim=a.claim,
+                    source=a.source,
+                    evidence=a.evidence,
+                    similarity=a.similarity,
                 )
             )
             for a in response.attributions
@@ -1225,7 +1225,10 @@ async def _prepare_and_execute_pipeline(
 
 
 @app.post(
-    "/ask", response_model=AnswerResponse, tags=["QA"], dependencies=[Depends(verify_api_key)]
+    "/ask",
+    response_model=AnswerResponse,
+    tags=["QA"],
+    dependencies=[Depends(verify_api_key)],
 )
 @limiter.limit("60/minute")
 async def ask_question(request: Request, body: QuestionRequest):

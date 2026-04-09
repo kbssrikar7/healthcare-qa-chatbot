@@ -18,7 +18,13 @@ Usage:
     python evaluation/run_paper_eval.py --mode calibration
     python evaluation/run_paper_eval.py --n 20       # quick smoke test
 """
-import os, sys, json, time, argparse, warnings
+
+import os
+import sys
+import json
+import time
+import argparse
+import warnings
 from pathlib import Path
 from collections import defaultdict
 
@@ -30,10 +36,12 @@ PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 warnings.filterwarnings("ignore")
 
+
 # ── lazy imports (heavy) ─────────────────────────────────────────────────────
 def _import_nlp_metrics():
     from rouge_score import rouge_scorer as _rs
     import evaluate as _ev
+
     bertscore = _ev.load("bertscore")
     return _rs, bertscore
 
@@ -58,6 +66,7 @@ def load_pipeline(
         _get_langchain_pipeline,
         _get_langgraph_pipeline,
     )
+
     if variant == "standard":
         return get_pipeline(model, adapter_path=adapter_path)
     elif variant == "langchain":
@@ -121,8 +130,11 @@ def run_metrics(test_cases: list, pipeline, variant_name: str, n: int = None) ->
         # Tier 1: rescaled (preferred)
         try:
             bs = bertscore_metric.compute(
-                predictions=preds, references=refs,
-                lang="en", rescale_with_baseline=True, device="cpu",
+                predictions=preds,
+                references=refs,
+                lang="en",
+                rescale_with_baseline=True,
+                device="cpu",
             )
             bs_f1_scores = [float(x) for x in bs["f1"]]
             bs_f1_mean = sum(bs_f1_scores) / len(bs_f1_scores)
@@ -130,26 +142,33 @@ def run_metrics(test_cases: list, pipeline, variant_name: str, n: int = None) ->
         except Exception as baseline_err:
             # Tier 2: unscaled (baseline file not cached locally)
             try:
-                print(f"    [BERTScore] rescaled failed ({type(baseline_err).__name__}), "
-                      f"trying unscaled…")
+                print(
+                    f"    [BERTScore] rescaled failed ({type(baseline_err).__name__}), "
+                    f"trying unscaled…"
+                )
                 bs = bertscore_metric.compute(
-                    predictions=preds, references=refs,
-                    lang="en", rescale_with_baseline=False, device="cpu",
+                    predictions=preds,
+                    references=refs,
+                    lang="en",
+                    rescale_with_baseline=False,
+                    device="cpu",
                 )
                 bs_f1_scores = [float(x) for x in bs["f1"]]
                 bs_f1_mean = sum(bs_f1_scores) / len(bs_f1_scores)
                 bs_mode = "unscaled"
             except Exception as raw_err:
                 # Tier 3: skip — model files missing even in offline cache
-                print(f"    [BERTScore] unscaled also failed ({type(raw_err).__name__}: "
-                      f"{raw_err}). Scores will be 0.0.")
+                print(
+                    f"    [BERTScore] unscaled also failed ({type(raw_err).__name__}: "
+                    f"{raw_err}). Scores will be 0.0."
+                )
                 bs_mode = "skipped"
 
     if bs_mode != "unavailable":
         print(f"    BERTScore ({bs_mode}): mean F1 = {bs_f1_mean:.4f}")
 
-
     import statistics
+
     result = {
         "variant": variant_name,
         "n": total,
@@ -159,7 +178,6 @@ def run_metrics(test_cases: list, pipeline, variant_name: str, n: int = None) ->
         "bertscore_f1_mean": round(bs_f1_mean, 4),
         "bertscore_mode": bs_mode,  # "rescaled" | "unscaled" | "skipped" | "unavailable"
     }
-
 
     # Add bootstrap 95% confidence intervals
     if len(kw_scores) >= 5:
@@ -202,10 +220,13 @@ def run_latency(test_cases: list, pipeline, variant_name: str, n: int = 20) -> d
             print(f"    [{i}] ERROR: {e}")
 
     import statistics
+
     result = {"variant": variant_name}
     if total_times:
         result["total_ms_mean"] = round(statistics.mean(total_times), 1)
-        result["total_ms_p90"] = round(sorted(total_times)[int(0.9 * len(total_times))], 1)
+        result["total_ms_p90"] = round(
+            sorted(total_times)[int(0.9 * len(total_times))], 1
+        )
     for stage, vals in stage_totals.items():
         result[f"{stage}_mean"] = round(statistics.mean(vals), 1)
         result[f"{stage}_p90"] = round(sorted(vals)[int(0.9 * len(vals))], 1)
@@ -220,10 +241,15 @@ def run_ablation(test_cases: list, pipeline, n: int = 30) -> list:
     For each signal weight set, run n questions and record mean confidence.
     Compares: all-signals vs. each signal ablated (set to 0, others renormalized).
     """
-    from src.xai.multi_signal_confidence import MultiSignalConfidenceScorer
 
     # Keys used by MultiSignalConfidenceScorer.weights
-    SIGNALS = ["retrieval", "generation", "consistency", "source_agreement", "entity_coverage"]
+    SIGNALS = [
+        "retrieval",
+        "generation",
+        "consistency",
+        "source_agreement",
+        "entity_coverage",
+    ]
     BASE_WEIGHTS = {s: 1.0 / len(SIGNALS) for s in SIGNALS}
 
     cases = test_cases[:n]
@@ -250,10 +276,13 @@ def run_ablation(test_cases: list, pipeline, n: int = 30) -> list:
                 pass
         scorer.weights = original_weights
         import statistics
+
         return {
             "name": name,
             "mean_confidence": round(statistics.mean(confs), 4) if confs else 0,
-            "mean_kw_coverage": round(statistics.mean(kws_scores), 4) if kws_scores else 0,
+            "mean_kw_coverage": round(statistics.mean(kws_scores), 4)
+            if kws_scores
+            else 0,
         }
 
     # Baseline (all signals)
@@ -276,7 +305,6 @@ def run_calibration(test_cases: list, pipeline, n: int = None) -> dict:
     Fit Platt calibration on keyword coverage as proxy label,
     compute ECE, and save reliability diagram.
     """
-    from src.xai.multi_signal_confidence import MultiSignalConfidenceScorer
     import numpy as np
 
     cases = test_cases[:n] if n else test_cases
@@ -286,6 +314,7 @@ def run_calibration(test_cases: list, pipeline, n: int = None) -> dict:
     rouge_scorer = None
     try:
         from rouge_score import rouge_scorer as _rs
+
         rouge_scorer = _rs.RougeScorer(["rougeL"], use_stemmer=True)
     except Exception:
         rouge_scorer = None
@@ -347,6 +376,7 @@ def run_calibration(test_cases: list, pipeline, n: int = None) -> dict:
     # Reliability diagram
     try:
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
 
@@ -354,9 +384,20 @@ def run_calibration(test_cases: list, pipeline, n: int = None) -> dict:
         ax.plot([0, 1], [0, 1], "k--", label="Perfect calibration")
         midpoints = [(lo + hi) / 2 for lo, hi in zip(bin_edges[:-1], bin_edges[1:])]
         # Only plot bins with data
-        used_mids = [m for m, cnt in zip(midpoints, bin_counts) if cnt > 0] if bin_counts else []
-        ax.bar(used_mids, bin_accs, width=0.08, alpha=0.7, color="#4f46e5",
-               edgecolor="black", label="Model")
+        used_mids = (
+            [m for m, cnt in zip(midpoints, bin_counts) if cnt > 0]
+            if bin_counts
+            else []
+        )
+        ax.bar(
+            used_mids,
+            bin_accs,
+            width=0.08,
+            alpha=0.7,
+            color="#4f46e5",
+            edgecolor="black",
+            label="Model",
+        )
         ax.set_xlabel("Mean predicted confidence")
         ax.set_ylabel("Fraction correct (keyword coverage ≥ 0.5)")
         ax.set_title(f"Reliability Diagram  (ECE = {ece:.3f})")
@@ -405,20 +446,33 @@ def _print_table(rows: list, title: str):
 # ────────────────────────────────────────────────────────────────────────────
 def main():
     parser = argparse.ArgumentParser(description="Paper evaluation pipeline")
-    parser.add_argument("--mode", choices=["metrics", "latency", "ablation",
-                                           "calibration", "all"],
-                        default="all")
-    parser.add_argument("--test-set", default="evaluation/test_set_v2.json",
-                        help="Test set JSON path")
-    parser.add_argument("--n", type=int, default=None,
-                        help="Limit to first N cases (useful for quick tests)")
-    parser.add_argument("--variants", nargs="+",
-                        default=["standard"],
-                        choices=["standard", "langchain", "langgraph"],
-                        help="Which pipeline variants to evaluate")
-    parser.add_argument("--model", default="tinyllama",
-                        choices=["tinyllama", "biomistral"],
-                        help="LLM model to use for standard pipeline")
+    parser.add_argument(
+        "--mode",
+        choices=["metrics", "latency", "ablation", "calibration", "all"],
+        default="all",
+    )
+    parser.add_argument(
+        "--test-set", default="evaluation/test_set_v2.json", help="Test set JSON path"
+    )
+    parser.add_argument(
+        "--n",
+        type=int,
+        default=None,
+        help="Limit to first N cases (useful for quick tests)",
+    )
+    parser.add_argument(
+        "--variants",
+        nargs="+",
+        default=["standard"],
+        choices=["standard", "langchain", "langgraph"],
+        help="Which pipeline variants to evaluate",
+    )
+    parser.add_argument(
+        "--model",
+        default="tinyllama",
+        choices=["tinyllama", "biomistral"],
+        help="LLM model to use for standard pipeline",
+    )
     parser.add_argument(
         "--adapter",
         default=None,

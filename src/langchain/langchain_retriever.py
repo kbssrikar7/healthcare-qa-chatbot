@@ -55,7 +55,10 @@ class LangChainHybridRetriever(BaseRetriever):
         return self.hybrid_retriever
 
     def _get_relevant_documents(
-        self, query: str, *, run_manager: Optional[CallbackManagerForRetrieverRun] = None
+        self,
+        query: str,
+        *,
+        run_manager: Optional[CallbackManagerForRetrieverRun] = None,
     ) -> List[Document]:
         """
         Retrieve relevant documents for a query.
@@ -69,7 +72,10 @@ class LangChainHybridRetriever(BaseRetriever):
         """
         # Use the underlying retriever
         retrieved_docs: List[RetrievedDocument] = self.hybrid_retriever.retrieve(
-            query=query, k=self.k, use_hybrid=self.use_hybrid, use_reranking=self.use_reranking
+            query=query,
+            k=self.k,
+            use_hybrid=self.use_hybrid,
+            use_reranking=self.use_reranking,
         )
 
         # Convert to LangChain Document format
@@ -84,7 +90,10 @@ class LangChainHybridRetriever(BaseRetriever):
         return documents
 
     async def _aget_relevant_documents(
-        self, query: str, *, run_manager: Optional[CallbackManagerForRetrieverRun] = None
+        self,
+        query: str,
+        *,
+        run_manager: Optional[CallbackManagerForRetrieverRun] = None,
     ) -> List[Document]:
         """Async version - delegates to sync for now."""
         return self._get_relevant_documents(query, run_manager=run_manager)

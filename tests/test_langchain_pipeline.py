@@ -8,7 +8,7 @@ Unit tests for the LangChain-based Healthcare QA pipeline components.
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock
 
 import pytest
 
@@ -73,7 +73,10 @@ class TestLangChainRetrieverWrapper:
         mock_retriever = Mock()
         mock_retriever.retrieve.return_value = [
             MockDocument(
-                content="Test content", source="TestSource", score=0.85, metadata={"key": "value"}
+                content="Test content",
+                source="TestSource",
+                score=0.85,
+                metadata={"key": "value"},
             )
         ]
 
@@ -123,12 +126,18 @@ class TestLangChainPipeline:
         # Configure low-relevance docs
         mock_retriever.retrieve.return_value = [
             MockDocument(
-                content="Unrelated content", source="Unknown", score=0.1, metadata={"score": 0.1}
+                content="Unrelated content",
+                source="Unknown",
+                score=0.1,
+                metadata={"score": 0.1},
             )
         ]
 
         pipeline = LangChainHealthcareQAPipeline(
-            retriever=mock_retriever, llm=mock_llm, min_retrieval_score=0.3, min_relevant_docs=2
+            retriever=mock_retriever,
+            llm=mock_llm,
+            min_retrieval_score=0.3,
+            min_relevant_docs=2,
         )
 
         assert pipeline.enable_grounding_gate == True

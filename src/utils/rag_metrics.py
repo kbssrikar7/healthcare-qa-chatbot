@@ -6,11 +6,11 @@ Implements core metrics from RAG skill files:
 - Generation: Faithfulness, Answer Relevance (via LLM-as-judge)
 """
 
-import logging
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Set, Tuple
 
 import numpy as np
+from loguru import logger
 
 logger = logging.getLogger(__name__)
 
@@ -168,11 +168,17 @@ def calculate_retrieval_metrics(
         ndcg = calculate_ndcg_at_k(retrieved_ids, binary_relevance, k)
 
     return RetrievalMetrics(
-        precision_at_k=precision, recall_at_k=recall, hit_rate=hit_rate, mrr=mrr, ndcg_at_k=ndcg
+        precision_at_k=precision,
+        recall_at_k=recall,
+        hit_rate=hit_rate,
+        mrr=mrr,
+        ndcg_at_k=ndcg,
     )
 
 
-def aggregate_metrics(metrics_list: List[RetrievalMetrics]) -> Dict[str, Dict[str, float]]:
+def aggregate_metrics(
+    metrics_list: List[RetrievalMetrics],
+) -> Dict[str, Dict[str, float]]:
     """
     Aggregate metrics across multiple queries.
 

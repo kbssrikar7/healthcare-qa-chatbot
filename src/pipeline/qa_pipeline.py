@@ -126,7 +126,9 @@ class HealthcareQAPipeline:
             self.enable_mcp_search = getattr(config.pipeline, "enable_mcp_search", False)
             self.mcp_search_cmd = getattr(config.pipeline, "mcp_search_cmd", "npx")
             self.mcp_search_args = getattr(
-                config.pipeline, "mcp_search_args", "-y @modelcontextprotocol/server-brave-search"
+                config.pipeline,
+                "mcp_search_args",
+                "-y @modelcontextprotocol/server-brave-search",
             )
 
         # Enhanced pipeline components
@@ -152,7 +154,10 @@ class HealthcareQAPipeline:
             if _cal_path.exists():
                 _cal = _json.loads(_cal_path.read_text())
                 if "platt_a" in _cal and "platt_b" in _cal:
-                    _platt_params = {"a": float(_cal["platt_a"]), "b": float(_cal["platt_b"])}
+                    _platt_params = {
+                        "a": float(_cal["platt_a"]),
+                        "b": float(_cal["platt_b"]),
+                    }
                     logger.info(
                         f"Loaded Platt calibration: a={_platt_params['a']:.3f}, b={_platt_params['b']:.3f}"
                     )
@@ -336,7 +341,7 @@ class HealthcareQAPipeline:
                     # Safe async execution: handle both sync and async calling contexts.
                     # asyncio.run() crashes inside FastAPI because the event loop is already running.
                     try:
-                        asyncio.get_running_loop()
+                        _ = asyncio.get_running_loop()
                         # We're inside an async context (e.g. FastAPI) — use a new thread
                         import concurrent.futures
 
@@ -520,7 +525,11 @@ class HealthcareQAPipeline:
         # 9. SOURCE ATTRIBUTION
         if self.source_attributor and include_explanation:
             doc_dicts = [
-                {"content": doc.content, "source": doc.source, "url": doc.metadata.get("url", "")}
+                {
+                    "content": doc.content,
+                    "source": doc.source,
+                    "url": doc.metadata.get("url", ""),
+                }
                 for doc in documents
             ]
             attributions_list = self.source_attributor.attribute_answer(answer, doc_dicts)

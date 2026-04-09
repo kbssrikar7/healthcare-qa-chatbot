@@ -9,7 +9,7 @@ Produces:
 Usage:
     python evaluation/generate_architecture_diagram.py
 """
-import os
+
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -76,10 +76,12 @@ flowchart TD
 
 # ── 2. Matplotlib Figure ────────────────────────────────────────────────────
 
+
 def generate_matplotlib_figure():
     """Generate a paper-quality architecture diagram using matplotlib."""
     try:
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
         import matplotlib.patches as mpatches
@@ -87,62 +89,131 @@ def generate_matplotlib_figure():
         print("matplotlib not installed — skipping figure generation")
         return
 
-    plt.rcParams.update({
-        'font.size': 9,
-        'font.family': 'serif',
-        'figure.dpi': 300,
-    })
+    plt.rcParams.update(
+        {
+            "font.size": 9,
+            "font.family": "serif",
+            "figure.dpi": 300,
+        }
+    )
 
     fig, ax = plt.subplots(figsize=(14, 8))
     ax.set_xlim(0, 14)
     ax.set_ylim(0, 8)
-    ax.axis('off')
-    fig.patch.set_facecolor('white')
+    ax.axis("off")
+    fig.patch.set_facecolor("white")
 
     # Stage definitions: (x, y, width, height, label, color)
     stages = [
         # Row 1 — Input
-        (0.5,  6.8, 3.0, 0.9, "Input Safety\n(Emergency, Content Filter,\nPrompt Injection Guard)", "#fef3c7"),
+        (
+            0.5,
+            6.8,
+            3.0,
+            0.9,
+            "Input Safety\n(Emergency, Content Filter,\nPrompt Injection Guard)",
+            "#fef3c7",
+        ),
         # Row 2 — Retrieval
-        (0.5,  5.2, 2.0, 0.9, "Query Enhancement\n(Medical Term Expansion)", "#dbeafe"),
-        (3.0,  5.2, 2.0, 0.9, "Dense Retrieval\n(MedCPT/MiniLM\nvia ChromaDB)", "#dbeafe"),
-        (5.5,  5.2, 2.0, 0.9, "Sparse Retrieval\n(BM25 + Medical\nTokenization)", "#dbeafe"),
-        (8.0,  5.2, 2.0, 0.9, "RRF Fusion\n+ Cross-Encoder\nReranking", "#dbeafe"),
+        (0.5, 5.2, 2.0, 0.9, "Query Enhancement\n(Medical Term Expansion)", "#dbeafe"),
+        (
+            3.0,
+            5.2,
+            2.0,
+            0.9,
+            "Dense Retrieval\n(MedCPT/MiniLM\nvia ChromaDB)",
+            "#dbeafe",
+        ),
+        (
+            5.5,
+            5.2,
+            2.0,
+            0.9,
+            "Sparse Retrieval\n(BM25 + Medical\nTokenization)",
+            "#dbeafe",
+        ),
+        (8.0, 5.2, 2.0, 0.9, "RRF Fusion\n+ Cross-Encoder\nReranking", "#dbeafe"),
         # Row 3 — Quality Gate
-        (0.5,  3.6, 2.5, 0.9, "Corrective RAG\n(Document Grading)", "#d1fae5"),
-        (3.5,  3.6, 2.5, 0.9, "Grounding Gate\n(Adaptive Threshold)", "#d1fae5"),
-        (6.5,  3.6, 2.5, 0.9, "Context Compression\n(Lost-in-Middle\nMitigation)", "#d1fae5"),
+        (0.5, 3.6, 2.5, 0.9, "Corrective RAG\n(Document Grading)", "#d1fae5"),
+        (3.5, 3.6, 2.5, 0.9, "Grounding Gate\n(Adaptive Threshold)", "#d1fae5"),
+        (
+            6.5,
+            3.6,
+            2.5,
+            0.9,
+            "Context Compression\n(Lost-in-Middle\nMitigation)",
+            "#d1fae5",
+        ),
         # Row 4 — Generation
-        (0.5,  2.0, 3.0, 0.9, "Prompt Construction\n(RAG Template)", "#e0e7ff"),
-        (4.0,  2.0, 3.0, 0.9, "LLM Inference\n(TinyLlama 1.1B /\nBioMistral 7B GGUF)", "#e0e7ff"),
+        (0.5, 2.0, 3.0, 0.9, "Prompt Construction\n(RAG Template)", "#e0e7ff"),
+        (
+            4.0,
+            2.0,
+            3.0,
+            0.9,
+            "LLM Inference\n(TinyLlama 1.1B /\nBioMistral 7B GGUF)",
+            "#e0e7ff",
+        ),
         # Row 5 — XAI
-        (0.3,  0.4, 2.5, 0.9, "Hallucination\nDetection\n(DeBERTa NLI)", "#fce7f3"),
-        (3.2,  0.4, 2.8, 0.9, "Multi-Signal\nConfidence Scoring\n(5 Signals)", "#fce7f3"),
-        (6.4,  0.4, 2.5, 0.9, "Source Attribution\n(Sentence-Level\nEvidence)", "#fce7f3"),
-        (9.3,  0.4, 2.5, 0.9, "Output Safety\n(Drug Interactions,\nPediatric Warnings)", "#fce7f3"),
+        (0.3, 0.4, 2.5, 0.9, "Hallucination\nDetection\n(DeBERTa NLI)", "#fce7f3"),
+        (
+            3.2,
+            0.4,
+            2.8,
+            0.9,
+            "Multi-Signal\nConfidence Scoring\n(5 Signals)",
+            "#fce7f3",
+        ),
+        (
+            6.4,
+            0.4,
+            2.5,
+            0.9,
+            "Source Attribution\n(Sentence-Level\nEvidence)",
+            "#fce7f3",
+        ),
+        (
+            9.3,
+            0.4,
+            2.5,
+            0.9,
+            "Output Safety\n(Drug Interactions,\nPediatric Warnings)",
+            "#fce7f3",
+        ),
     ]
 
-    for (x, y, w, h, label, color) in stages:
+    for x, y, w, h, label, color in stages:
         rect = mpatches.FancyBboxPatch(
-            (x, y), w, h,
+            (x, y),
+            w,
+            h,
             boxstyle="round,pad=0.08",
-            facecolor=color, edgecolor="#374151", linewidth=1.2,
+            facecolor=color,
+            edgecolor="#374151",
+            linewidth=1.2,
         )
         ax.add_patch(rect)
-        ax.text(x + w/2, y + h/2, label,
-                ha='center', va='center', fontsize=7.5, fontweight='medium',
-                linespacing=1.35)
+        ax.text(
+            x + w / 2,
+            y + h / 2,
+            label,
+            ha="center",
+            va="center",
+            fontsize=7.5,
+            fontweight="medium",
+            linespacing=1.35,
+        )
 
     # Arrows between rows
-    arrow_props = dict(arrowstyle='->', color='#6b7280', lw=1.5)
+    arrow_props = dict(arrowstyle="->", color="#6b7280", lw=1.5)
     # Input → Retrieval
-    ax.annotate('', xy=(2.0, 5.95), xytext=(2.0, 6.65), arrowprops=arrow_props)
+    ax.annotate("", xy=(2.0, 5.95), xytext=(2.0, 6.65), arrowprops=arrow_props)
     # Retrieval → Quality Gate
-    ax.annotate('', xy=(5.0, 4.35), xytext=(5.0, 5.05), arrowprops=arrow_props)
+    ax.annotate("", xy=(5.0, 4.35), xytext=(5.0, 5.05), arrowprops=arrow_props)
     # Quality Gate → Generation
-    ax.annotate('', xy=(3.5, 2.75), xytext=(3.5, 3.45), arrowprops=arrow_props)
+    ax.annotate("", xy=(3.5, 2.75), xytext=(3.5, 3.45), arrowprops=arrow_props)
     # Generation → XAI
-    ax.annotate('', xy=(5.5, 1.15), xytext=(5.5, 1.85), arrowprops=arrow_props)
+    ax.annotate("", xy=(5.5, 1.15), xytext=(5.5, 1.85), arrowprops=arrow_props)
 
     # Row labels
     labels = [
@@ -152,27 +223,43 @@ def generate_matplotlib_figure():
         (13.0, 2.35, "GENERATION", "#6366f1"),
         (13.0, 0.75, "XAI &\nSAFETY", "#ec4899"),
     ]
-    for (x, y, label, color) in labels:
-        ax.text(x, y, label, ha='center', va='center', fontsize=8,
-                fontweight='bold', color=color)
+    for x, y, label, color in labels:
+        ax.text(
+            x,
+            y,
+            label,
+            ha="center",
+            va="center",
+            fontsize=8,
+            fontweight="bold",
+            color=color,
+        )
 
     # Title
-    ax.text(7, 7.7, "Healthcare QA Chatbot — System Architecture",
-            ha='center', va='center', fontsize=14, fontweight='bold',
-            color='#1f2937')
+    ax.text(
+        7,
+        7.7,
+        "Healthcare QA Chatbot — System Architecture",
+        ha="center",
+        va="center",
+        fontsize=14,
+        fontweight="bold",
+        color="#1f2937",
+    )
 
     fig.tight_layout()
 
     png_path = OUT_DIR / "architecture_diagram.png"
     pdf_path = OUT_DIR / "architecture_diagram.pdf"
-    fig.savefig(png_path, dpi=300, bbox_inches='tight', facecolor='white')
-    fig.savefig(pdf_path, bbox_inches='tight', facecolor='white')
+    fig.savefig(png_path, dpi=300, bbox_inches="tight", facecolor="white")
+    fig.savefig(pdf_path, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"  Architecture PNG → {png_path}")
     print(f"  Architecture PDF → {pdf_path}")
 
 
 # ── 3. Save Mermaid ─────────────────────────────────────────────────────────
+
 
 def save_mermaid():
     mermaid_path = OUT_DIR / "architecture_diagram.md"

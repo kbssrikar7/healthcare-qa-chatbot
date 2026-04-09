@@ -17,17 +17,25 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 class LLMError(Exception):
     """Base exception for LLM errors."""
 
+    pass
+
 
 class ModelNotFoundError(LLMError):
     """Raised when model cannot be found/downloaded."""
+
+    pass
 
 
 class GPUOutOfMemoryError(LLMError):
     """Raised when GPU runs out of memory."""
 
+    pass
+
 
 class GenerationError(LLMError):
     """Raised when generation fails."""
+
+    pass
 
 
 @dataclass
@@ -164,7 +172,11 @@ class MedicalLLM:
         import os
 
         n_threads = min(4, os.cpu_count() or 4)
-        logger.info("Loading GGUF model from {} (n_ctx=4096, n_threads={})", model_path, n_threads)
+        logger.info(
+            "Loading GGUF model from {} (n_ctx=4096, n_threads={})",
+            model_path,
+            n_threads,
+        )
         n_gpu_layers = -1 if torch.cuda.is_available() else 0  # -1 = all layers on GPU
         self._gguf_llm = Llama(
             model_path=str(model_path),

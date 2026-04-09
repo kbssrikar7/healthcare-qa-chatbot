@@ -11,7 +11,9 @@ from src.langgraph.langgraph_nodes import MAX_RETRY_COUNT
 from src.langgraph.langgraph_state import HealthcareRAGState
 
 
-def route_after_grading(state: HealthcareRAGState) -> Literal["generate", "refine", "unanswerable"]:
+def route_after_grading(
+    state: HealthcareRAGState,
+) -> Literal["generate", "refine", "unanswerable"]:
     """
     Route after document grading.
 

@@ -4,7 +4,6 @@ Tests cache hit, miss, TTL expiration, and invalidation.
 """
 
 import time
-from pathlib import Path
 
 import pytest
 

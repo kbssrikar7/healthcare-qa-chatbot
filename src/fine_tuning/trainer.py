@@ -96,7 +96,10 @@ class MedicalQADatasetBuilder:
         # Tokenize
         def tokenize(examples):
             return self.tokenizer(
-                examples["text"], truncation=True, max_length=self.max_length, padding="max_length"
+                examples["text"],
+                truncation=True,
+                max_length=self.max_length,
+                padding="max_length",
             )
 
         tokenized_dataset = dataset.map(tokenize, batched=True, remove_columns=["text"])
@@ -175,7 +178,7 @@ class QLoRATrainer:
         trainable_params = sum(p.numel() for p in self.peft_model.parameters() if p.requires_grad)
         total_params = sum(p.numel() for p in self.peft_model.parameters())
         print(
-            f"✅ Model loaded. Trainable: {trainable_params:,} / {total_params:,} ({100*trainable_params/total_params:.2f}%)"
+            f"✅ Model loaded. Trainable: {trainable_params:,} / {total_params:,} ({100 * trainable_params / total_params:.2f}%)"
         )
 
         return self.peft_model

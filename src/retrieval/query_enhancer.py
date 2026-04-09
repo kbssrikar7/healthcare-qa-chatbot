@@ -174,7 +174,9 @@ class QueryEnhancer:
                     break
 
         return EnhancedQuery(
-            original=query, expansions=unique_expansions, all_queries=[query] + unique_expansions
+            original=query,
+            expansions=unique_expansions,
+            all_queries=[query] + unique_expansions,
         )
 
     def _expand_abbreviations(self, query: str) -> str:
@@ -290,7 +292,16 @@ Answer (2-3 sentences):"""
                     # Ensure it's a proper question
                     if not any(
                         part.lower().startswith(q)
-                        for q in ["what", "how", "why", "when", "where", "which", "can", "is"]
+                        for q in [
+                            "what",
+                            "how",
+                            "why",
+                            "when",
+                            "where",
+                            "which",
+                            "can",
+                            "is",
+                        ]
                     ):
                         part = "What is " + part
                     sub_queries.append(part.strip("?") + "?")
@@ -302,7 +313,8 @@ Answer (2-3 sentences):"""
             import re
 
             match = re.search(
-                r"(?:compare|difference between)\s+(.+)\s+and\s+(.+?)(?:\?|$)", query_lower
+                r"(?:compare|difference between)\s+(.+)\s+and\s+(.+?)(?:\?|$)",
+                query_lower,
             )
             if match:
                 item1, item2 = match.groups()

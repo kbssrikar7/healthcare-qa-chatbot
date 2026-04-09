@@ -121,7 +121,8 @@ class CacheManager:
         if len(self._query_cache) >= self.max_memory_items:
             # Remove oldest entry
             oldest_key = min(
-                self._query_cache.keys(), key=lambda k: self._query_cache[k]["timestamp"]
+                self._query_cache.keys(),
+                key=lambda k: self._query_cache[k]["timestamp"],
             )
             del self._query_cache[oldest_key]
 

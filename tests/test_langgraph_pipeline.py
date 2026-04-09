@@ -7,7 +7,7 @@ Unit tests for the LangGraph-based Healthcare RAG pipeline components.
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from unittest.mock import MagicMock, Mock
+from unittest.mock import Mock
 
 import pytest
 
@@ -42,7 +42,13 @@ class TestLangGraphState:
 
         # Check annotations exist
         annotations = HealthcareRAGState.__annotations__
-        required_fields = ["question", "documents", "answer", "is_answerable", "confidence"]
+        required_fields = [
+            "question",
+            "documents",
+            "answer",
+            "is_answerable",
+            "confidence",
+        ]
 
         for field in required_fields:
             assert field in annotations
@@ -132,7 +138,10 @@ class TestLangGraphNodes:
 
         nodes = HealthcareRAGNodes(retriever=mock_retriever, llm=mock_llm)
 
-        state = {"question": "What is diabetes?", "query_history": ["What is diabetes?"]}
+        state = {
+            "question": "What is diabetes?",
+            "query_history": ["What is diabetes?"],
+        }
         result = nodes.retrieve_documents(state)
 
         assert "documents" in result
@@ -172,7 +181,10 @@ class TestLangGraphNodes:
             "answer": "Diabetes is a chronic metabolic condition that affects blood sugar.",
             "context": "Diabetes is a chronic metabolic condition characterized by elevated blood glucose levels.",
             "documents": [
-                Document(page_content="Diabetes is a chronic metabolic condition", metadata={})
+                Document(
+                    page_content="Diabetes is a chronic metabolic condition",
+                    metadata={},
+                )
             ],
         }
 

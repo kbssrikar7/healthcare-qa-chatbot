@@ -59,7 +59,9 @@ class FeedbackCollector:
     """
 
     def __init__(
-        self, storage_path: str = "data/feedback/user_feedback.jsonl", auto_save: bool = True
+        self,
+        storage_path: str = "data/feedback/user_feedback.jsonl",
+        auto_save: bool = True,
     ):
         """
         Initialize feedback collector.
@@ -255,7 +257,11 @@ class SimpleFeedback:
     def thumbs_up(self, question_id: str, **kwargs) -> UserFeedback:
         """Record positive feedback."""
         return self.collector.submit_feedback(
-            question_id=question_id, rating=5, was_helpful=True, was_accurate=True, **kwargs
+            question_id=question_id,
+            rating=5,
+            was_helpful=True,
+            was_accurate=True,
+            **kwargs,
         )
 
     def thumbs_down(self, question_id: str, reason: Optional[str] = None, **kwargs) -> UserFeedback:

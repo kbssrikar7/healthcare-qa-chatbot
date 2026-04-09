@@ -89,7 +89,9 @@ def get_llm():
             if adapter_path.exists():
                 print(f"✅ Found adapter at {adapter_path}")
                 llm = MedicalLLM(
-                    model_name="tinyllama", adapter_path=str(adapter_path), load_in_4bit=True
+                    model_name="tinyllama",
+                    adapter_path=str(adapter_path),
+                    load_in_4bit=True,
                 )
             else:
                 print("⚠️ No adapter found, using base model")

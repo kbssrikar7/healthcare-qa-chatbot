@@ -12,7 +12,14 @@ Usage:
     python evaluation/run_api_eval.py --mode ablation
     python evaluation/run_api_eval.py --n 20             # quick run
 """
-import os, sys, json, time, argparse, statistics, warnings
+
+import os
+import sys
+import json
+import time
+import argparse
+import statistics
+import warnings
 from pathlib import Path
 from collections import defaultdict
 
@@ -24,9 +31,15 @@ API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 
 # ── API helper ───────────────────────────────────────────────────────────────
-def ask(question: str, model: str = "tinyllama", use_langchain: bool = False,
-        use_langgraph: bool = False, num_sources: int = 3) -> dict:
+def ask(
+    question: str,
+    model: str = "tinyllama",
+    use_langchain: bool = False,
+    use_langgraph: bool = False,
+    num_sources: int = 3,
+) -> dict:
     import requests
+
     payload = {
         "question": question,
         "model_choice": model,
@@ -44,6 +57,7 @@ def ask(question: str, model: str = "tinyllama", use_langchain: bool = False,
 
 def check_api() -> bool:
     import requests
+
     try:
         r = requests.get(f"{API_URL}/health", timeout=5)
         return r.status_code == 200
@@ -58,6 +72,7 @@ from evaluation.eval_utils import keyword_coverage, is_correct, bootstrap_ci
 def rouge_l(hyp: str, ref: str) -> float:
     try:
         from rouge_score import rouge_scorer as _rs
+
         scorer = _rs.RougeScorer(["rougeL"], use_stemmer=True)
         return scorer.score(ref, hyp)["rougeL"].fmeasure
     except Exception:
@@ -79,10 +94,12 @@ def run_metrics(cases: list, variant: dict, n: int = None) -> dict:
 
     for i, case in enumerate(run_cases, 1):
         try:
-            r = ask(case["query"],
-                    model=variant.get("model", "tinyllama"),
-                    use_langchain=variant.get("langchain", False),
-                    use_langgraph=variant.get("langgraph", False))
+            r = ask(
+                case["query"],
+                model=variant.get("model", "tinyllama"),
+                use_langchain=variant.get("langchain", False),
+                use_langgraph=variant.get("langgraph", False),
+            )
             answer = r.get("answer", "")
             kw = case.get("expected_keywords", [])
             ref = case.get("reference_answer", "")
@@ -104,14 +121,27 @@ def run_metrics(cases: list, variant: dict, n: int = None) -> dict:
     if preds:
         try:
             import evaluate as _ev
+
             bsm = _ev.load("bertscore")
             try:
-                bs = bsm.compute(predictions=preds, references=refs,
-                                 lang="en", rescale_with_baseline=True, device="cpu")
+                bs = bsm.compute(
+                    predictions=preds,
+                    references=refs,
+                    lang="en",
+                    rescale_with_baseline=True,
+                    device="cpu",
+                )
             except Exception as baseline_err:
-                print(f"    BERTScore baseline not cached, using unscaled: {baseline_err}")
-                bs = bsm.compute(predictions=preds, references=refs,
-                                 lang="en", rescale_with_baseline=False, device="cpu")
+                print(
+                    f"    BERTScore baseline not cached, using unscaled: {baseline_err}"
+                )
+                bs = bsm.compute(
+                    predictions=preds,
+                    references=refs,
+                    lang="en",
+                    rescale_with_baseline=False,
+                    device="cpu",
+                )
             bs_f1_scores = [float(x) for x in bs["f1"]]
             bs_f1_mean = statistics.mean(bs_f1_scores)
         except Exception as e:
@@ -122,7 +152,9 @@ def run_metrics(cases: list, variant: dict, n: int = None) -> dict:
         "variant": name,
         "n": n_total,
         "answerable_pct": round(answerable / n_total, 3) if n_total else 0,
-        "keyword_coverage_mean": round(statistics.mean(kw_scores), 3) if kw_scores else 0,
+        "keyword_coverage_mean": round(statistics.mean(kw_scores), 3)
+        if kw_scores
+        else 0,
         "rougeL_mean": round(statistics.mean(rl_scores), 3) if rl_scores else 0,
         "bertscore_f1_mean": round(bs_f1_mean, 3),
     }
@@ -150,10 +182,12 @@ def run_latency(cases: list, variant: dict, n: int = 20) -> dict:
     for case in run_cases:
         try:
             t0 = time.perf_counter()
-            r = ask(case["query"],
-                    model=variant.get("model", "tinyllama"),
-                    use_langchain=variant.get("langchain", False),
-                    use_langgraph=variant.get("langgraph", False))
+            r = ask(
+                case["query"],
+                model=variant.get("model", "tinyllama"),
+                use_langchain=variant.get("langchain", False),
+                use_langgraph=variant.get("langgraph", False),
+            )
             elapsed = (time.perf_counter() - t0) * 1000
             times.append(elapsed)
             for k, v in (r.get("stage_latencies") or {}).items():
@@ -173,6 +207,7 @@ def run_latency(cases: list, variant: dict, n: int = 20) -> dict:
 def run_calibration(cases: list, variant: dict, n: int = None) -> dict:
     """Compute ECE from API responses using keyword coverage as correctness proxy."""
     import numpy as np
+
     run_cases = cases[:n] if n else cases
     confidences, labels = [], []
     print(f"\n  Calibration: {len(run_cases)} questions …")
@@ -186,7 +221,11 @@ def run_calibration(cases: list, variant: dict, n: int = None) -> dict:
             ref = case.get("reference_answer", "")
             if ref:
                 rouge_l_score = rouge_l(r.get("answer", ""), ref)
-            label = 1 if is_correct(keyword_coverage(r.get("answer", ""), kw), rouge_l_score) else 0
+            label = (
+                1
+                if is_correct(keyword_coverage(r.get("answer", ""), kw), rouge_l_score)
+                else 0
+            )
             confidences.append(conf)
             labels.append(label)
         except Exception:
@@ -218,15 +257,24 @@ def run_calibration(cases: list, variant: dict, n: int = None) -> dict:
     # Reliability diagram
     try:
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
+
         fig, ax = plt.subplots(figsize=(5, 5))
         ax.plot([0, 1], [0, 1], "k--", label="Perfect calibration")
         mids = [(lo + hi) / 2 for lo, hi in zip(edges[:-1], edges[1:])]
         used = [m for m, cnt in zip(mids, bin_counts) if cnt > 0] if bin_counts else []
         if used:
-            ax.bar(used, bin_accs, width=0.08, alpha=0.7, color="#4f46e5",
-                   edgecolor="black", label="Model")
+            ax.bar(
+                used,
+                bin_accs,
+                width=0.08,
+                alpha=0.7,
+                color="#4f46e5",
+                edgecolor="black",
+                label="Model",
+            )
         ax.set_xlabel("Predicted confidence")
         ax.set_ylabel("Fraction correct")
         ax.set_title(f"Reliability Diagram  (ECE = {ece:.3f})")
@@ -271,14 +319,17 @@ def _print_table(rows: list, title: str):
 # ── Main ──────────────────────────────────────────────────────────────────────
 def main():
     parser = argparse.ArgumentParser(description="API-based evaluation runner")
-    parser.add_argument("--mode", choices=["metrics", "latency", "calibration", "all"],
-                        default="all")
+    parser.add_argument(
+        "--mode", choices=["metrics", "latency", "calibration", "all"], default="all"
+    )
     parser.add_argument("--test-set", default="evaluation/test_set_v2.json")
-    parser.add_argument("--n", type=int, default=None,
-                        help="Limit to first N cases")
-    parser.add_argument("--model", default="tinyllama",
-                        choices=["tinyllama", "biomistral"],
-                        help="Model to use for standard pipeline")
+    parser.add_argument("--n", type=int, default=None, help="Limit to first N cases")
+    parser.add_argument(
+        "--model",
+        default="tinyllama",
+        choices=["tinyllama", "biomistral"],
+        help="Model to use for standard pipeline",
+    )
     args = parser.parse_args()
 
     if not check_api():

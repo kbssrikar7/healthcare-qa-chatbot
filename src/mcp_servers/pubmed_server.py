@@ -56,7 +56,10 @@ async def list_tools() -> List[Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "pmid": {"type": "string", "description": "PubMed article ID (PMID)"}
+                    "pmid": {
+                        "type": "string",
+                        "description": "PubMed article ID (PMID)",
+                    }
                 },
                 "required": ["pmid"],
             },

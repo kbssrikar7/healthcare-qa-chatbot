@@ -42,7 +42,12 @@ class CrossEncoderReranker:
         "bge-reranker": "BAAI/bge-reranker-base",
     }
 
-    def __init__(self, model_name: str = "ms-marco-mini", device: str = None, batch_size: int = 32):
+    def __init__(
+        self,
+        model_name: str = "ms-marco-mini",
+        device: str = None,
+        batch_size: int = 32,
+    ):
         """
         Initialize reranker.
 
@@ -185,7 +190,11 @@ class CohereReranker:
                 doc_texts.append(str(doc))
 
         response = self.client.rerank(
-            query=query, documents=doc_texts, top_n=top_k, model=self.model, return_documents=True
+            query=query,
+            documents=doc_texts,
+            top_n=top_k,
+            model=self.model,
+            return_documents=True,
         )
 
         results = []

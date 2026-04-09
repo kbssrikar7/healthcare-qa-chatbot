@@ -70,7 +70,9 @@ class TestMedicalPromptManager:
     def test_add_custom_template(self, prompt_manager):
         """Test adding custom template."""
         prompt_manager.add_template(
-            name="custom", template="Q: {question}\nC: {context}\nA:", description="Custom template"
+            name="custom",
+            template="Q: {question}\nC: {context}\nA:",
+            description="Custom template",
         )
 
         prompt = prompt_manager.build_prompt(

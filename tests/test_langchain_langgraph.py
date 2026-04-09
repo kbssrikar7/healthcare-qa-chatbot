@@ -7,13 +7,12 @@ results using mock components without requiring GPU or model downloads.
 
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from conftest import MockDocument, MockLLM, MockRetriever
+from conftest import MockLLM, MockRetriever
 
 # =========================================================================
 # Shared test data

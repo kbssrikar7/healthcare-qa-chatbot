@@ -13,7 +13,6 @@ from src.safety.guardrails import (
     ContentFilter,
     EmergencyDetector,
     MedicalGuardrails,
-    SafetyCheckResult,
     SafetyLevel,
 )
 

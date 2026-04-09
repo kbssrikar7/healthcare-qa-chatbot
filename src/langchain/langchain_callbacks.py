@@ -137,10 +137,21 @@ class MedicalQACallbackHandler(BaseCallbackHandler):
         logger.error(f"Chain error: {error}")
 
     def on_retriever_start(
-        self, serialized: Dict[str, Any], query: str, *, run_id: Optional[str] = None, **kwargs
+        self,
+        serialized: Dict[str, Any],
+        query: str,
+        *,
+        run_id: Optional[str] = None,
+        **kwargs,
     ) -> None:
         """Called when retriever starts."""
-        self._log({"event": "retrieval_start", "run_id": self.run_id, "query_length": len(query)})
+        self._log(
+            {
+                "event": "retrieval_start",
+                "run_id": self.run_id,
+                "query_length": len(query),
+            }
+        )
 
     def on_retriever_end(self, documents: List, *, run_id: Optional[str] = None, **kwargs) -> None:
         """Called when retriever ends."""
@@ -185,7 +196,13 @@ class MedicalQACallbackHandler(BaseCallbackHandler):
                 for gen in gen_list:
                     output_length += len(gen.text) if hasattr(gen, "text") else 0
 
-        self._log({"event": "llm_complete", "run_id": self.run_id, "output_length": output_length})
+        self._log(
+            {
+                "event": "llm_complete",
+                "run_id": self.run_id,
+                "output_length": output_length,
+            }
+        )
 
     def on_llm_error(self, error: Exception, *, run_id: Optional[str] = None, **kwargs) -> None:
         """Called when LLM errors."""

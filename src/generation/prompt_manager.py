@@ -138,7 +138,7 @@ class MedicalPromptManager:
 
         for i, doc in enumerate(documents):
             content = doc.get("content", str(doc))
-            source = doc.get("source", f"Source {i+1}")
+            source = doc.get("source", f"Source {i + 1}")
 
             entry = f"[{source}]: {content}"
 

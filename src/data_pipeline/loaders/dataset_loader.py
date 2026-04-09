@@ -72,7 +72,10 @@ class MedicalDatasetLoader:
     def load_chatdoctor(self) -> pd.DataFrame:
         """Load ChatDoctor datasets."""
         dfs = []
-        for filename in ["chatdoctor_icliniq.parquet", "chatdoctor_healthcaremagic.parquet"]:
+        for filename in [
+            "chatdoctor_icliniq.parquet",
+            "chatdoctor_healthcaremagic.parquet",
+        ]:
             path = self.data_dir / "chatdoctor" / filename
             df = self._safe_load_parquet(path)
             if df is not None:
@@ -216,7 +219,11 @@ class MedicalDatasetLoader:
 
                 if question and answer:
                     qa_pairs.append(
-                        {"question": question, "answer": str(answer), "source": "MedQA-USMLE"}
+                        {
+                            "question": question,
+                            "answer": str(answer),
+                            "source": "MedQA-USMLE",
+                        }
                     )
             logger.info(f"  Loaded MedQA USMLE: {len(df):,} entries")
         except Exception as e:
@@ -273,7 +280,11 @@ class MedicalDatasetLoader:
 
                 if question and answer:
                     qa_pairs.append(
-                        {"question": question, "answer": answer, "source": "LavitaMedicalQA"}
+                        {
+                            "question": question,
+                            "answer": answer,
+                            "source": "LavitaMedicalQA",
+                        }
                     )
             logger.info(f"  Loaded Additional QA: {len(df):,} entries")
         except Exception as e:
@@ -293,7 +304,11 @@ class MedicalDatasetLoader:
             if qa.get("context"):
                 content = f"Context: {qa['context']}\n\n{content}"
 
-            yield {"content": content, "source": qa["source"], "metadata": {"type": "qa_pair"}}
+            yield {
+                "content": content,
+                "source": qa["source"],
+                "metadata": {"type": "qa_pair"},
+            }
 
     def get_stats(self) -> Dict:
         """Get statistics about available datasets."""

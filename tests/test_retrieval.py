@@ -126,7 +126,10 @@ class TestHybridRetriever:
         from src.retrieval.hybrid_retriever import RetrievedDocument
 
         doc = RetrievedDocument(
-            content="Test content", source="Test Source", score=0.85, metadata={"key": "value"}
+            content="Test content",
+            source="Test Source",
+            score=0.85,
+            metadata={"key": "value"},
         )
         assert doc.content == "Test content"
         assert doc.score == 0.85

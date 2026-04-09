@@ -19,25 +19,48 @@ class MedicalQueryExpander:
     # Medical synonym mappings (term -> list of synonyms/related terms)
     MEDICAL_SYNONYMS: Dict[str, List[str]] = {
         # Cardiovascular
-        "heart attack": ["myocardial infarction", "MI", "cardiac event", "coronary event"],
-        "high blood pressure": ["hypertension", "elevated BP", "elevated blood pressure"],
+        "heart attack": [
+            "myocardial infarction",
+            "MI",
+            "cardiac event",
+            "coronary event",
+        ],
+        "high blood pressure": [
+            "hypertension",
+            "elevated BP",
+            "elevated blood pressure",
+        ],
         "hypertension": ["high blood pressure", "elevated BP"],
         "stroke": ["cerebrovascular accident", "CVA", "brain attack"],
         "chest pain": ["angina", "thoracic pain", "angina pectoris"],
         # Metabolic
-        "diabetes": ["diabetes mellitus", "DM", "hyperglycemia", "blood sugar disorder"],
+        "diabetes": [
+            "diabetes mellitus",
+            "DM",
+            "hyperglycemia",
+            "blood sugar disorder",
+        ],
         "type 2 diabetes": [
             "T2DM",
             "type II diabetes",
             "adult-onset diabetes",
             "non-insulin dependent",
         ],
-        "type 1 diabetes": ["T1DM", "type I diabetes", "juvenile diabetes", "insulin dependent"],
+        "type 1 diabetes": [
+            "T1DM",
+            "type I diabetes",
+            "juvenile diabetes",
+            "insulin dependent",
+        ],
         "high cholesterol": ["hyperlipidemia", "hypercholesterolemia", "dyslipidemia"],
         # Respiratory
         "asthma": ["bronchial asthma", "reactive airway disease"],
         "pneumonia": ["lung infection", "pulmonary infection"],
-        "copd": ["chronic obstructive pulmonary disease", "emphysema", "chronic bronchitis"],
+        "copd": [
+            "chronic obstructive pulmonary disease",
+            "emphysema",
+            "chronic bronchitis",
+        ],
         "shortness of breath": ["dyspnea", "breathlessness", "difficulty breathing"],
         # Neurological
         "headache": ["cephalgia", "head pain"],
@@ -45,7 +68,12 @@ class MedicalQueryExpander:
         "seizure": ["epileptic seizure", "convulsion", "fit"],
         "alzheimer": ["alzheimer's disease", "AD", "dementia"],
         # Gastrointestinal
-        "stomach pain": ["abdominal pain", "gastralgia", "belly ache", "epigastric pain"],
+        "stomach pain": [
+            "abdominal pain",
+            "gastralgia",
+            "belly ache",
+            "epigastric pain",
+        ],
         "acid reflux": ["GERD", "gastroesophageal reflux", "heartburn"],
         "ibs": ["irritable bowel syndrome", "spastic colon"],
         # Musculoskeletal

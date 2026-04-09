@@ -343,7 +343,6 @@ class SourceAttributor:
         """Extract the most relevant snippet from content."""
         # Find best matching window
         claim_words = claim.lower().split()
-        content.lower()
 
         best_start = 0
         best_score = 0
