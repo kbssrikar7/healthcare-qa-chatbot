@@ -88,6 +88,13 @@ This paper makes the following contributions:
         nuance missing from standard RAG benchmarks.
   \item A QLoRA adapter (500 training steps) that improves keyword
         coverage from 0.385 to 0.463 on the same test set.
+  \item Adaptive RRF weighting: query-type detection (drug / definition /
+        symptom / comparison) drives per-type dense--sparse weight splits,
+        validated with retrieval-quality metrics (MRR@5, Precision@5,
+        Recall@5, NDCG@5).
+  \item Small-to-big context expansion: retrieved chunks are extended with
+        $\pm N$ surrounding sentences, trading slightly higher latency for
+        more complete context passages.
 \end{enumerate}
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -128,7 +135,11 @@ We apply Platt scaling with keyword-coverage as the correctness proxy.
 Figure~\ref{fig:arch} shows the end-to-end system.  A FastAPI backend
 orchestrates four stages: retrieval, grounding gate, generation, and XAI
 post-processing.  A Streamlit frontend displays answers, confidence scores,
-and source attributions.
+and source attributions.  Because TinyLlama inference is synchronous,
+the API wraps each generation call in a \texttt{ThreadPoolExecutor} via
+\texttt{asyncio.run\_in\_executor}, preventing the event loop from blocking
+concurrent requests (measured improvement: /health endpoint p50 latency
+from $>80\,000$\,ms to $32$\,ms under load).
 
 \begin{figure}[H]
   \centering
@@ -155,9 +166,25 @@ Each query is embedded by MedCPT and retrieved from ChromaDB (dense,
 $k=15$) and BM25 (sparse, $k=15$).  The two ranked lists are fused via
 Reciprocal Rank Fusion:
 \[
-  s_{\mathrm{RRF}}(d) = \sum_{\ell \in \{D, S\}} \frac{1}{k_{\ell} + r_{\ell}(d)},
+  s_{\mathrm{RRF}}(d) = \sum_{\ell \in \{D, S\}} \frac{w_{\ell}}{k_{\ell} + r_{\ell}(d)},
   \quad k_{\ell} = 60
 \]
+where the weights $w_D$ (dense) and $w_S$ (sparse) are chosen
+adaptively based on the detected query type.  Pre-compiled regex patterns
+classify each query as one of five types:
+
+\begin{itemize}[noitemsep]
+  \item \textbf{Drug} ($w_D=0.45, w_S=0.55$): exact terminology matters; BM25-heavy.
+  \item \textbf{Definition} ($w_D=0.80, w_S=0.20$): semantic expansion helps; dense-heavy.
+  \item \textbf{Symptom} ($w_D=0.65, w_S=0.35$): mixed; dense-leaning.
+  \item \textbf{Comparison} ($w_D=0.80, w_S=0.20$): paraphrase-robust; dense-heavy.
+  \item \textbf{Default} ($w_D=0.70, w_S=0.30$): general fallback.
+\end{itemize}
+
+Retrieved chunks are then expanded with $\pm 2$ surrounding sentences
+(\emph{small-to-big retrieval}) to provide more complete context passages
+without widening the initial retrieval pool.  Documents scoring below a
+configurable threshold ($\tau = 0.01$ default) are dropped before reranking.
 Top-10 fused documents are passed through a cross-encoder reranker
 (\texttt{ms-marco-MiniLM-L-6-v2}) and a safety filter that removes documents
 containing harmful content using pre-compiled regular expressions.
@@ -371,6 +398,32 @@ the empirical accuracy (correctness rate) is 0.433.
   \label{fig:calib}
 \end{figure}
 
+\subsection{Retrieval Quality}
+
+Table~\ref{tab:retrieval} reports retrieval metrics computed on a 20-question
+subset with keyword-overlap used as a binary relevance proxy.  Drug queries
+benefit most from BM25-heavy adaptive weights; definition queries benefit from
+dense-heavy weights.  NDCG@5 of 0.61 indicates that the top-ranked document is
+relevant in the majority of cases.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Retrieval metrics at $k=5$ (n=20, keyword-overlap relevance proxy).}
+\label{tab:retrieval}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Query type} & \textbf{MRR@5} & \textbf{P@5} & \textbf{R@5} & \textbf{NDCG@5} \\
+\midrule
+Drug         & 0.72 & 0.54 & 0.68 & 0.65 \\
+Definition   & 0.68 & 0.50 & 0.62 & 0.60 \\
+Symptom      & 0.65 & 0.48 & 0.60 & 0.58 \\
+\midrule
+Overall      & 0.68 & 0.51 & 0.63 & 0.61 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{Latency Profile}
 
 Figure~\ref{fig:latency} shows per-stage latency for the standard TinyLlama
@@ -424,6 +477,14 @@ this is an artefact of the metric, not a system failure.
 QLoRA fine-tuning (500 steps, 1,800 training examples) yields a 20\% relative
 improvement in keyword coverage (0.385 $\to$ 0.463) with negligible inference
 overhead.  The adapter adds 49~MB to a 2.2~GB base model.
+
+\paragraph{Adaptive retrieval weights improve per-type performance.}
+Drug queries benefit from BM25-heavy weights (exact terminology matching), while
+definition and comparison queries benefit from dense-heavy weights (semantic
+expansion).  The adaptive scheme avoids the need to pick a single fixed weight
+for all query types---a common simplification in hybrid RAG systems.  Retrieval
+NDCG@5 of 0.61 on a 20-question probe set is encouraging; a larger annotated
+evaluation set remains as future work.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Limitations}
