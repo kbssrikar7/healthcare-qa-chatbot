@@ -371,6 +371,16 @@ class MedicalLLM:
 
         input_length = inputs.input_ids.shape[1]
 
+        # Encode stop strings as extra EOS token IDs so generation halts
+        # before exam-format leakage like "\nQuestion:" or ". Answer:"
+        stop_strings = ["\nQuestion:", "\nAnswer:", "\nQ:", ". Answer:", "? Answer:"]
+        extra_eos = set()
+        for s in stop_strings:
+            ids = self.tokenizer.encode(s, add_special_tokens=False)
+            if ids:
+                extra_eos.add(ids[0])
+        eos_ids = [self.tokenizer.eos_token_id] + list(extra_eos)
+
         with torch.no_grad():
             outputs = self.model.generate(
                 **inputs,
@@ -379,7 +389,7 @@ class MedicalLLM:
                 top_p=top_p if do_sample else 1.0,
                 do_sample=do_sample,
                 pad_token_id=self.tokenizer.pad_token_id,
-                eos_token_id=self.tokenizer.eos_token_id,
+                eos_token_id=eos_ids,
                 output_scores=return_probabilities,
                 return_dict_in_generate=True,
             )

@@ -18,12 +18,24 @@ ANSWER_PREFIXES = [
     "Based on the reference text,",
 ]
 
+# Patterns that are ALWAYS truncated wherever they appear (min_pos=0).
+# These indicate exam-format leakage from MedMCQA / board-exam context chunks.
+AGGRESSIVE_STOP_PATTERNS = [
+    r"Per the (?:Joint National|American Heart|WHO|CDC|European)",
+    r"of the following (?:combinations|options|choices|drugs|statements)",
+    r"[Ww]hich (?:of the following|can be considered|is the most effective|is the best)",
+    r"[Aa] \d{2}-year-old (?:man|woman|patient|child|boy|girl) presents",
+    r"[Hh]is (?:temperature|blood pressure|pulse|heart rate) is \d",
+    r"[Hh]er (?:temperature|blood pressure|pulse|heart rate) is \d",
+    r"(?:^|\n)###\s*(?:Question|Answer|Q|A)\s*:",
+]
+
 # Patterns indicating leaked training data, new Q&A, or sign-offs.
 # If found beyond min_match_pos, the response is truncated there.
 STOP_PATTERNS = [
-    r"\nQuestion:",
-    r"\nQ:",
-    r"\nAnswer:",
+    # Board-exam / MedMCQA leakage — catch with or without preceding newline
+    r"(?:\n|\.\s+|\?\s+)(?:Question|Q)\s*:",
+    r"(?:\n|\.\s+|\?\s+)Answer\s*:",
     r"Best regards",
     r"Kind regards",
     r"Sincerely",
@@ -64,7 +76,7 @@ STOP_PATTERNS = [
 def clean_llm_response(
     response: str,
     stop_patterns: List[str] | None = None,
-    min_match_pos: int = 50,
+    min_match_pos: int = 60,
 ) -> str:
     """
     Clean an LLM response by removing training-data leakage.
@@ -96,7 +108,16 @@ def clean_llm_response(
         if response.startswith(prefix):
             response = response[len(prefix) :].strip()
 
-    # 2. Truncate at earliest stop-pattern
+    # 2a. Aggressive stop — exam/board-format leakage, truncate anywhere
+    earliest_pos = len(response)
+    for pattern in AGGRESSIVE_STOP_PATTERNS:
+        match = re.search(pattern, response, re.IGNORECASE)
+        if match and match.start() < earliest_pos:
+            earliest_pos = match.start()
+    if earliest_pos < len(response):
+        response = response[:earliest_pos]
+
+    # 2b. Normal stop patterns — only after min_match_pos characters
     patterns = stop_patterns if stop_patterns is not None else STOP_PATTERNS
     safe_min = min(min_match_pos, len(response))
     earliest_pos = len(response)
