@@ -6,6 +6,6 @@
   "decision": "v2",
   "method": "dense_retrieval_only_n97",
   "v2_docs": 505584,
-  "errors": 0,
-  "reason": "v2 wins by >=0.03 retrieval kw coverage"
+  "chunker": "RecursiveSentenceChunker",
+  "reason": "KB v2 wins by +0.2920 retrieval kw coverage (threshold was 0.03). Switch to v2."
 }

@@ -1,32 +1,37 @@
 {
-  "calibration": {
-    "ece": 0.1438,
-    "n": 97,
-    "mean_confidence": 0.0245,
-    "mean_label": 0.433,
-    "bin_confidences": [
-      0.38239947039165717,
-      0.4194254394019329,
-      0.527683663421725,
-      0.6330361091337073,
-      0.75358274085587,
-      0.8342209243066818
-    ],
-    "bin_accuracies": [
-      0.2982456140350877,
-      0.56,
-      0.75,
-      1.0,
-      0.0,
-      0.5
-    ],
-    "bin_counts": [
-      57,
-      25,
-      4,
-      7,
-      2,
-      2
-    ]
-  }
+  "metrics": [
+    {
+      "variant": "standard",
+      "n": 97,
+      "answerable_pct": 1.0,
+      "keyword_coverage_mean": 0.4463917525773196,
+      "rougeL_mean": 0.20769190136976426,
+      "bertscore_f1_mean": 0.158,
+      "bertscore_mode": "rescaled",
+      "keyword_coverage_ci": [
+        0.3698,
+        0.5225
+      ],
+      "keyword_coverage_ci_95": [
+        0.3698,
+        0.5225
+      ],
+      "rougeL_ci": [
+        0.1706,
+        0.2454
+      ],
+      "rougeL_ci_95": [
+        0.1706,
+        0.2454
+      ],
+      "bertscore_f1_ci": [
+        0.112,
+        0.2049
+      ],
+      "bertscore_ci_95": [
+        0.112,
+        0.2049
+      ]
+    }
+  ]
 }
