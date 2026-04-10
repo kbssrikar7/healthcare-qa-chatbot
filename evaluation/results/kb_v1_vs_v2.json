@@ -1,9 +1,11 @@
 {
   "kw_v1": 0.3845,
-  "kw_v2": 0.3845,
-  "delta": 0.0,
+  "kw_v2": 0.6765,
+  "delta": 0.292,
   "threshold": 0.03,
-  "use_v2": false,
-  "winner": "v1",
-  "rationale": "KB v2 improves keyword_coverage by 0.0000 (0.0%) which does not meet the >=0.03 threshold. Keeping KB v1 (fixed 512-token chunker)."
+  "decision": "v2",
+  "method": "dense_retrieval_only_n97",
+  "v2_docs": 505584,
+  "errors": 0,
+  "reason": "v2 wins by >=0.03 retrieval kw coverage"
 }
