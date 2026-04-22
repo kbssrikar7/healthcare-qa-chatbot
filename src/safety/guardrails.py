@@ -281,6 +281,14 @@ This chatbot cannot provide emergency medical assistance.
         return sanitized, check_result
 
 
+def _normalize_filter_text(text: str) -> str:
+    """Match MedicalGuardrails normalization so filters cannot be bypassed with lookalikes."""
+    text = unicodedata.normalize("NFKD", text)
+    text = re.sub(r"\s+", " ", text)
+    text = re.sub(r"[\u200b\u200c\u200d\ufeff]", "", text)
+    return text.lower()
+
+
 class ContentFilter:
     """Filter inappropriate or harmful content."""
 
@@ -299,7 +307,7 @@ class ContentFilter:
 
     def is_blocked(self, text: str) -> Tuple[bool, Optional[str]]:
         """Check if content should be blocked."""
-        text_lower = text.lower()
+        text_lower = _normalize_filter_text(text)
 
         for pattern in self.blocked_patterns:
             if pattern.search(text_lower):

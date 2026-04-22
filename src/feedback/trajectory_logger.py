@@ -11,6 +11,10 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 from loguru import logger
+try:
+    from src.utils.log_redaction import maybe_redact
+except Exception:
+    maybe_redact = lambda x: x
 
 
 class TrajectoryLogger:
@@ -46,6 +50,7 @@ class TrajectoryLogger:
         response_id = trajectory.get("response_id")
         if not response_id:
             raise ValueError("Trajectory must include response_id")
+        trajectory = maybe_redact(trajectory)
 
         with open(self.storage_path, "a", encoding="utf-8") as handle:
             handle.write(json.dumps(trajectory, default=str) + "\n")

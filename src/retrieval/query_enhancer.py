@@ -107,6 +107,42 @@ class QueryEnhancer:
         "aml": "acute myeloid leukemia",
     }
 
+    # Legacy synonym table from MedicalQueryExpander (kept here to avoid
+    # splitting expansion logic across two modules).
+    MEDICAL_SYNONYMS = {
+        "heart attack": ["myocardial infarction", "MI", "cardiac event", "coronary event"],
+        "high blood pressure": ["hypertension", "elevated BP", "elevated blood pressure"],
+        "hypertension": ["high blood pressure", "elevated BP"],
+        "stroke": ["cerebrovascular accident", "CVA", "brain attack"],
+        "chest pain": ["angina", "thoracic pain", "angina pectoris"],
+        "diabetes": ["diabetes mellitus", "DM", "hyperglycemia", "blood sugar disorder"],
+        "type 2 diabetes": ["T2DM", "type II diabetes", "adult-onset diabetes", "non-insulin dependent"],
+        "type 1 diabetes": ["T1DM", "type I diabetes", "juvenile diabetes", "insulin dependent"],
+        "high cholesterol": ["hyperlipidemia", "hypercholesterolemia", "dyslipidemia"],
+        "asthma": ["bronchial asthma", "reactive airway disease"],
+        "pneumonia": ["lung infection", "pulmonary infection"],
+        "copd": ["chronic obstructive pulmonary disease", "emphysema", "chronic bronchitis"],
+        "shortness of breath": ["dyspnea", "breathlessness", "difficulty breathing"],
+        "headache": ["cephalgia", "head pain"],
+        "migraine": ["migraine headache", "severe headache"],
+        "seizure": ["epileptic seizure", "convulsion", "fit"],
+        "alzheimer": ["alzheimer's disease", "AD", "dementia"],
+        "stomach pain": ["abdominal pain", "gastralgia", "belly ache", "epigastric pain"],
+        "acid reflux": ["GERD", "gastroesophageal reflux", "heartburn"],
+        "ibs": ["irritable bowel syndrome", "spastic colon"],
+        "arthritis": ["joint inflammation", "joint pain", "osteoarthritis"],
+        "back pain": ["lumbar pain", "lumbago", "dorsalgia"],
+        "depression": ["major depressive disorder", "MDD", "clinical depression"],
+        "anxiety": ["anxiety disorder", "generalized anxiety", "GAD"],
+        "fever": ["pyrexia", "elevated temperature", "high temperature"],
+        "infection": ["infectious disease", "pathogenic infection"],
+        "cancer": ["malignancy", "neoplasm", "tumor", "carcinoma"],
+        "allergy": ["allergic reaction", "hypersensitivity", "allergic response"],
+        "pregnancy": ["gestation", "expecting", "prenatal"],
+        "kidney disease": ["renal disease", "nephropathy", "kidney failure"],
+        "liver disease": ["hepatic disease", "liver disorder", "hepatopathy"],
+    }
+
     def __init__(self, llm=None, enable_llm_expansion: bool = False, max_expansions: int = 3):
         """
         Initialize query enhancer.
@@ -154,6 +190,10 @@ class QueryEnhancer:
         if abbrev_expanded != query:
             expansions.append(abbrev_expanded)
 
+        # 1b. Legacy synonym expansion (multi-word phrase substitution).
+        synonym_variants = self._expand_with_synonyms(query)
+        expansions.extend(synonym_variants)
+
         # 2. LLM-based expansion (if enabled)
         if self.enable_llm_expansion:
             llm_expansions = self._llm_expand(query)
@@ -162,6 +202,19 @@ class QueryEnhancer:
         # 3. Simple reformulations
         reformulations = self._simple_reformulations(query)
         expansions.extend(reformulations)
+
+        # 4. Decompose compound questions into simpler sub-queries.
+        # Keep this lightweight and deterministic for clearly multi-part phrasing.
+        query_lower = query.lower()
+        if (
+            " and " in query_lower
+            or "compare" in query_lower
+            or "difference between" in query_lower
+        ):
+            decomposed = self.decompose_query(query)
+            for sub_query in decomposed:
+                if sub_query and sub_query.strip() and sub_query.strip() != query:
+                    expansions.append(sub_query.strip())
 
         # Deduplicate and limit
         seen = {query.lower()}
@@ -178,6 +231,22 @@ class QueryEnhancer:
             expansions=unique_expansions,
             all_queries=[query] + unique_expansions,
         )
+
+    def _expand_with_synonyms(self, query: str) -> List[str]:
+        """Generate variants by replacing matched medical phrases with synonyms."""
+        import re
+
+        query_lower = query.lower()
+        variants: List[str] = []
+        for term, synonyms in self.MEDICAL_SYNONYMS.items():
+            if term in query_lower:
+                for syn in synonyms[: self.max_expansions]:
+                    variant = re.sub(re.escape(term), syn, query_lower, flags=re.IGNORECASE)
+                    if variant not in variants and variant != query_lower:
+                        variants.append(variant)
+                        if len(variants) >= self.max_expansions:
+                            return variants
+        return variants
 
     def _expand_abbreviations(self, query: str) -> str:
         """Expand common medical abbreviations."""

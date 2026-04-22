@@ -10,6 +10,7 @@ Enhanced with:
 """
 
 import hashlib
+import math
 import pickle
 import re
 import time
@@ -31,7 +32,7 @@ class RetrievedDocument:
     score: float
     metadata: Dict
     doc_id: str = ""
-    score_type: str = "cosine"  # "cosine" | "rrf" | "reranked"
+    score_type: str = "cosine"  # "cosine" | "rrf" | "reranked" | "normalized"
 
 
 def reciprocal_rank_fusion(
@@ -63,6 +64,47 @@ def reciprocal_rank_fusion(
             fused_scores[doc_id] = fused_scores.get(doc_id, 0.0) + rrf_score
 
     return fused_scores
+
+
+def normalize_retrieval_scores(
+    documents: List[RetrievedDocument],
+    basis: str,
+    rrf_k: int = 60,
+) -> None:
+    """
+    Map raw scores to [0, 1] and set ``score_type='normalized'``.
+
+    Args:
+        documents: Retrieved documents (mutated in place).
+        basis: ``"reranker"`` (cross-encoder logits), ``"rrf"``, or ``"cosine"``.
+        rrf_k: The RRF constant used during fusion (default 60). Used to derive
+               the correct scaling factor for the "rrf" basis so that a rank-1
+               result across both dense and sparse lists maps to exactly 1.0.
+               Formula: scale = (rrf_k + 1) / 2.0
+               For k=60: top RRF ≈ 2/(60+1) ≈ 0.033 → scale ≈ 30.5
+               For k=20: top RRF ≈ 2/(20+1) ≈ 0.095 → scale ≈ 10.5
+               (Old hardcoded *25.0 was only correct for k=60.)
+    """
+    if not documents:
+        return
+    if basis == "reranker":
+        for d in documents:
+            s = float(d.score)
+            if s > 60.0:
+                d.score = 1.0
+            elif s < -60.0:
+                d.score = 0.0
+            else:
+                d.score = 1.0 / (1.0 + math.exp(-s))
+    elif basis == "rrf":
+        scale_factor = (rrf_k + 1) / 2.0  # config-adaptive; replaces hardcoded 25.0
+        for d in documents:
+            d.score = min(float(d.score) * scale_factor, 1.0)
+    else:
+        for d in documents:
+            d.score = float(max(0.0, min(1.0, d.score)))
+    for d in documents:
+        d.score_type = "normalized"
 
 
 def _stable_doc_id(content: str, source: str = "") -> str:
@@ -98,6 +140,11 @@ class HybridRetriever:
         rrf_k: int = 60,
         min_score: float = 0.0,
         context_window_sentences: int = 0,
+        bm25_k1: float = 1.2,
+        bm25_b: float = 0.5,
+        use_adaptive_fusion: bool = True,
+        enable_mmr_diversity: bool = False,
+        mmr_lambda: float = 0.5,
     ):
         """
         Initialize hybrid retriever.
@@ -123,6 +170,11 @@ class HybridRetriever:
         self.rrf_k = rrf_k
         self.min_score = min_score
         self.context_window_sentences = context_window_sentences
+        self._bm25_k1 = float(bm25_k1)
+        self._bm25_b = float(bm25_b)
+        self.use_adaptive_fusion = bool(use_adaptive_fusion)
+        self.enable_mmr_diversity = bool(enable_mmr_diversity)
+        self.mmr_lambda = float(mmr_lambda)
         self.corpus = corpus
         self.bm25 = None
         self._bm25_init_attempted = False
@@ -156,7 +208,11 @@ class HybridRetriever:
             content = doc.get("content", "")
             tokenized_corpus.append(self._medical_tokenize(content))
 
-        self.bm25 = BM25Okapi(tokenized_corpus)
+        self.bm25 = BM25Okapi(
+            tokenized_corpus,
+            k1=self._bm25_k1,
+            b=self._bm25_b,
+        )
         self._bm25_init_attempted = True
         logger.info(f" BM25 index initialized with {len(corpus)} documents")
 
@@ -169,13 +225,21 @@ class HybridRetriever:
             return None
 
     def _bm25_cache_key(self, doc_count: int) -> str:
-        """Stable cache key = doc_count + embedding_meta mtime (or '0' if absent)."""
+        """Stable cache key = doc_count + SHA-256 of embedding_metadata.json content.
+
+        Using a content hash instead of mtime means `git pull`, `touch`, or any
+        filesystem operation that updates the timestamp without changing the file
+        will NOT invalidate the BM25 pickle (avoiding a costly 20-60s rebuild).
+        """
         try:
             meta_path = Path(self.vector_store.persist_directory) / "embedding_metadata.json"
-            mtime = str(int(meta_path.stat().st_mtime)) if meta_path.exists() else "0"
+            if meta_path.exists():
+                content_hash = hashlib.sha256(meta_path.read_bytes()).hexdigest()[:16]
+            else:
+                content_hash = "none"
         except Exception:
-            mtime = "0"
-        return f"{doc_count}:{mtime}"
+            content_hash = "none"
+        return f"{doc_count}:{content_hash}"
 
     def _try_load_bm25_cache(self, doc_count: int) -> bool:
         """Try to load BM25 from pickle cache. Returns True on success."""
@@ -356,6 +420,53 @@ class HybridRetriever:
                 documents.append((doc, float(similarity), metadata, doc_id))
         return documents
 
+    def _mmr_rerank_candidates(
+        self,
+        query_embedding: np.ndarray,
+        documents: List[RetrievedDocument],
+        fetch_k: int,
+    ) -> List[RetrievedDocument]:
+        """Re-order fused candidates using vector-store MMR for diversity.
+
+        NOTE (Issue 3 / enable_mmr_diversity): MedicalVectorStore does not currently
+        implement mmr_search(), so enable_mmr_diversity=True is a safe no-op.
+        The hasattr guard below ensures this method returns the original list unchanged.
+        To activate MMR diversity: implement mmr_search() in MedicalVectorStore and
+        expose it via the Chroma / Qdrant client backend.
+        """
+        # hasattr guard — silently skips if mmr_search is not yet implemented
+        if not documents or not hasattr(self.vector_store, "mmr_search"):
+            return documents
+        try:
+            mmr = self.vector_store.mmr_search(
+                query_embedding.tolist(),
+                k=min(len(documents), fetch_k),
+                fetch_k=min(fetch_k * 2, max(fetch_k * 4, 24)),
+                lambda_mult=self.mmr_lambda,
+            )
+            texts = mmr.get("documents", [[]])[0]
+            if not texts:
+                return documents
+            by_exact = {d.content: d for d in documents}
+            out: List[RetrievedDocument] = []
+            for t in texts:
+                if t in by_exact:
+                    out.append(by_exact[t])
+                    continue
+                for d in documents:
+                    if d in out:
+                        continue
+                    if len(t) > 40 and (t[:40] in d.content or d.content[:40] in t):
+                        out.append(d)
+                        break
+            for d in documents:
+                if d not in out:
+                    out.append(d)
+            return out[:fetch_k]
+        except Exception as e:
+            logger.debug(f"MMR diversity skipped: {e}")
+            return documents
+
     def _dense_retrieve(
         self,
         query: str,
@@ -426,10 +537,16 @@ class HybridRetriever:
         fetch_k = k * 3 if use_reranking else k * 2
         _timings: Dict[str, float] = {}
 
+        # Basis for post-hoc score normalization (set before rerank; rerank overwrites).
+        norm_basis = "cosine"
+
         # Adaptive RRF weights based on query type
         query_type = self._detect_query_type(query)
-        dense_w, sparse_w = self._ADAPTIVE_WEIGHTS[query_type]
-        if query_type != "default":
+        if self.use_adaptive_fusion:
+            dense_w, sparse_w = self._ADAPTIVE_WEIGHTS[query_type]
+        else:
+            dense_w, sparse_w = self.dense_weight, self.sparse_weight
+        if self.use_adaptive_fusion and query_type != "default":
             logger.debug(
                 f"Query type '{query_type}' → adaptive weights dense={dense_w} sparse={sparse_w}"
             )
@@ -485,6 +602,11 @@ class HybridRetriever:
                             score_type="rrf",
                         )
                     )
+            norm_basis = "rrf"
+            if self.enable_mmr_diversity:
+                documents = self._mmr_rerank_candidates(
+                    query_embedding, documents, fetch_k
+                )
         else:
             # Dense only
             if use_hybrid:
@@ -502,6 +624,7 @@ class HybridRetriever:
                 )
                 for doc, score, metadata, doc_id in dense_results
             ]
+            norm_basis = "cosine"
 
         # Apply reranking if available
         if use_reranking and self.reranker is not None:
@@ -528,6 +651,11 @@ class HybridRetriever:
             else:
                 for d in documents:
                     d.score_type = "reranked"
+            norm_basis = "reranker"
+
+        # Unified [0, 1] scores for grounding, corrective RAG, and confidence layers.
+        # rrf_k is forwarded so the scale factor adapts to any configured value.
+        normalize_retrieval_scores(documents, norm_basis, rrf_k=self.rrf_k)
 
         # Sort by score and return top k
         documents.sort(key=lambda x: x.score, reverse=True)
@@ -590,16 +718,20 @@ class HybridRetriever:
         if not self.corpus:
             return documents
 
-        # Build a content → corpus index map once per call (not per document)
-        content_index: Dict[str, int] = {
-            d.get("content", "")[:120]: i for i, d in enumerate(self.corpus)
-        }
+        # Prefer stable Chroma / corpus IDs (content-prefix keys collide).
+        content_index: Dict[str, int] = {}
+        for i, row in enumerate(self.corpus):
+            cid = row.get("id")
+            if cid is not None:
+                content_index[str(cid)] = i
+            content_index[row.get("content", "")[:120]] = i
 
         expanded = []
         n = self.context_window_sentences
         for doc in documents:
-            key = doc.content[:120]
-            idx = content_index.get(key)
+            idx = content_index.get(doc.doc_id) if doc.doc_id else None
+            if idx is None:
+                idx = content_index.get(doc.content[:120])
             if idx is None:
                 expanded.append(doc)
                 continue

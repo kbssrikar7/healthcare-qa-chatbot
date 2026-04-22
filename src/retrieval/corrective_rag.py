@@ -31,12 +31,11 @@ class CorrectiveRAG:
     - Supports multiple retrieval strategies
     """
 
-    # Relevance thresholds calibrated for RRF-scale scores (~0.01-0.04)
-    # RRF combines dense + sparse retrieval; typical top scores: 0.016-0.040
-    HIGH_RELEVANCE_THRESHOLD = 0.025  # Strong RRF fusion score
-    LOW_RELEVANCE_THRESHOLD = 0.012  # Minimum acceptable RRF score
+    # Thresholds assume HybridRetriever ``normalize_retrieval_scores`` output in [0, 1].
+    HIGH_RELEVANCE_THRESHOLD = 0.7
+    LOW_RELEVANCE_THRESHOLD = 0.4
 
-    def __init__(self, retriever, llm=None, max_iterations: int = 2):
+    def __init__(self, retriever, llm=None, max_iterations: int = 2, query_enhancer=None):
         """
         Initialize Corrective RAG.
 
@@ -44,10 +43,15 @@ class CorrectiveRAG:
             retriever: Base retriever for document search
             llm: Optional LLM for relevance grading
             max_iterations: Maximum retrieval refinement iterations
+            query_enhancer: Optional QueryEnhancer instance. When provided,
+                            retry queries use abbreviation expansion and
+                            synonym-based refinement instead of naive keyword
+                            extraction from the top document chunk.
         """
         self.retriever = retriever
         self.llm = llm
         self.max_iterations = max_iterations
+        self.query_enhancer = query_enhancer
 
     def retrieve_with_correction(
         self, query: str, k: int = 5, min_relevant_docs: int = 2
@@ -84,7 +88,7 @@ class CorrectiveRAG:
 
             if refined_query and refined_query != query:
                 new_documents = self.retriever.retrieve(refined_query, k=k)
-                new_grades = self._grade_documents(query, new_documents)
+                new_grades = self._grade_documents(refined_query, new_documents)
 
                 new_relevant_count = sum(1 for g in new_grades if g.relevance == "relevant")
 
@@ -144,7 +148,19 @@ class CorrectiveRAG:
         """
         Refine query based on feedback from document grades.
         """
-        # Simple refinement: add specificity
+        # Strategy 1: QueryEnhancer abbreviation + synonym expansion (preferred)
+        if self.query_enhancer is not None:
+            try:
+                enhanced = self.query_enhancer.enhance(original_query)
+                # Take just the expanded query text (not decomposed sub-questions)
+                refined = enhanced.enhanced_query if hasattr(enhanced, "enhanced_query") else str(enhanced)
+                if refined and refined.lower().strip() != original_query.lower().strip():
+                    logger.debug(f"CorrectiveRAG: QueryEnhancer refined '{original_query}' -> '{refined[:80]}'")
+                    return refined
+            except Exception as e:
+                logger.debug(f"CorrectiveRAG: QueryEnhancer failed, trying fallback: {e}")
+
+        # Strategy 2: LLM-based reformulation
         if self.llm:
             prompt = f"""The search query "{original_query}" returned documents that weren't relevant enough.
             
@@ -157,20 +173,39 @@ Return only the refined query, nothing else."""
             except Exception as e:
                 logger.warning(f"LLM-based query reformulation failed: {e}")
 
-        # Fallback: extract key terms from partially relevant docs
+        # Strategy 3: Abbreviation-based expansion (lightweight fallback without QueryEnhancer)
+        # Prefer expanding known abbreviations over extracting random document words.
+        _COMMON_EXPANSIONS = {
+            "COPD": "chronic obstructive pulmonary disease",
+            "HTN": "hypertension",
+            "DM": "diabetes mellitus",
+            "MI": "myocardial infarction",
+            "CVA": "cerebrovascular accident stroke",
+            "UTI": "urinary tract infection",
+            "CAD": "coronary artery disease",
+            "CHF": "congestive heart failure",
+            "CKD": "chronic kidney disease",
+            "GERD": "gastroesophageal reflux disease",
+        }
+        for abbr, expansion in _COMMON_EXPANSIONS.items():
+            if abbr in original_query and expansion not in original_query:
+                return f"{original_query} {expansion}"
+
+        # Strategy 4: Extract key terms from top partially-relevant doc
         relevant_docs = [
             doc for i, doc in enumerate(documents) if grades[i].relevance != "irrelevant"
         ]
-
         if relevant_docs:
-            # Extract potential keywords from relevant docs
-            first_doc = relevant_docs[0]
-            content = first_doc.content if hasattr(first_doc, "content") else str(first_doc)
-
-            # Add first few significant words to query
-            words = [w for w in content.split()[:50] if len(w) > 4][:3]
-            if words:
-                return original_query + " " + " ".join(words)
+            import re as _re
+            content = relevant_docs[0].content if hasattr(relevant_docs[0], "content") else str(relevant_docs[0])
+            # Use first few meaningful long words (>5 chars) not already in query
+            query_words = set(original_query.lower().split())
+            keywords = [
+                w for w in _re.findall(r"\b[a-zA-Z]{5,}\b", content)
+                if w.lower() not in query_words
+            ][:3]
+            if keywords:
+                return original_query + " " + " ".join(keywords)
 
         return None
 

@@ -36,13 +36,14 @@ class MedicalTextChunker:
     - Recursive chunking with overlaps
     """
 
-    # Domain-specific chunk sizes (in tokens, approximate)
+    # Domain-specific chunk sizes in characters
+    # (roughly 4 chars/token: 256 chars ≈ 64 tokens).
     DOMAIN_CHUNK_SIZES = {
-        "pubmedqa": 256,  # Dense abstracts
-        "medmcqa": 128,  # Short Q&A pairs
-        "healthcaremagic": 512,  # Long consultations
-        "clinical_guideline": 768,  # Context-heavy guidelines
-        "default": 512,
+        "pubmedqa": 256,  # ~64 tokens, dense abstracts
+        "medmcqa": 128,  # ~32 tokens, short Q&A pairs
+        "healthcaremagic": 512,  # ~128 tokens, long consultations
+        "clinical_guideline": 768,  # ~192 tokens, context-heavy guidelines
+        "default": 512,  # ~128 tokens baseline
     }
 
     def __init__(

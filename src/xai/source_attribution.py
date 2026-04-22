@@ -4,10 +4,12 @@ Source attribution for medical QA.
 
 import re
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Sequence
 
 import numpy as np
 from loguru import logger
+
+from src.utils.stopwords import OVERLAP_STOPWORDS as _SHARED_STOP
 
 # Try to import spacy for better NLP, fall back to regex
 try:
@@ -168,7 +170,13 @@ class SourceAttributor:
 
         return True
 
-    def find_evidence(self, claim: str, documents: List[Dict]) -> Optional[Dict]:
+    def find_evidence(
+        self,
+        claim: str,
+        documents: List[Dict],
+        claim_embedding: Optional[np.ndarray] = None,
+        doc_embeddings: Optional[Dict[str, np.ndarray]] = None,
+    ) -> Optional[Dict]:
         """Find best matching evidence for a claim."""
         best_match = None
         best_score = 0.0
@@ -176,11 +184,19 @@ class SourceAttributor:
         for doc in documents:
             content = doc.get("content", str(doc))
             source = doc.get("source", "Unknown")
+            doc_emb = None
+            if doc_embeddings is not None:
+                doc_emb = doc_embeddings.get(content)
 
             # Calculate similarity (using embedder if available)
             if self.embedder:
                 try:
-                    score = self._embedding_similarity(claim, content)
+                    score = self._embedding_similarity(
+                        claim,
+                        content,
+                        claim_embedding=claim_embedding,
+                        content_embedding=doc_emb,
+                    )
                 except Exception as e:
                     logger.warning(
                         f"Embedding similarity failed, falling back to text overlap: {e}"
@@ -203,10 +219,20 @@ class SourceAttributor:
             return best_match
         return None
 
-    def _embedding_similarity(self, text1: str, text2: str) -> float:
+    def _embedding_similarity(
+        self,
+        text1: str,
+        text2: str,
+        claim_embedding: Optional[np.ndarray] = None,
+        content_embedding: Optional[np.ndarray] = None,
+    ) -> float:
         """Calculate cosine similarity between embeddings."""
-        emb1 = self.embedder.embed_query(text1)
-        emb2 = self.embedder.embed_query(text2)
+        emb1 = claim_embedding if claim_embedding is not None else self.embedder.embed_query(text1)
+        emb2 = (
+            content_embedding
+            if content_embedding is not None
+            else self.embedder.embed_query(text2)
+        )
         # Cosine similarity (normalized dot product)
         norm1 = np.linalg.norm(emb1)
         norm2 = np.linalg.norm(emb2)
@@ -214,119 +240,32 @@ class SourceAttributor:
             return 0.0
         return float(np.dot(emb1, emb2) / (norm1 * norm2))
 
-    # Common English stopwords to exclude from overlap scoring
-    _STOP_WORDS = frozenset(
-        {
-            "the",
-            "a",
-            "an",
-            "is",
-            "are",
-            "was",
-            "were",
-            "be",
-            "been",
-            "being",
-            "have",
-            "has",
-            "had",
-            "do",
-            "does",
-            "did",
-            "will",
-            "would",
-            "could",
-            "should",
-            "may",
-            "might",
-            "shall",
-            "can",
-            "need",
-            "dare",
-            "ought",
-            "to",
-            "of",
-            "in",
-            "for",
-            "on",
-            "with",
-            "at",
-            "by",
-            "from",
-            "as",
-            "into",
-            "through",
-            "during",
-            "before",
-            "after",
-            "above",
-            "below",
-            "between",
-            "out",
-            "off",
-            "over",
-            "under",
-            "again",
-            "further",
-            "then",
-            "once",
-            "and",
-            "but",
-            "or",
-            "nor",
-            "not",
-            "no",
-            "so",
-            "that",
-            "this",
-            "these",
-            "those",
-            "it",
-            "its",
-            "he",
-            "she",
-            "they",
-            "we",
-            "you",
-            "i",
-            "me",
-            "him",
-            "her",
-            "us",
-            "them",
-            "my",
-            "your",
-            "his",
-            "our",
-            "their",
-            "what",
-            "which",
-            "who",
-            "whom",
-            "when",
-            "where",
-            "why",
-            "how",
-            "all",
-            "each",
-            "every",
-            "both",
-            "few",
-            "more",
-            "most",
-            "other",
-            "some",
-            "such",
-            "only",
-            "own",
-            "same",
-            "than",
-            "too",
-            "very",
-            "just",
-            "also",
-        }
-    )
+    def _build_embedding_cache(
+        self, claims: Sequence[str], documents: List[Dict]
+    ) -> tuple[Dict[str, np.ndarray], Dict[str, np.ndarray]]:
+        """
+        Pre-compute embeddings once per request.
+
+        Returns:
+            claim_to_emb: claim string -> embedding
+            doc_to_emb: doc content string -> embedding
+        """
+        claim_to_emb: Dict[str, np.ndarray] = {}
+        doc_to_emb: Dict[str, np.ndarray] = {}
+        if not self.embedder:
+            return claim_to_emb, doc_to_emb
+
+        for claim in claims:
+            claim_to_emb[claim] = self.embedder.embed_query(claim)
+
+        for doc in documents:
+            content = doc.get("content", str(doc))
+            if content not in doc_to_emb:
+                doc_to_emb[content] = self.embedder.embed_query(content)
+
+        return claim_to_emb, doc_to_emb
+
+    _STOP_WORDS = _SHARED_STOP
 
     def _text_overlap(self, claim: str, content: str) -> float:
         """Calculate word overlap similarity (stopwords excluded)."""
@@ -348,12 +287,15 @@ class SourceAttributor:
         best_score = 0
 
         words = content.split()
+        perfect = len(claim_words)
         for i in range(max(1, len(words) - 10)):
             window = " ".join(words[i : i + 20]).lower()
             score = sum(1 for w in claim_words if w in window)
             if score > best_score:
                 best_score = score
                 best_start = i
+                if best_score == perfect:
+                    break
 
         # Extract snippet
         snippet_words = words[best_start : best_start + 30]
@@ -368,9 +310,15 @@ class SourceAttributor:
         """Attribute an entire answer to sources."""
         claims = self.extract_claims(answer)
         attributions = []
+        claim_embs, doc_embs = self._build_embedding_cache(claims, documents)
 
         for claim in claims:
-            evidence = self.find_evidence(claim, documents)
+            evidence = self.find_evidence(
+                claim,
+                documents,
+                claim_embedding=claim_embs.get(claim),
+                doc_embeddings=doc_embs if doc_embs else None,
+            )
 
             if evidence:
                 attributions.append(

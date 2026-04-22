@@ -17,6 +17,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List
 
+from src.utils.stopwords import OVERLAP_STOPWORDS as _SHARED_STOP
+
 from loguru import logger
 
 
@@ -100,43 +102,7 @@ class HallucinationDetector:
             "without",
         }
     )
-    STOP_WORDS = frozenset(
-        {
-            "the",
-            "a",
-            "an",
-            "is",
-            "are",
-            "was",
-            "were",
-            "be",
-            "have",
-            "has",
-            "had",
-            "do",
-            "does",
-            "did",
-            "will",
-            "would",
-            "could",
-            "should",
-            "may",
-            "might",
-            "shall",
-            "of",
-            "in",
-            "on",
-            "at",
-            "to",
-            "for",
-            "by",
-            "with",
-            "this",
-            "that",
-            "these",
-            "those",
-        }
-    )
+    STOP_WORDS = _SHARED_STOP
 
     def __init__(self, use_nli: bool = False):
         """
@@ -230,18 +196,34 @@ class HallucinationDetector:
             scores.append(0.7)
 
         # 4. Fabricated citation detection
-        fab_citations = self._check_fabricated_citations(answer)
+        # Pass the context so citations copied from source docs are NOT flagged.
+        fab_citations = self._check_fabricated_citations(answer, context=context)
         if fab_citations:
             flagged_claims.extend(fab_citations)
             scores.append(0.6)
 
         # 5. Optional NLI entailment
+        nli_best_entailment = 0.0
         if self.use_nli:
             nli_score = self._nli_check(answer, context)
+            nli_best_entailment = nli_score  # store for rescue rule below
             scores.append(1.0 - nli_score)
 
-        # Aggregate
-        hallucination_score = max(scores) if scores else 0.0
+        # Aggregate: balance grounding risk with secondary signals.
+        # Grounding weight reduced from 0.55 to 0.45 when NLI is available
+        # (embedding grounding is more reliable; E1 fix will improve this further).
+        if not scores:
+            hallucination_score = 0.0
+        else:
+            grounding_risk = scores[0]
+            # NLI rescue: if any claim has high entailment, grounding floor is raised
+            if nli_best_entailment > 0.6:
+                # The retrieval context does support the answer — reduce grounding risk
+                grounding_risk = min(grounding_risk, 0.5)
+            rest = scores[1:]
+            rest_mean = sum(rest) / len(rest) if rest else 0.0
+            g_weight = 0.45 if self.use_nli else 0.55
+            hallucination_score = min(1.0, g_weight * grounding_risk + (1.0 - g_weight) * rest_mean)
         has_hallucination = hallucination_score >= 0.5
 
         # Determine type
@@ -350,14 +332,26 @@ class HallucinationDetector:
         r"\b(?:doi|DOI)\s*:\s*10\.\d{4,}",
     ]
 
-    def _check_fabricated_citations(self, answer: str) -> List[Dict[str, Any]]:
+    def _check_fabricated_citations(self, answer: str, context: str = "") -> List[Dict[str, Any]]:
+        """Flag citations in the answer that are NOT present in the retrieved context.
+
+        Citations that appear verbatim in the source documents were copied, not
+        fabricated.  Only citations absent from the context are flagged.
+        Passing context="" (default) restores the previous always-flag behaviour.
+        """
         flags: List[Dict[str, Any]] = []
+        context_lower = context.lower() if context else ""
         for pattern in self._CITATION_PATTERNS:
             for match in re.finditer(pattern, answer):
+                matched_text = match.group()
+                # If the matched text (or a normalised version) is in the source,
+                # it was copied not fabricated — skip it.
+                if context_lower and matched_text.lower() in context_lower:
+                    continue
                 flags.append(
                     {
                         "check": "fabricated_citation",
-                        "matched": match.group()[:60],
+                        "matched": matched_text[:60],
                     }
                 )
         return flags
@@ -370,7 +364,10 @@ class HallucinationDetector:
 
         Uses microsoft/deberta-base-mnli which is cached locally.
         Input format: {"text": premise, "text_pair": hypothesis} for correct
-        NLI pair encoding (avoids manual [SEP] injection which deberta ignores).
+        NLI pair encoding.
+
+        Window size increased from 480/240 to 900/450 chars to match
+        FactualConsistencyChecker and reduce fragmentation of medical context.
         """
         if self._nli_pipeline is None:
             try:
@@ -391,19 +388,26 @@ class HallucinationDetector:
         if not sentences:
             return 0.5
 
+        def _windows(txt: str, size: int = 900, step: int = 450) -> List[str]:
+            if len(txt) <= size:
+                return [txt]
+            return [txt[i : i + size] for i in range(0, len(txt), step)]
+
+        premises = _windows(context or "")
         entail_scores: List[float] = []
-        premise = context[:512]
         for sent in sentences[:5]:
-            try:
-                # Pass as a dict so the tokenizer uses proper pair encoding
-                result = self._nli_pipeline({"text": premise, "text_pair": sent})[0]
-                if "ENTAIL" in result["label"].upper():
-                    entail_scores.append(result["score"])
-                else:
-                    entail_scores.append(0.0)
-            except Exception as e:
-                logger.warning(f"NLI sentence check failed: {e}")
-                entail_scores.append(0.5)
+            sent_best = 0.0
+            for premise in premises:
+                if not premise.strip():
+                    continue
+                try:
+                    result = self._nli_pipeline({"text": premise, "text_pair": sent})[0]
+                    if "ENTAIL" in result["label"].upper():
+                        sent_best = max(sent_best, float(result["score"]))
+                except Exception as e:
+                    logger.warning(f"NLI sentence check failed: {e}")
+                    continue
+            entail_scores.append(sent_best)
 
         return sum(entail_scores) / len(entail_scores) if entail_scores else 0.5
 

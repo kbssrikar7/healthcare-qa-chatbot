@@ -12,6 +12,8 @@ from typing import Dict, List, Optional
 
 from loguru import logger
 
+from src.utils.stopwords import OVERLAP_STOPWORDS as _SHARED_STOP
+
 
 @dataclass
 class ClaimResult:
@@ -173,33 +175,40 @@ class FactualConsistencyChecker:
             return self._fallback_check(claim, context)
 
         try:
-            # NLI format: Use proper pair encoding for MNLI models
-            # Premise = context (what we know)
-            # Hypothesis = claim (what we're checking)
-            # Pass as dict to ensure tokenizer uses correct pair encoding
-            raw = self.pipeline({"text": context[:1024], "text_pair": claim})
-            result = raw[0] if isinstance(raw, list) else raw
-            label = result["label"].upper()
-            score = result["score"]
+            entail_best = 0.0
+            contradict_best = 0.0
+            window, step = 900, 450
+            for start in range(0, max(len(context), 1), step):
+                chunk = context[start : start + window]
+                if not chunk.strip():
+                    continue
+                raw = self.pipeline({"text": chunk, "text_pair": claim})
+                result = raw[0] if isinstance(raw, list) else raw
+                label = result["label"].upper()
+                score = float(result["score"])
+                if "ENTAIL" in label:
+                    entail_best = max(entail_best, score)
+                elif "CONTRADICT" in label:
+                    contradict_best = max(contradict_best, score)
 
-            # Map labels (different models have different formats)
-            if "ENTAIL" in label:
-                is_supported = score >= self.entailment_threshold
-                label = "ENTAILMENT"
-            elif "CONTRADICT" in label:
-                is_supported = False
-                label = "CONTRADICTION"
-            else:
-                is_supported = False
-                label = "NEUTRAL"
+            if contradict_best > 0.5:
+                return ClaimResult(
+                    claim=claim,
+                    is_supported=False,
+                    confidence=contradict_best,
+                    label="CONTRADICTION",
+                    evidence_snippet=None,
+                )
 
-            # Find supporting evidence snippet
+            is_supported = entail_best >= self.entailment_threshold
+            label = "ENTAILMENT" if is_supported else "NEUTRAL"
+            confidence = entail_best if entail_best > 0 else contradict_best
             evidence = self._find_evidence(claim, context) if is_supported else None
 
             return ClaimResult(
                 claim=claim,
                 is_supported=is_supported,
-                confidence=score,
+                confidence=confidence,
                 label=label,
                 evidence_snippet=evidence,
             )
@@ -213,53 +222,8 @@ class FactualConsistencyChecker:
         claim_words = set(claim.lower().split())
         context_words = set(context.lower().split())
 
-        # Remove stopwords
-        stopwords = {
-            "the",
-            "a",
-            "an",
-            "is",
-            "are",
-            "was",
-            "were",
-            "be",
-            "been",
-            "have",
-            "has",
-            "had",
-            "do",
-            "does",
-            "did",
-            "will",
-            "would",
-            "could",
-            "should",
-            "may",
-            "might",
-            "must",
-            "can",
-            "this",
-            "that",
-            "it",
-            "its",
-            "of",
-            "in",
-            "to",
-            "for",
-            "with",
-            "on",
-            "at",
-            "by",
-            "from",
-            "or",
-            "and",
-            "but",
-            "if",
-            "then",
-        }
-
-        claim_words = claim_words - stopwords
-        context_words = context_words - stopwords
+        claim_words = claim_words - _SHARED_STOP
+        context_words = context_words - _SHARED_STOP
 
         if not claim_words:
             return ClaimResult(
@@ -366,7 +330,11 @@ class MedicalFactChecker(FactualConsistencyChecker):
 
         # Verify dosages mentioned in answer appear in context
         dosage_verified = (
-            all(d in context_dosages for d in dosage_claims) if dosage_claims else True
+            all(
+                any(re.search(r"\b" + re.escape(d) + r"\b", cd, re.IGNORECASE) for cd in context_dosages)
+                for d in dosage_claims
+            )
+            if dosage_claims else True
         )
 
         return {

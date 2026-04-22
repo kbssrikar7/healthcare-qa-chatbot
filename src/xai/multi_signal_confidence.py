@@ -9,12 +9,18 @@ For publication: each signal can be ablated independently to study
 contribution (Section 5.3 of paper).
 """
 
+import json
 import re
 from dataclasses import dataclass, field
 from difflib import SequenceMatcher
+from pathlib import Path
 from typing import Dict, List, Optional
 
 import numpy as np
+
+_CALIBRATION_SIDECAR = (
+    Path(__file__).parent.parent.parent / "evaluation" / "results" / "calibration.json"
+)
 
 
 @dataclass
@@ -87,8 +93,15 @@ class MultiSignalConfidenceScorer:
             self.weights = {k: v / total for k, v in self.weights.items()}
 
         # Platt scaling:  sigmoid(a * raw_score + b)
-        # Use parameters from calibration.json as specified in IMPROVEMENT_PLAN
+        # Priority: explicit params > calibration.json sidecar > hardcoded defaults
         cp = calibration_params or {}
+        if not cp and _CALIBRATION_SIDECAR.exists():
+            try:
+                _sidecar = json.loads(_CALIBRATION_SIDECAR.read_text())
+                if "platt_a" in _sidecar and "platt_b" in _sidecar:
+                    cp = {"a": _sidecar["platt_a"], "b": _sidecar["platt_b"]}
+            except Exception:
+                pass
         self.platt_a: float = cp.get("a", 14.44)
         self.platt_b: float = cp.get("b", -11.25)
 
@@ -124,7 +137,12 @@ class MultiSignalConfidenceScorer:
         bd.generation_confidence = self._generation_confidence(generation_probabilities)
         bd.consistency_score = self._self_consistency_score(answer, alternative_answers)
         bd.source_agreement = self._source_agreement_score(answer, retrieved_documents)
-        bd.medical_entity_coverage = self._entity_coverage_score(query, answer, retrieved_documents)
+        # D2: Skip entity coverage when its weight is 0 — saves ~5ms per query
+        # and prevents a misleading 0.5 neutral score inflating the weighted sum.
+        if self.weights.get("entity_coverage", 0.0) > 0:
+            bd.medical_entity_coverage = self._entity_coverage_score(query, answer, retrieved_documents)
+        else:
+            bd.medical_entity_coverage = 0.0
 
         raw = (
             self.weights.get("retrieval", 0) * bd.retrieval_confidence
@@ -149,8 +167,11 @@ class MultiSignalConfidenceScorer:
     def _retrieval_confidence(self, documents: list) -> float:
         """Score based on retrieval quality metrics.
 
-        Normalizes scores to [0, 1] internally regardless of input scale
-        (handles both cosine similarity ~0.3-0.9 and RRF ~0.01-0.04).
+        Normalizes scores to [0, 1] internally regardless of input scale.
+        For RRF scores: derives the scale factor from rrf_k so it adapts to
+        any configured value (old hardcoded *25 assumed k=60 only).
+        Formula: max_rrf = sum_{list=1}^{n_lists} 1/(k+1) ≈ 1/(k+1) for 2 lists.
+        We scale so that a rank-1 match across both lists maps to 1.0.
         """
         if not documents:
             return 0.0
@@ -159,22 +180,26 @@ class MultiSignalConfidenceScorer:
         if not scores:
             return 0.0
 
-        # For RRF scores, we shouldn't normalize by dividing by the max
-        # RRF scores are naturally small, dividing by max inflates them and
-        # destroys the absolute magnitude indicating relevance.
-
         score_type = getattr(documents[0], "score_type", "cosine")
-        if score_type == "rrf":
-            # RRF is usually sum(1 / (k + rank)). Max possible for 1 list is ~0.016 (with k=60)
-            # Max for 2 lists (dense + sparse) is ~0.032. We can scale it gently but not divide by max.
-            norm_scores = [min(s * 25.0, 1.0) for s in scores]
+        if score_type == "normalized":
+            norm_scores = [float(np.clip(s, 0.0, 1.0)) for s in scores]
+        elif score_type == "rrf":
+            # Derive scale factor from rrf_k stored in document metadata (if present)
+            # or fall back to k=60. scale = 1 / (2/(rrf_k+1)) = (rrf_k+1)/2
+            try:
+                rrf_k = float(documents[0].metadata.get("rrf_k", 60)) if hasattr(documents[0], "metadata") else 60.0
+            except Exception:
+                rrf_k = 60.0
+            # For k=60: top RRF ≈ 1/61 + 1/61 ≈ 0.033; scale_factor = 1/0.033 ≈ 30
+            # For k=20: top RRF ≈ 1/21 + 1/21 ≈ 0.095; scale_factor = 1/0.095 ≈ 10.5
+            scale_factor = (rrf_k + 1) / 2.0
+            norm_scores = [min(float(s) * scale_factor, 1.0) for s in scores]
         else:
-            # Cosine scores: Normalize scores to [0, 1] if max > 1, otherwise leave as is.
             max_raw = max(scores)
             if max_raw > 1.0:
                 norm_scores = [s / max_raw for s in scores]
             else:
-                norm_scores = scores
+                norm_scores = [float(np.clip(s, 0.0, 1.0)) for s in scores]
 
         top_score = norm_scores[0]
         mean_score = float(np.mean(norm_scores))
@@ -199,20 +224,32 @@ class MultiSignalConfidenceScorer:
         )
 
     def _generation_confidence(self, probabilities: Optional[List[float]]) -> float:
-        """Score from token-level generation probabilities."""
+        """Score from token-level generation probabilities.
+
+        Uses geometric mean (overall fluency) and low-probability token penalty
+        (uncertainty marker) as two orthogonal signals.  The old entropy formula
+        `−mean(p * log2(p))` was mathematically invalid for scalars and reduced to
+        a transformed version of geo_mean, providing no additional information.
+        """
         if not probabilities:
             return 0.5  # neutral when unavailable
 
         probs = np.array(probabilities, dtype=float)
         probs = np.clip(probs, 1e-10, 1.0)
 
+        # Geometric mean: overall probability mass of the generated sequence
         geo_mean = float(np.exp(np.mean(np.log(probs))))
-        min_prob = float(np.min(probs))
-        entropy = -float(np.mean(probs * np.log2(probs)))
-        max_ent = float(np.log2(len(probs) + 1))
-        norm_cert = 1.0 - entropy / (max_ent + 1e-8)
 
-        return float(np.clip(0.5 * geo_mean + 0.2 * min_prob + 0.3 * norm_cert, 0.0, 1.0))
+        # Low-probability token penalty: fraction of tokens with prob < 0.1
+        # High penalty → model was uncertain → lower confidence
+        low_prob_frac = float(np.mean(probs < 0.1))
+        certainty = 1.0 - low_prob_frac
+
+        # Minimum token probability: extreme outliers signal hallucination risk
+        min_prob = float(np.min(probs))
+        min_signal = float(np.clip(min_prob * 5.0, 0.0, 1.0))  # scale: 0.2→1.0
+
+        return float(np.clip(0.5 * geo_mean + 0.3 * certainty + 0.2 * min_signal, 0.0, 1.0))
 
     def _self_consistency_score(
         self, primary_answer: str, alternatives: Optional[List[str]]
@@ -319,7 +356,15 @@ class MultiSignalConfidenceScorer:
 
         result = minimize(nll, [1.0, 0.0], method="Nelder-Mead", options={"xatol": 1e-6})
         self.platt_a, self.platt_b = float(result.x[0]), float(result.x[1])
-        return {"a": self.platt_a, "b": self.platt_b}
+        params = {"a": self.platt_a, "b": self.platt_b}
+        try:
+            existing = json.loads(_CALIBRATION_SIDECAR.read_text()) if _CALIBRATION_SIDECAR.exists() else {}
+            existing["platt_a"] = self.platt_a
+            existing["platt_b"] = self.platt_b
+            _CALIBRATION_SIDECAR.write_text(json.dumps(existing, indent=2))
+        except Exception:
+            pass
+        return params
 
     # ------------------------------------------------------------------
     # Helpers
@@ -333,27 +378,29 @@ class MultiSignalConfidenceScorer:
         return "low"
 
     def _generate_explanation(self, bd: ConfidenceBreakdown) -> str:
-        parts: List[str] = []
+        # Lead with the final calibrated confidence level so it always matches the score.
+        level_labels = {
+            "high": "High confidence",
+            "medium": "Medium confidence",
+            "low": "Low confidence",
+        }
+        lead = level_labels.get(bd.confidence_level, "Confidence")
+        parts: List[str] = [f"{lead} —"]
 
         if bd.retrieval_confidence < 0.4:
-            parts.append("Retrieved documents may not be highly relevant to the query.")
+            parts.append("retrieved documents may not be highly relevant.")
         elif bd.retrieval_confidence > 0.7:
-            parts.append("Retrieved documents are highly relevant.")
+            parts.append("retrieved documents are relevant.")
 
         if bd.generation_confidence < 0.4:
-            parts.append("The model showed uncertainty during generation.")
-
-        if bd.consistency_score < 0.5:
-            parts.append("Multiple generation attempts produced varying answers.")
-        elif bd.consistency_score > 0.8:
-            parts.append("Answer is consistent across multiple generation attempts.")
+            parts.append("Model showed uncertainty during generation.")
 
         if bd.source_agreement < 0.3:
-            parts.append("Limited source agreement for this answer.")
+            parts.append("Limited source agreement.")
         elif bd.source_agreement > 0.7:
-            parts.append("Multiple sources support this answer.")
+            parts.append("Multiple sources agree.")
 
-        if not parts:
-            parts.append(f"Overall confidence: {bd.confidence_level}.")
+        if len(parts) == 1:
+            parts.append(f"signal score {bd.confidence_level}.")
 
         return " ".join(parts)
