@@ -14,7 +14,6 @@ from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
 from pydantic import ConfigDict, Field
 
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from src.retrieval.hybrid_retriever import RetrievedDocument
 

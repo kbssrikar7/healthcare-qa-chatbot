@@ -14,7 +14,6 @@ from langchain_core.language_models.llms import LLM
 from langchain_core.outputs import GenerationChunk
 from pydantic import ConfigDict
 
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from src.generation.llm_wrapper import GenerationResult, MedicalLLM
 

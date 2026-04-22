@@ -12,8 +12,6 @@ from typing import Dict, List, Optional, Set, Tuple
 import numpy as np
 from loguru import logger
 
-logger = logging.getLogger(__name__)
-
 
 @dataclass
 class RetrievalMetrics:

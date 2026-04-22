@@ -140,30 +140,54 @@ def _extract_content_and_source(doc: Any, fallback_index: int) -> tuple[str, str
 
 def _strip_leading_artefacts(content: str) -> str:
     """
-    Remove common MedQuAD / MedMCQA artefacts from the beginning of a
-    document chunk so that TinyLlama does not interpret them as in-context
-    Q&A examples to imitate.
+    Remove common MedQuAD / MedMCQA / ChatDoctor artefacts so that TinyLlama
+    receives clean factual text — not raw Q&A pairs it will parrot back.
 
-    Patterns removed
+    Patterns handled
     ----------------
-    * ``[SomeLabel]: …``   — source-label prefix sometimes prepended during
-                             ingestion
-    * ``Question: …``      — MedQuAD chunks often start with the question
-                             that was used to retrieve the chunk
+    * ``[SomeLabel]: …``          — source-label prefix from ingestion
+    * ``Question: … Answer: …``  — MedQA-USMLE Q&A pair format.  Extracts ONLY
+                                    the Answer portion (the actual medical fact)
+    * ``Answer: nan``             — ChatDoctor garbage (literal "nan" string)
+    * Multi-choice options (A. / B. / C. / D.) — MedMCQA exam-format leakage
+    * Leading ``Question:`` prefix alone
 
-    Parameters
-    ----------
-    content : str
-        Raw chunk content.
+    The key insight: The knowledge base stores chunks as
+    ``Question: <clinical vignette> Answer: <medical fact>``.
+    Passing the entire chunk to TinyLlama causes two problems:
+      1. TinyLlama echoes the exam-question vignette as its answer
+      2. Post-processing ``AGGRESSIVE_STOP_PATTERNS`` then truncates the
+         actual answer because it contains exam-format language
 
-    Returns
-    -------
-    str
-        Cleaned content with leading artefacts stripped.
+    Solution: extract only the Answer portion and discard the Question vignette.
     """
     # Remove "[SomeLabel]: " prefix (non-greedy match inside brackets)
     content = re.sub(r"^\s*\[.*?\]\s*:\s*", "", content)
-    # Remove "Question: " prefix (case-insensitive)
+
+    # ─── Handle "Question: ... Answer: ..." format ─────────────────────
+    # This is the critical fix: MedQA-USMLE chunks are stored as:
+    #   "Question: A 56-year-old... Answer: ACE inhibitor, ARB, CCB, or thiazide"
+    # We extract ONLY the Answer portion.
+    answer_match = re.search(r"\bAnswer\s*:\s*(.+)", content, flags=re.IGNORECASE | re.DOTALL)
+    if answer_match:
+        answer_text = answer_match.group(1).strip()
+        # Guard: "Answer: nan" is garbage from ChatDoctor; discard
+        if answer_text.lower() in ("nan", "none", "n/a", "na", "null", ""):
+            # Fall through — strip the Question: prefix below and keep the question
+            # text (it may contain useful context)
+            pass
+        else:
+            # Strip multi-choice options from the extracted answer
+            # e.g. "A. Lisinopril B. Amlodipine C. HCTZ D. All of the above"
+            answer_text = re.sub(
+                r"\b[A-E]\.\s+[A-Z][a-zA-Z,\- ]{2,40}\s*(?=\b[A-E]\.|\Z)",
+                "", answer_text,
+            ).strip()
+            if answer_text:
+                content = answer_text
+
+    # Remove leading "Question:" prefix if still present (no Answer: found, or
+    # Answer was garbage and we fell through)
     content = re.sub(r"^\s*Question\s*:\s*", "", content, flags=re.IGNORECASE)
     return content.strip()
 

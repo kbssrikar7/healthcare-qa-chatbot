@@ -9,6 +9,7 @@ import dataclasses
 import hashlib
 import json
 import time
+from collections import OrderedDict
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -35,7 +36,13 @@ class CacheManager:
     - Embedding cache (LRU in-memory)
     - Q&A response cache (with TTL)
     - Query cache for deduplication
+
+    Bump CACHE_SCHEMA_VERSION whenever the response schema or pipeline logic
+    changes in a way that makes existing cache entries stale (e.g. KB switch,
+    new confidence fields, prompt template changes).
     """
+
+    CACHE_SCHEMA_VERSION = "v2"
 
     def __init__(
         self,
@@ -56,13 +63,17 @@ class CacheManager:
         self.ttl_seconds = ttl_seconds
         self.max_memory_items = max_memory_items
 
-        # In-memory caches
-        self._query_cache: Dict[str, Dict] = {}
-        self._embedding_cache: Dict[str, Any] = {}
+        # In-memory caches — OrderedDict gives O(1) LRU eviction via move_to_end / popitem
+        self._query_cache: OrderedDict = OrderedDict()
+        self._embedding_cache: OrderedDict = OrderedDict()
 
     def _hash_key(self, key: str, context_key: str = "") -> str:
-        """Generate hash for cache key including optional context."""
-        full_key = f"{key}::{context_key}"
+        """Generate hash for cache key including schema version and optional context.
+
+        The schema version prefix ensures entries written by older code are never
+        served after a pipeline/KB change — they simply become cache misses.
+        """
+        full_key = f"{self.CACHE_SCHEMA_VERSION}::{key}::{context_key}"
         return hashlib.md5(full_key.encode()).hexdigest()
 
     def get_cached_response(self, query: str, context_key: str = "") -> Optional[Dict]:
@@ -78,10 +89,11 @@ class CacheManager:
         """
         key = self._hash_key(query.lower().strip(), context_key)
 
-        # Check memory cache first
+        # Check memory cache first (move to end = mark as most-recently-used)
         if key in self._query_cache:
             entry = self._query_cache[key]
             if time.time() - entry["timestamp"] < self.ttl_seconds:
+                self._query_cache.move_to_end(key)
                 return entry["response"]
             else:
                 # Expired
@@ -117,16 +129,12 @@ class CacheManager:
         key = self._hash_key(query.lower().strip(), context_key)
         entry = {"query": query, "response": response, "timestamp": time.time()}
 
-        # Store in memory
+        # Store in memory — evict LRU entry if at capacity (O(1))
         if len(self._query_cache) >= self.max_memory_items:
-            # Remove oldest entry
-            oldest_key = min(
-                self._query_cache.keys(),
-                key=lambda k: self._query_cache[k]["timestamp"],
-            )
-            del self._query_cache[oldest_key]
+            self._query_cache.popitem(last=False)  # remove least-recently-used
 
         self._query_cache[key] = entry
+        self._query_cache.move_to_end(key)
 
         # Store on disk
         cache_file = self.cache_dir / f"qa_{key}.json"
@@ -147,7 +155,10 @@ class CacheManager:
             Cached embedding or None
         """
         key = self._hash_key(text)
-        return self._embedding_cache.get(key)
+        if key in self._embedding_cache:
+            self._embedding_cache.move_to_end(key)
+            return self._embedding_cache[key]
+        return None
 
     def cache_embedding(self, text: str, embedding: Any) -> None:
         """
@@ -160,12 +171,10 @@ class CacheManager:
         key = self._hash_key(text)
 
         if len(self._embedding_cache) >= self.max_memory_items:
-            # Clear half the cache (simple LRU approximation)
-            keys_to_remove = list(self._embedding_cache.keys())[: self.max_memory_items // 2]
-            for k in keys_to_remove:
-                del self._embedding_cache[k]
+            self._embedding_cache.popitem(last=False)  # evict LRU entry (O(1))
 
         self._embedding_cache[key] = embedding
+        self._embedding_cache.move_to_end(key)
 
     def invalidate_cache(self) -> None:
         """Clear all caches (call when knowledge base updates)."""

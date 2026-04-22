@@ -29,7 +29,6 @@ from langchain_core.runnables import (
 )
 from loguru import logger
 
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 # Import LangChain wrappers
 from src.langchain.langchain_llm import LangChainMedicalLLMFromExisting
@@ -319,7 +318,7 @@ class LangChainHealthcareQAPipeline:
                 except Exception as e:
                     logger.warning(f"Confidence scoring failed, using default: {e}")
                     confidence = {
-                        "score": 0.7,
+                        "score": 0.5,
                         "level": "medium",
                         "explanation": "Confidence scoring unavailable",
                     }

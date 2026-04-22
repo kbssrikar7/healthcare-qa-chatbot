@@ -32,7 +32,6 @@ from typing import Any, Dict, List, Optional
 from langchain_core.documents import Document
 from loguru import logger
 
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from src.langgraph.langgraph_state import HealthcareRAGState
 from src.utils.context_builder import (  # noqa: E402

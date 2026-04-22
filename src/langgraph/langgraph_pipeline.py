@@ -18,7 +18,6 @@ from loguru import logger
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from src.langgraph.langgraph_nodes import MEDICAL_DISCLAIMER, HealthcareRAGNodes
 from src.langgraph.langgraph_routing import (
