@@ -336,7 +336,6 @@ pipelines: Dict[str, Any] = {}
 
 # Shared components (loaded once)
 _shared_components: Dict[str, Any] = {}
-_shared_init_error: str = ""  # stores traceback if _get_shared_components fails
 
 # Safety guardrails
 guardrails = None
@@ -587,9 +586,7 @@ def _get_shared_components():
     except Exception:
         import traceback
 
-        global _shared_init_error
-        _shared_init_error = traceback.format_exc()
-        logger.error(f" Failed to load shared components:\n{_shared_init_error}")
+        logger.error(f" Failed to load shared components:\n{traceback.format_exc()}")
 
     return _shared_components
 
@@ -1054,19 +1051,6 @@ async def component_health():
         "default_pipeline": default_pipe,
         "models_loaded": list(pipelines.keys()),
         "components": components,
-    }
-
-
-@app.get("/health/init-error", tags=["Health"])
-async def init_error():
-    """Return the traceback from the last _get_shared_components failure (empty if ok)."""
-    return {
-        "has_error": bool(_shared_init_error),
-        "traceback": _shared_init_error or None,
-        "env_qdrant_url_set": bool(os.getenv("QDRANT_URL")),
-        "env_qdrant_key_set": bool(os.getenv("QDRANT_API_KEY")),
-        "env_hf_offline": os.getenv("HF_HUB_OFFLINE"),
-        "env_default_model": os.getenv("DEFAULT_MODEL"),
     }
 
 
