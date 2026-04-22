@@ -251,17 +251,30 @@ class OllamaLLM:
         """Call Ollama /api/generate with faithfulness-enforcing system prompt."""
         import requests
 
-        system_prompt = (
-            "You are a medical information assistant. "
-            "First, try to answer the question using the reference text provided. "
-            "If the reference text contains relevant information, prefer that. "
-            "If the reference text is not relevant to the question (e.g. it's about a different drug or topic), "
-            "use your own medical knowledge to answer accurately. "
-            "For drug brand names, identify the generic name and answer based on that. "
-            "Always add: 'Please consult a healthcare professional before making medical decisions.' "
-            "Be concise and accurate."
-        )
-        user_message = f"Reference text:\n{context}\n\nQuestion: {question}"
+        # Check if context is relevant by seeing if any question keywords appear in it
+        question_words = set(question.lower().split())
+        context_lower = context.lower()
+        overlap = sum(1 for w in question_words if len(w) > 4 and w in context_lower)
+        context_is_relevant = overlap >= 2
+
+        if context_is_relevant:
+            system_prompt = (
+                "You are a medical information assistant. "
+                "Answer the question using the reference text provided. "
+                "For drug brand names, identify the generic name and use that to find the answer. "
+                "Always end with: 'Please consult a healthcare professional before making medical decisions.' "
+                "Be concise and accurate."
+            )
+            user_message = f"Reference text:\n{context}\n\nQuestion: {question}"
+        else:
+            system_prompt = (
+                "You are a medical information assistant with broad medical knowledge. "
+                "Answer the question accurately using your medical knowledge. "
+                "For drug brand names, identify the generic active ingredient and answer based on that. "
+                "Always end with: 'Please consult a healthcare professional before making medical decisions.' "
+                "Be concise and accurate."
+            )
+            user_message = f"Question: {question}"
 
         headers: dict = {"Content-Type": "application/json"}
         if self._api_key:
