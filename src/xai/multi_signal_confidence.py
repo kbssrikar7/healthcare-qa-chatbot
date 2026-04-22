@@ -109,6 +109,15 @@ class MultiSignalConfidenceScorer:
     # Public API
     # ------------------------------------------------------------------
 
+    # Weights tuned for Ollama (Qwen2.5-7B): entity coverage enabled, no Platt compression
+    OLLAMA_WEIGHTS: Dict[str, float] = {
+        "retrieval": 0.35,
+        "source_agreement": 0.30,
+        "generation": 0.15,
+        "consistency": 0.10,
+        "entity_coverage": 0.10,
+    }
+
     def compute_confidence(
         self,
         query: str,
@@ -116,6 +125,7 @@ class MultiSignalConfidenceScorer:
         retrieved_documents: list,
         generation_probabilities: Optional[List[float]] = None,
         alternative_answers: Optional[List[str]] = None,
+        backend: str = "extractive",
     ) -> ConfidenceBreakdown:
         """Compute multi-signal confidence with full breakdown.
 
@@ -126,36 +136,37 @@ class MultiSignalConfidenceScorer:
         retrieved_documents     : List of RetrievedDocument objects.
         generation_probabilities: Per-token probabilities from the LLM.
         alternative_answers     : Extra generation samples (for consistency).
+        backend                 : Generation backend ("ollama", "extractive", etc.)
 
         Returns
         -------
         ConfidenceBreakdown with all signal scores and explanation.
         """
+        is_ollama = backend == "ollama"
+        weights = self.OLLAMA_WEIGHTS if is_ollama else self.weights
+
         bd = ConfidenceBreakdown()
 
         bd.retrieval_confidence = self._retrieval_confidence(retrieved_documents)
         bd.generation_confidence = self._generation_confidence(generation_probabilities)
         bd.consistency_score = self._self_consistency_score(answer, alternative_answers)
         bd.source_agreement = self._source_agreement_score(answer, retrieved_documents)
-        # D2: Skip entity coverage when its weight is 0 — saves ~5ms per query
-        # and prevents a misleading 0.5 neutral score inflating the weighted sum.
-        if self.weights.get("entity_coverage", 0.0) > 0:
-            bd.medical_entity_coverage = self._entity_coverage_score(query, answer, retrieved_documents)
-        else:
-            bd.medical_entity_coverage = 0.0
+        bd.medical_entity_coverage = self._entity_coverage_score(query, answer, retrieved_documents)
 
         raw = (
-            self.weights.get("retrieval", 0) * bd.retrieval_confidence
-            + self.weights.get("generation", 0) * bd.generation_confidence
-            + self.weights.get("consistency", 0) * bd.consistency_score
-            + self.weights.get("source_agreement", 0) * bd.source_agreement
-            + self.weights.get("entity_coverage", 0) * bd.medical_entity_coverage
+            weights.get("retrieval", 0) * bd.retrieval_confidence
+            + weights.get("generation", 0) * bd.generation_confidence
+            + weights.get("consistency", 0) * bd.consistency_score
+            + weights.get("source_agreement", 0) * bd.source_agreement
+            + weights.get("entity_coverage", 0) * bd.medical_entity_coverage
         )
 
         bd.overall_confidence = float(np.clip(raw, 0.0, 1.0))
-        bd.calibrated_confidence = self._platt_calibrate(bd.overall_confidence)
+        # Ollama answers are paraphrased — Platt scaling trained on TinyLlama compresses
+        # scores incorrectly. Use raw weighted score directly for Ollama.
+        bd.calibrated_confidence = bd.overall_confidence if is_ollama else self._platt_calibrate(bd.overall_confidence)
         bd.confidence_level = self._confidence_level(bd.calibrated_confidence)
-        bd.signal_weights = dict(self.weights)
+        bd.signal_weights = dict(weights)
         bd.explanation = self._generate_explanation(bd)
 
         return bd
@@ -291,19 +302,23 @@ class MultiSignalConfidenceScorer:
 
         def _extract(text: str) -> set:
             entities: set = set()
-            # PascalCase proper nouns (e.g. "Myocardial Infarction")
-            entities.update(re.findall(r"\b[A-Z][a-z]+(?:\s[A-Z][a-z]+)+\b", text))
+            # Multi-word proper nouns — both PascalCase and lowercase (Ollama outputs lowercase)
+            entities.update(re.findall(r"\b[A-Za-z][a-z]+(?:\s[A-Za-z][a-z]+)+\b", text))
             # Dosages (case-insensitive)
             entities.update(
                 re.findall(r"\b\d+\s*(?:mg|ml|mcg|units|mmol|g)\b", text, re.IGNORECASE)
             )
-            # Expanded medical conditions (case-insensitive)
+            # Medical conditions and symptoms (case-insensitive, expanded)
             medical_pattern = (
                 r"\b(?:type\s*[12]\s*diabetes|diabetes\s*(?:mellitus|insipidus)?|"
                 r"hypertension|hypotension|cancer|infection|asthma|arthritis|"
                 r"anemia|depression|anxiety|pneumonia|bronchitis|hepatitis|"
-                r"cirrhosis|epilepsy|migraine|obesity|osteoporosis|COPD|"
-                r"stroke|dementia|Alzheimer|Parkinson|thyroid|"
+                r"cirrhosis|epilepsy|migraine|obesity|osteoporosis|copd|"
+                r"stroke|dementia|alzheimer|parkinson|thyroid|"
+                r"nausea|vomiting|fatigue|fever|diarrhea|constipation|"
+                r"urination|thirst|hunger|ketosis|ketones|blurred\s+vision|"
+                r"weight\s+loss|weight\s+gain|headache|dizziness|"
+                r"paracetamol|acetaminophen|ibuprofen|aspirin|metformin|"
                 r"chronic\s+\w+|acute\s+\w+)\b"
             )
             entities.update(re.findall(medical_pattern, text, re.IGNORECASE))

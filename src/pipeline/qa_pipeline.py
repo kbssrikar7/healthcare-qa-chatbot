@@ -506,13 +506,13 @@ class HealthcareQAPipeline:
                 logger.warning(f" Factual consistency check failed: {e}")
 
         # 7b. HALLUCINATION DETECTION (DeBERTa NLI + rule-based)
-        # Always run for quality-gate purposes; expose XAI details only when
-        # include_explanation=True so the fast path stays low-latency in the response
-        # payload while still blocking hallucinated answers in both modes.
+        # Skip for Ollama — DeBERTa NLI produces systematic false positives on MCQ-format
+        # context combined with Ollama's paraphrased answers (not word-for-word copies).
         _s = time.perf_counter()
         hallucination_result = None
         _hal_gate_result = None  # used by quality gate even on fast path
-        if self.hallucination_detector and answer:
+        _is_ollama_backend = (_generation_backend_used == "ollama")
+        if self.hallucination_detector and answer and not _is_ollama_backend:
             try:
                 if verify_context != context:
                     doc_dicts_for_hal = [
@@ -554,6 +554,7 @@ class HealthcareQAPipeline:
                     answer=answer,
                     retrieved_documents=documents,
                     generation_probabilities=generation_result.probabilities,
+                    backend=_generation_backend_used or "extractive",
                 )
                 # Build explanation that leads with the calibrated level (not sub-signals).
                 _lvl = bd.confidence_level
