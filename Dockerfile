@@ -28,33 +28,38 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # ── Python deps ───────────────────────────────────────────────────────────────
-# Copy only requirements first so Docker layer-caches the install
-COPY requirements.txt .
+# Use lean requirements for HF Spaces (CPU-only torch, no training/eval deps).
+# CPU-only torch wheel is fetched from the PyTorch index first so the heavy
+# CUDA-enabled wheel from PyPI is never pulled in.
+COPY requirements-hf.txt .
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir \
+        --extra-index-url https://download.pytorch.org/whl/cpu \
+        -r requirements-hf.txt
 
 # ── Application code ──────────────────────────────────────────────────────────
 COPY . .
 
 # ── Runtime defaults ──────────────────────────────────────────────────────────
 # These can all be overridden via --env or --env-file
-ENV HF_HUB_OFFLINE=1 \
-    TRANSFORMERS_OFFLINE=1 \
+ENV HF_HUB_OFFLINE=0 \
+    TRANSFORMERS_OFFLINE=0 \
     USE_GPU=false \
     ENVIRONMENT=production \
     LOG_LEVEL=INFO \
-    DEFAULT_PIPELINE=standard
+    DEFAULT_PIPELINE=standard \
+    SKIP_BM25=true
 
 # Data + model directories are mounted at runtime (not baked into the image)
 # to keep the image small and avoid baking large binaries.
 VOLUME ["/app/data", "/app/models"]
 
-EXPOSE 8000
+EXPOSE 7860
 
 # Health check — waits 90s for the model to load before first probe
 HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+    CMD curl -f http://localhost:7860/health || exit 1
 
 CMD ["python3", "-m", "uvicorn", "api.main:app", \
-     "--host", "0.0.0.0", "--port", "8000", \
+     "--host", "0.0.0.0", "--port", "7860", \
      "--workers", "1", "--log-level", "info"]
