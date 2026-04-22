@@ -253,10 +253,13 @@ class OllamaLLM:
 
         system_prompt = (
             "You are a medical information assistant. "
-            "Answer the question using ONLY the reference text provided. "
-            "If the reference text does not contain the answer, respond with: "
-            "'I don't have enough information to answer this.' "
-            "Do not use external knowledge. Be concise and accurate."
+            "First, try to answer the question using the reference text provided. "
+            "If the reference text contains relevant information, prefer that. "
+            "If the reference text is not relevant to the question (e.g. it's about a different drug or topic), "
+            "use your own medical knowledge to answer accurately. "
+            "For drug brand names, identify the generic name and answer based on that. "
+            "Always add: 'Please consult a healthcare professional before making medical decisions.' "
+            "Be concise and accurate."
         )
         user_message = f"Reference text:\n{context}\n\nQuestion: {question}"
 
