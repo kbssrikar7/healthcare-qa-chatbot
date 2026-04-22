@@ -177,15 +177,25 @@ jobs:
       - name: Push to HF Spaces
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          HF_SPACE: kbssrikar7/healthcare-qa-api
+          HF_SPACE: kbsss/healthcare-qa-api
         run: |
           git config --global user.email "ci@github-actions"
           git config --global user.name "GitHub Actions"
-          # Add HF Spaces as a remote (uses token for auth)
+          # Export only backend files — HF Spaces rejects large binaries/notebooks
+          DEPLOY_DIR=$(mktemp -d)
+          git archive HEAD -- \
+            api/ src/ config/ requirements.txt Dockerfile .dockerignore \
+            pyproject.toml start.sh Makefile data/drug_knowledge/ tests/ \
+            | tar -x -C "$DEPLOY_DIR"
+          printf -- "---\ntitle: Healthcare QA API\nemoji: 🏥\ncolorFrom: blue\ncolorTo: red\nsdk: docker\napp_port: 7860\npinned: false\n---\n" \
+            > "$DEPLOY_DIR/README.md"
+          cd "$DEPLOY_DIR"
+          git init -b main
+          git add -A
+          git commit -m "chore: deploy to HF Spaces from CI (sha: $GITHUB_SHA)"
           git remote add space \
-            "https://kbssrikar7:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE}"
-          # Force-push the current main to HF Spaces (triggers a rebuild)
-          git push space HEAD:main --force
+            "https://kbsss:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE}"
+          git push space main --force
 
   # ── Security scan (filesystem) ─────────────────────────────────────────────
   security:
