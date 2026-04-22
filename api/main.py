@@ -1070,22 +1070,6 @@ async def list_models():
     return result
 
 
-@app.get("/debug/ollama", tags=["Debug"])
-async def debug_ollama():
-    """Test connectivity to the configured Ollama endpoint (remove after debugging)."""
-    import requests as _req
-    base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-    api_key = os.getenv("OLLAMA_API_KEY", "")
-    model = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
-    headers = {"Content-Type": "application/json"}
-    if api_key:
-        headers["Authorization"] = f"Bearer {api_key}"
-    try:
-        r = _req.get(f"{base_url}/api/tags", headers=headers, timeout=15)
-        return {"ok": True, "status": r.status_code, "base_url": base_url, "model": model, "body": r.json()}
-    except Exception as e:
-        return {"ok": False, "base_url": base_url, "model": model, "error": str(e)}
-
 
 @app.post(
     "/sessions",
