@@ -260,7 +260,8 @@ class OllamaLLM:
         if context_is_relevant:
             system_prompt = (
                 "You are a medical information assistant. "
-                "Answer the question using the reference text provided. "
+                "The reference text may be formatted as medical exam Q&A or explanations. "
+                "Extract all relevant medical facts from it and use them to answer the user question. "
                 "For drug brand names, identify the generic name and use that to find the answer. "
                 "Always end with: 'Please consult a healthcare professional before making medical decisions.' "
                 "Be concise and accurate."
