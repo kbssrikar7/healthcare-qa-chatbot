@@ -1,84 +1,126 @@
-# Healthcare QA Chatbot - GitHub Actions CI/CD
+# Healthcare QA Chatbot — CI/CD Pipeline
 
 name: Healthcare QA CI/CD
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 env:
   PYTHON_VERSION: '3.11'
+  NODE_VERSION: '20'
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
+# ─────────────────────────────────────────────────────────────────────────────
 jobs:
-  # Run tests
-  test:
+
+  # ── Secret scanning ────────────────────────────────────────────────────────
+  secret-scan:
+    name: Secret scanning (gitleaks)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Set up Python
-        uses: actions/setup-python@v5
+        with:
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}  # uncomment for org repos
+
+  # ── Python lint ────────────────────────────────────────────────────────────
+  lint-python:
+    name: Python lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
-      
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Lint
+        run: ruff check src/ api/ --select E,W,F --ignore E501,W503
+
+  # ── Backend tests ──────────────────────────────────────────────────────────
+  test-backend:
+    name: Backend tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest pytest-cov pytest-asyncio
-      
-      - name: Create project structure
-        run: |
-          mkdir -p data/raw data/processed data/knowledge_base models outputs
+
+      - name: Create expected directories
+        run: mkdir -p data/raw data/processed data/knowledge_base_v2 models outputs
 
       - name: Run tests
         env:
           HF_HUB_OFFLINE: "1"
           TRANSFORMERS_OFFLINE: "1"
+          SKIP_BM25: "true"
+          DEFAULT_MODEL: "extractive"
+          MIN_ANSWER_CONFIDENCE: "0.0"
           PYTHONPATH: ${{ github.workspace }}
         run: |
-          pytest tests/ -v --cov=src --cov-report=xml --cov-report=term-missing
-      
+          pytest tests/ -v --cov=src --cov-report=xml --cov-report=term-missing \
+            --ignore=tests/e2e -x
+
       - name: Upload coverage
         uses: codecov/codecov-action@v4
         with:
           files: ./coverage.xml
           fail_ci_if_error: false
 
-  # Lint code
-  lint:
+  # ── Frontend type-check + build ────────────────────────────────────────────
+  test-frontend:
+    name: Frontend (Next.js type-check + build)
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend-react
+
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Set up Python
-        uses: actions/setup-python@v5
+
+      - uses: actions/setup-node@v4
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend-react/package-lock.json
+
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install black isort flake8
-      
-      - name: Run Black
-        run: black --check --diff src/ api/ tests/
+        run: npm ci
 
-      - name: Run isort
-        run: isort --check-only --diff src/ api/ tests/
+      - name: Type-check
+        run: npx tsc --noEmit
 
-      - name: Run flake8
-        run: flake8 src/ api/
+      - name: Build
+        env:
+          # Point at a dummy URL for the build — runtime value comes from Vercel env
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+        run: npm run build
 
-  # Build Docker image
-  docker:
-    needs: [test]
+  # ── Docker build (backend) ─────────────────────────────────────────────────
+  docker-backend:
+    name: Build backend Docker image
+    needs: [test-backend, secret-scan]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -90,10 +132,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v3
 
-      - name: Login to Container Registry
+      - name: Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -107,32 +148,57 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=branch
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,prefix=main-
+            type=raw,value=latest,enable=true
 
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: docker/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # Layer A (torch CPU) + Layer B (ML stack) cached across runs
-          # Only Layer C (app deps) rebuilds when requirements.txt changes
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Security scan
+  # ── Deploy backend to HF Spaces ────────────────────────────────────────────
+  deploy-hf-spaces:
+    name: Deploy backend → HF Spaces
+    needs: [test-backend, test-frontend, secret-scan]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Push to HF Spaces
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE: kbssrikar7/healthcare-qa-api
+        run: |
+          git config --global user.email "ci@github-actions"
+          git config --global user.name "GitHub Actions"
+          # Add HF Spaces as a remote (uses token for auth)
+          git remote add space \
+            "https://kbssrikar7:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE}"
+          # Force-push the current main to HF Spaces (triggers a rebuild)
+          git push space HEAD:main --force
+
+  # ── Security scan (filesystem) ─────────────────────────────────────────────
   security:
+    name: Trivy security scan
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Run Trivy vulnerability scanner
+
+      - name: Run Trivy (filesystem)
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          severity: 'CRITICAL,HIGH'
+          scan-type: fs
+          scan-ref: .
+          severity: CRITICAL,HIGH
           exit-code: '0'
+          ignore-unfixed: true

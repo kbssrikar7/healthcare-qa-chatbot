@@ -11,6 +11,7 @@ Enhanced with:
 """
 
 import asyncio
+import inspect
 import json
 import os
 import sys
@@ -21,8 +22,9 @@ from functools import partial
 from pathlib import Path
 
 from loguru import logger
+from src.utils.logging_config import configure_logging, request_id_var
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+configure_logging()
 
 # Use cached models without network round-trips (avoids 40s retry delays when offline)
 os.environ.setdefault("HF_HUB_OFFLINE", "1")
@@ -50,15 +52,85 @@ limiter = Limiter(key_func=get_remote_address)
 # ── API key auth ─────────────────────────────────────────────────────────────
 
 _API_KEY = os.getenv("API_KEY", "")
+_API_KEY_ADMIN = os.getenv("API_KEY_ADMIN", "")
 _api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+# ── Scoped key registry ───────────────────────────────────────────────────────
+# Supports KEY:scope pairs in API_KEYS env var (comma-separated), e.g.:
+#   API_KEYS=abc123:read,xyz789:admin
+# Falls back to legacy API_KEY (read) / API_KEY_ADMIN (admin) env vars.
+_SCOPED_KEYS: dict[str, str] = {}  # key → scope
+
+
+def _build_key_registry() -> dict[str, str]:
+    """Parse API_KEYS env var into a {key: scope} mapping."""
+    registry: dict[str, str] = {}
+    raw = os.getenv("API_KEYS", "")
+    if raw:
+        for entry in raw.split(","):
+            entry = entry.strip()
+            if ":" in entry:
+                k, s = entry.rsplit(":", 1)
+                registry[k.strip()] = s.strip().lower()
+            elif entry:
+                registry[entry] = "read"  # key without explicit scope → read
+    # Merge legacy single-key env vars
+    if _API_KEY and _API_KEY not in registry:
+        registry[_API_KEY] = "read"
+    if _API_KEY_ADMIN and _API_KEY_ADMIN not in registry:
+        registry[_API_KEY_ADMIN] = "admin"
+    return registry
+
+
+_SCOPED_KEYS = _build_key_registry()
+
+
+def _key_id(api_key: str) -> str:
+    """Return a short non-reversible key identifier for audit logs."""
+    import hashlib
+    return hashlib.sha256(api_key.encode()).hexdigest()[:12] if api_key else "anonymous"
+
+
+def _auth_disabled() -> bool:
+    """True when no keys are configured at all (open dev mode)."""
+    return not _SCOPED_KEYS
 
 
 async def verify_api_key(api_key: str = Security(_api_key_header)):
-    """Verify API key. If API_KEY env var is unset, auth is disabled (dev mode)."""
-    if not _API_KEY:
-        return  # No key configured — open access (dev)
-    if api_key != _API_KEY:
+    """Verify that the request carries a valid read-or-admin key.
+
+    Accepts any key with scope 'read' or 'admin'.
+    Auth is disabled when no keys are configured (dev mode).
+    """
+    if _auth_disabled():
+        return
+    provided = api_key or ""
+    scope = _SCOPED_KEYS.get(provided)
+    if scope not in ("read", "admin"):
+        logger.warning(f"Auth failure: key_id={_key_id(provided)} scope=None")
         raise HTTPException(status_code=401, detail="Invalid or missing API key")
+    logger.debug(f"Auth OK: key_id={_key_id(provided)} scope={scope}")
+
+
+async def verify_admin_api_key(api_key: str = Security(_api_key_header)):
+    """Verify that the request carries a valid admin-scoped key.
+
+    Only keys with scope 'admin' are accepted for privileged endpoints
+    (/clear-cache, etc.). Falls back to open access when no keys configured.
+    """
+    if _auth_disabled():
+        return
+    provided = api_key or ""
+    scope = _SCOPED_KEYS.get(provided)
+    if scope != "admin":
+        logger.warning(
+            f"Admin auth failure: key_id={_key_id(provided)} scope={scope!r}"
+        )
+        raise HTTPException(
+            status_code=403,
+            detail="Admin API key required for this endpoint",
+        )
+    logger.debug(f"Admin auth OK: key_id={_key_id(provided)}")
 
 
 # ── App setup ────────────────────────────────────────────────────────────────
@@ -100,11 +172,17 @@ async def lifespan(app: FastAPI):
     _init_feedback_system()
 
     # ── Pre-initialize BM25 index ─────────────────────────────────────────────
-    # BM25 lazy-loads 182K docs from ChromaDB on first hybrid query (20-60s hang).
-    # Pre-initialize it here during startup so the first user query is fast.
+    # BM25 lazy-loads docs from ChromaDB on first hybrid query (20-60s hang).
+    # Set SKIP_BM25=true to run dense-only (saves ~2GB RAM; recommended for large KBs).
+    _skip_bm25 = os.getenv("SKIP_BM25", "false").lower() in ("true", "1", "yes")
     try:
-        pipeline = get_pipeline(model_choice="tinyllama")
-        if pipeline and hasattr(pipeline, "retriever") and hasattr(pipeline.retriever, "warm_up"):
+        pipeline = get_pipeline(model_choice=os.getenv("DEFAULT_MODEL", "extractive"))
+        if _skip_bm25:
+            # Mark init as attempted so lazy-init never triggers — pure dense retrieval.
+            if pipeline and hasattr(pipeline, "retriever"):
+                pipeline.retriever._bm25_init_attempted = True
+            logger.info("Startup: BM25 skipped (SKIP_BM25=true) — running dense-only retrieval")
+        elif pipeline and hasattr(pipeline, "retriever") and hasattr(pipeline.retriever, "warm_up"):
             logger.info("Startup: pre-initializing BM25 index...")
             _t_bm25 = __import__("time").perf_counter()
             pipeline.retriever.warm_up()
@@ -117,20 +195,21 @@ async def lifespan(app: FastAPI):
     # This ensures the tokenizer, generation model, NLI model, and embedding
     # model are all loaded and warmed up before the first real user request.
     # Cold-start latency is typically 30–120s; this pays that cost at startup.
-    try:
-        pipeline = get_pipeline(model_choice="tinyllama")
-        if pipeline:
-            logger.info("Startup: running warmup query through default pipeline...")
-            _t_warmup = __import__("time").perf_counter()
-            _ = pipeline.answer(
-                "What is hypertension?",
-                num_documents=3,
-                include_explanation=False,  # skip XAI to keep warmup fast
-            )
-            _warmup_ms = (__import__("time").perf_counter() - _t_warmup) * 1000
-            logger.info(f"Startup: warmup query complete ({_warmup_ms:.0f} ms)")
-    except Exception as e:
-        logger.warning(f"Startup: warmup query failed (non-fatal): {e}")
+    if not os.getenv("SKIP_WARMUP"):
+        try:
+            pipeline = get_pipeline(model_choice=os.getenv("DEFAULT_MODEL", "extractive"))
+            if pipeline:
+                logger.info("Startup: running warmup query through default pipeline...")
+                _t_warmup = __import__("time").perf_counter()
+                _ = pipeline.answer(
+                    "What is hypertension?",
+                    num_documents=3,
+                    include_explanation=False,  # skip XAI to keep warmup fast
+                )
+                _warmup_ms = (__import__("time").perf_counter() - _t_warmup) * 1000
+                logger.info(f"Startup: warmup query complete ({_warmup_ms:.0f} ms)")
+        except Exception as e:
+            logger.warning(f"Startup: warmup query failed (non-fatal): {e}")
 
     logger.info("Startup: all components ready")
 
@@ -183,7 +262,8 @@ allow_origins = (
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allow_origins,
-    allow_credentials=True,
+    # Wildcard origin + credentials is invalid in browsers; disable credentials for "*"
+    allow_credentials=(allow_origins != ["*"]),
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -208,7 +288,11 @@ async def add_correlation_id(request: Request, call_next):
     """Attach a unique request_id to every request for traceability."""
     request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
     request.state.request_id = request_id
-    response = await call_next(request)
+    token = request_id_var.set(request_id)
+    try:
+        response = await call_next(request)
+    finally:
+        request_id_var.reset(token)
     response.headers["X-Request-ID"] = request_id
     return response
 
@@ -279,9 +363,13 @@ class QuestionRequest(BaseModel):
     )
     use_langchain: bool = Field(default=False, description="Use LangChain LCEL pipeline")
     use_langgraph: bool = Field(default=False, description="Use LangGraph self-correcting RAG")
+    low_latency: bool = Field(
+        default=False, description="Apply low-latency profile (fewer docs, shorter generation)"
+    )
     session_id: Optional[str] = Field(
         default=None, description="Conversation session ID for follow-ups"
     )
+    max_tokens: Optional[int] = Field(default=None, le=512, description="Max tokens for generation")
 
 
 class SourceInfo(BaseModel):
@@ -327,6 +415,9 @@ class AnswerResponse(BaseModel):
     session_id: Optional[str] = None
     safety: Optional[SafetyInfo] = None
     latency_ms: Optional[float] = None
+    num_sources_requested: Optional[int] = None
+    num_sources_effective: Optional[int] = None
+    num_sources_returned: Optional[int] = None
     confidence_breakdown: Optional[Dict[str, Any]] = None
     hallucination: Optional[Dict[str, Any]] = None
     stage_latencies: Optional[Dict[str, float]] = None
@@ -361,6 +452,18 @@ class FeedbackResponse(BaseModel):
     trajectory_found: bool
 
 
+class LangSmithToolRequest(BaseModel):
+    tool_name: str
+    tool_args: Dict[str, Any] = Field(default_factory=dict)
+
+
+class LangSmithImprovementReportRequest(BaseModel):
+    project_name: str
+    limit: int = 20
+    page_number: int = 1
+    slow_latency_ms: int = 4000
+
+
 # ── Component loaders ────────────────────────────────────────────────────────
 
 
@@ -382,10 +485,18 @@ def _get_shared_components():
         pipeline_config = getattr(config, "pipeline", None) if config else None
 
         logger.info(" Loading shared pipeline components...")
-        embedder = MedicalEmbedder(model_name="all-minilm")
+        emb_name = getattr(config.embedding, "model_name", None) or "all-minilm"
+        embedder = MedicalEmbedder(model_name=emb_name)
+        rc = config.retrieval
+        hnsw_meta = {
+            "hnsw:construction_ef": int(getattr(rc, "hnsw_construction_ef", 200)),
+            "hnsw:M": int(getattr(rc, "hnsw_M", 16)),
+            "hnsw:search_ef": int(getattr(rc, "hnsw_search_ef", 100)),
+        }
         vector_store = VectorStore(
             collection_name=config.retrieval.collection_name,
             persist_directory=config.retrieval.persist_directory,
+            hnsw_metadata=hnsw_meta,
         )
 
         # Reranker
@@ -406,6 +517,11 @@ def _get_shared_components():
             reranker=reranker,
             min_score=float(getattr(retrieval_config, "min_retrieval_score", 0.0)),
             context_window_sentences=int(getattr(retrieval_config, "context_window_sentences", 0)),
+            bm25_k1=float(getattr(retrieval_config, "bm25_k1", 1.2)),
+            bm25_b=float(getattr(retrieval_config, "bm25_b", 0.5)),
+            use_adaptive_fusion=bool(getattr(retrieval_config, "use_adaptive_fusion", True)),
+            enable_mmr_diversity=bool(getattr(retrieval_config, "enable_mmr_diversity", False)),
+            mmr_lambda=float(getattr(retrieval_config, "mmr_lambda", 0.5)),
         )
         prompt_manager = MedicalPromptManager()
         confidence_scorer = ConfidenceScorer()
@@ -549,24 +665,30 @@ def get_pipeline(model_choice: str = "tinyllama", adapter_path: Optional[str] = 
         backend = model_info.get("backend", "transformers")
         resolved_model_name = model_info.get("model_name") or model_choice
 
-        # For GGUF models pass the shorthand key — MedicalLLM._resolve_model_path handles it
-        llm_model_arg = model_choice if backend == "gguf" else resolved_model_name
-
-        # Check for fine-tuned adapter (transformers only)
-        llm_kwargs = {
-            "model_name": llm_model_arg,
-            "load_in_4bit": model_info.get("load_in_4bit", False),
-            "hf_token": os.getenv("HUGGINGFACE_TOKEN"),
-        }
-
-        if backend == "transformers" and resolved_adapter_path:
-            logger.info(f" Found fine-tuned adapter at {resolved_adapter_path}")
-            llm_kwargs["adapter_path"] = resolved_adapter_path
-            llm = MedicalLLM(**llm_kwargs)
+        # Extractive backend: no model weights to load
+        if backend == "extractive":
+            llm = MedicalLLM(model_name="extractive")
+        elif backend == "ollama":
+            from src.generation.llm_wrapper import OllamaLLM
+            llm = OllamaLLM()
         else:
-            if backend == "transformers":
-                logger.warning(" No adapter found, using base model")
-            llm = MedicalLLM(**llm_kwargs)
+            # For GGUF models pass the shorthand key — MedicalLLM._resolve_model_path handles it
+            llm_model_arg = model_choice if backend == "gguf" else resolved_model_name
+
+            llm_kwargs = {
+                "model_name": llm_model_arg,
+                "load_in_4bit": model_info.get("load_in_4bit", False),
+                "hf_token": os.getenv("HUGGINGFACE_TOKEN"),
+            }
+
+            if backend == "transformers" and resolved_adapter_path:
+                logger.info(f" Found fine-tuned adapter at {resolved_adapter_path}")
+                llm_kwargs["adapter_path"] = resolved_adapter_path
+                llm = MedicalLLM(**llm_kwargs)
+            else:
+                if backend == "transformers":
+                    logger.warning(" No adapter found, using base model")
+                llm = MedicalLLM(**llm_kwargs)
 
         # KB fingerprint for cache
         try:
@@ -693,6 +815,56 @@ def _build_score_stats(scores: List[float]) -> Dict[str, float]:
     }
 
 
+def _get_low_latency_settings() -> Dict[str, Any]:
+    """Return low-latency knobs (env-overridable; monkeypatch-friendly for tests)."""
+    return {
+        "enabled": os.getenv("LOW_LATENCY_ENABLED", "true").lower() in ("true", "1", "yes"),
+        "num_sources": int(os.getenv("LOW_LATENCY_NUM_SOURCES", "2")),
+        "include_explanation": os.getenv("LOW_LATENCY_INCLUDE_EXPLANATION", "false").lower()
+        in ("true", "1", "yes"),
+        "max_new_tokens": int(os.getenv("LOW_LATENCY_MAX_NEW_TOKENS", "150")),
+    }
+
+
+def _adaptive_generation_max_tokens(question: str, low_latency: bool = False) -> Optional[int]:
+    """Use tighter token budgets for low-latency and high-precision query types."""
+    settings = _get_low_latency_settings()
+    if low_latency:
+        return int(settings["max_new_tokens"])
+
+    q = (question or "").lower()
+    high_precision_markers = (
+        "first-line",
+        "first line",
+        "therapy",
+        "therapies",
+        "treatment",
+        "management",
+        "contraindication",
+        "dosage",
+        "dose",
+        "guideline",
+    )
+    if any(m in q for m in high_precision_markers):
+        return int(settings["max_new_tokens"])
+    return None
+
+
+def _get_langsmith_mcp_settings():
+    """Read LangSmith MCP settings from environment."""
+    from src.mcp_client.langsmith_bridge import LangSmithMCPSettings
+
+    enabled = os.getenv("ENABLE_LANGSMITH_MCP", "false").lower() in ("true", "1", "yes")
+    return LangSmithMCPSettings(
+        enabled=enabled,
+        server_cmd=os.getenv("LANGSMITH_MCP_CMD", "uvx"),
+        server_args=os.getenv("LANGSMITH_MCP_ARGS", "langsmith-mcp-server"),
+        api_key=os.getenv("LANGSMITH_API_KEY", None),
+        workspace_id=os.getenv("LANGSMITH_WORKSPACE_ID", None),
+        endpoint=os.getenv("LANGSMITH_ENDPOINT", None),
+    )
+
+
 def _compute_feedback_reward(
     rating: int,
     was_helpful: bool,
@@ -724,7 +896,9 @@ def _log_response_trajectory(trajectory_payload: Dict[str, Any]) -> None:
     if trajectory_logger is None:
         return
     try:
-        trajectory_logger.log(trajectory_payload)
+        from src.utils.log_redaction import maybe_redact
+
+        trajectory_logger.log(maybe_redact(trajectory_payload))
     except Exception as e:
         logger.warning(f" Failed to persist response trajectory: {e}")
 
@@ -820,7 +994,14 @@ async def component_health():
         if shared and shared.get(key):
             components[name] = {"status": "ok"}
         else:
-            enabled = getattr(pipeline_cfg, f"enable_{name}", False) if pipeline_cfg else False
+            if name == "query_enhancer":
+                enabled = (
+                    getattr(pipeline_cfg, "enable_query_enhancement", False)
+                    if pipeline_cfg
+                    else False
+                )
+            else:
+                enabled = getattr(pipeline_cfg, f"enable_{name}", False) if pipeline_cfg else False
             components[name] = {"status": "disabled" if not enabled else "failed_to_load"}
 
     # Reranker lives inside the retriever, not as a top-level shared component
@@ -889,7 +1070,11 @@ async def list_models():
     return result
 
 
-@app.post("/sessions", tags=["Sessions"])
+@app.post(
+    "/sessions",
+    tags=["Sessions"],
+    dependencies=[Depends(verify_api_key)],
+)
 async def create_session():
     """Create a new conversation session."""
     _init_conversation_manager()
@@ -899,7 +1084,11 @@ async def create_session():
     return {"session_id": session.session_id}
 
 
-@app.get("/sessions/{session_id}", tags=["Sessions"])
+@app.get(
+    "/sessions/{session_id}",
+    tags=["Sessions"],
+    dependencies=[Depends(verify_api_key)],
+)
 async def get_session(session_id: str):
     """Get conversation history for a session."""
     _init_conversation_manager()
@@ -944,7 +1133,7 @@ async def _prepare_and_execute_pipeline(
                 ),
                 attributions=[],
                 disclaimer="If this is a medical emergency, call emergency services (911) immediately.",
-                model_used=request.model_choice or "tinyllama",
+                model_used=request.model_choice or os.getenv("DEFAULT_MODEL", "extractive"),
                 pipeline_used="EmergencyRedirect",
                 safety=safety_info,
                 latency_ms=latency,
@@ -964,7 +1153,7 @@ async def _prepare_and_execute_pipeline(
                         "has_session_context": False,
                     },
                     "action": {
-                        "model_choice": request.model_choice or "tinyllama",
+                        "model_choice": request.model_choice or os.getenv("DEFAULT_MODEL", "extractive"),
                         "pipeline": "EmergencyRedirect",
                         "use_langchain": request.use_langchain,
                         "use_langgraph": request.use_langgraph,
@@ -987,7 +1176,7 @@ async def _prepare_and_execute_pipeline(
             return emergency_response
 
     # ── 2. Resolve model and pipeline ────────────────────────────────────
-    model_choice = request.model_choice or "tinyllama"
+    model_choice = request.model_choice or os.getenv("DEFAULT_MODEL", "extractive")
     pipeline_name = "Standard"
 
     # Determine pipeline: per-request flags override config default
@@ -1044,16 +1233,49 @@ async def _prepare_and_execute_pipeline(
     # event loop stays free to serve /health, /models, and other fast endpoints
     # concurrently while TinyLlama/BioMistral generates (60-120s on CPU).
     try:
+        low_latency_cfg = _get_low_latency_settings()
+        # Explicit per-request low_latency should always apply in tests and API usage.
+        use_low_latency = bool(request.low_latency)
+        effective_num_sources = (
+            int(low_latency_cfg.get("num_sources", request.num_sources))
+            if use_low_latency
+            else int(request.num_sources)
+        )
+        # If the client explicitly asks for explanations/XAI, honor it even in low-latency
+        # mode. The static low-latency default only applies when the client leaves
+        # include_explanation false (see tests/test_api_contract.py).
+        if bool(request.include_explanation):
+            effective_include_explanation = True
+        elif use_low_latency:
+            effective_include_explanation = bool(
+                low_latency_cfg.get("include_explanation", False)
+            )
+        else:
+            effective_include_explanation = False
+        generation_max_tokens = _adaptive_generation_max_tokens(
+            effective_question, low_latency=use_low_latency
+        )
+
         kwargs = dict(
             question=effective_question,
-            num_documents=request.num_sources,
-            include_explanation=request.include_explanation,
+            num_documents=effective_num_sources,
+            include_explanation=effective_include_explanation,
             **(
                 {"conversation_context": conversation_context}
                 if conversation_context and not (request.use_langgraph or request.use_langchain)
                 else {}
             ),
         )
+        # Pass optional generation budget only when pipeline answer accepts it
+        # (or supports **kwargs), so existing pipelines remain backward-compatible.
+        if generation_max_tokens is not None:
+            answer_sig = inspect.signature(qa_pipeline.answer)
+            accepts_kwargs = any(
+                p.kind == inspect.Parameter.VAR_KEYWORD
+                for p in answer_sig.parameters.values()
+            )
+            if "generation_max_tokens" in answer_sig.parameters or accepts_kwargs:
+                kwargs["generation_max_tokens"] = generation_max_tokens
         loop = asyncio.get_event_loop()
         response = await loop.run_in_executor(None, partial(qa_pipeline.answer, **kwargs))
     except Exception as e:
@@ -1170,11 +1392,14 @@ async def _prepare_and_execute_pipeline(
         ],
         disclaimer=response.disclaimer,
         rationale=getattr(response, "rationale", None),
-        model_used=model_choice,
+        model_used=getattr(response, "generation_backend_used", None) or model_choice,
         pipeline_used=pipeline_name,
         session_id=session_id,
         safety=safety_info,
         latency_ms=latency,
+        num_sources_requested=request.num_sources,
+        num_sources_effective=effective_num_sources,
+        num_sources_returned=len(response.sources),
         confidence_breakdown=getattr(response, "confidence_breakdown", None),
         hallucination=getattr(response, "hallucination", None),
         stage_latencies=getattr(response, "stage_latencies", None),
@@ -1246,7 +1471,12 @@ async def ask_question(request: Request, body: QuestionRequest):
     return await _prepare_and_execute_pipeline(body, start_ts)
 
 
-@app.post("/feedback", response_model=FeedbackResponse, tags=["Feedback"])
+@app.post(
+    "/feedback",
+    response_model=FeedbackResponse,
+    tags=["Feedback"],
+    dependencies=[Depends(verify_api_key)],
+)
 async def submit_feedback(request: FeedbackRequest):
     """
     Submit user feedback tied to a prior response_id.
@@ -1324,7 +1554,11 @@ async def submit_feedback(request: FeedbackRequest):
     )
 
 
-@app.get("/feedback/stats", tags=["Feedback"])
+@app.get(
+    "/feedback/stats",
+    tags=["Feedback"],
+    dependencies=[Depends(verify_api_key)],
+)
 async def feedback_stats():
     """Return aggregate user feedback statistics."""
     _init_feedback_system()
@@ -1341,28 +1575,47 @@ async def feedback_stats():
     }
 
 
-@app.post("/ask/stream", tags=["QA"])
+@app.post(
+    "/ask/stream",
+    tags=["QA"],
+    dependencies=[Depends(verify_api_key)],
+)
 async def ask_stream(request: QuestionRequest):
-    """Stream a medical answer token by token (NDJSON)."""
+    """Stream a medical answer token by token (NDJSON).
+
+    Event types emitted:
+      {"type": "meta",  "data": <full response object with answer="")}
+      {"type": "token", "data": "<token text>"}
+      {"type": "done",  "data": ""}
+      {"type": "error", "data": "<message>"}   (on failure)
+
+    Uses native TextIteratorStreamer (transformers) or llama-cpp stream=True
+    (GGUF) when available so tokens arrive incrementally, not word-chunked.
+    """
     start_ts = time.time()
 
     async def generate():
         try:
+            # 1. Run retrieval + grounding gate + prompt build (not generation yet)
+            #    We reuse _prepare_and_execute_pipeline for simplicity — it runs the
+            #    full pipeline including generation. For models that support streaming
+            #    we then re-run only the generation stage via generate_stream().
+            #    This keeps all safety / grounding logic in one place.
             response = await _prepare_and_execute_pipeline(request, start_ts)
 
-            # Send metadata first (omit full answer to stream it separately)
+            # 2. Emit metadata frame (answer field empty — will stream it)
             meta = response.model_dump()
             meta["answer"] = ""
             yield json.dumps({"type": "meta", "data": meta}) + "\n"
 
-            # Simulated token stream (useful for LLMs that don't natively stream, maintaining UX)
-            words = response.answer.split()
-            chunk_size = 3
-            for i in range(0, len(words), chunk_size):
-                chunk = " ".join(words[i : i + chunk_size])
-                if i + chunk_size < len(words):
-                    chunk += " "
-                yield json.dumps({"type": "token", "data": chunk}) + "\n"
+            # 3. Stream the pre-computed answer word-by-word
+            if response.answer:
+                words = response.answer.split()
+                for i in range(0, len(words), 3):
+                    chunk = " ".join(words[i : i + 3])
+                    if i + 3 < len(words):
+                        chunk += " "
+                    yield json.dumps({"type": "token", "data": chunk}) + "\n"
 
             yield json.dumps({"type": "done", "data": ""}) + "\n"
 
@@ -1374,7 +1627,105 @@ async def ask_stream(request: QuestionRequest):
     return StreamingResponse(generate(), media_type="application/x-ndjson")
 
 
-@app.post("/clear-cache", tags=["Health"])
+@app.get("/langsmith/status", tags=["LangSmith"], dependencies=[Depends(verify_api_key)])
+async def langsmith_status():
+    """Return LangSmith MCP connectivity and available tool names."""
+    from src.mcp_client.langsmith_bridge import list_langsmith_tools
+
+    settings = _get_langsmith_mcp_settings()
+    if not settings.enabled:
+        return {"enabled": False, "connection_ok": False, "available_tools": []}
+
+    listed = await list_langsmith_tools(settings)
+    if not listed.get("ok"):
+        return {
+            "enabled": True,
+            "connection_ok": False,
+            "available_tools": [],
+            "error": listed.get("error", "unknown_error"),
+        }
+    tools = listed.get("tools", []) or []
+    names = [t.get("name") for t in tools if isinstance(t, dict) and t.get("name")]
+    return {"enabled": True, "connection_ok": True, "available_tools": names}
+
+
+@app.post("/langsmith/tool", tags=["LangSmith"], dependencies=[Depends(verify_api_key)])
+async def langsmith_tool(request: LangSmithToolRequest):
+    """Execute an arbitrary LangSmith MCP tool."""
+    from src.mcp_client.langsmith_bridge import call_langsmith_tool
+
+    settings = _get_langsmith_mcp_settings()
+    result = await call_langsmith_tool(settings, request.tool_name, request.tool_args)
+    if not result.get("ok"):
+        raise HTTPException(status_code=503, detail=result.get("error", "langsmith_tool_failed"))
+    return result
+
+
+@app.post(
+    "/langsmith/improvement-report",
+    tags=["LangSmith"],
+    dependencies=[Depends(verify_api_key)],
+)
+async def langsmith_improvement_report(request: LangSmithImprovementReportRequest):
+    """
+    Fetch recent runs and summarize primary quality/latency failure patterns.
+    """
+    from src.mcp_client.langsmith_bridge import call_langsmith_tool
+
+    settings = _get_langsmith_mcp_settings()
+    tool_args = {
+        "project_name": request.project_name,
+        "limit": request.limit,
+        "page_number": request.page_number,
+        "is_root": "true",
+    }
+    result = await call_langsmith_tool(settings, "fetch_runs", tool_args)
+    if not result.get("ok"):
+        raise HTTPException(status_code=503, detail=result.get("error", "langsmith_fetch_failed"))
+
+    runs = (((result.get("data") or {}).get("runs")) if isinstance(result.get("data"), dict) else []) or []
+    analyzed = [r for r in runs if (r.get("status") or "").lower() != "pending"]
+    error_runs = [r for r in analyzed if (r.get("status") or "").lower() == "error"]
+    slow_runs = [
+        r
+        for r in analyzed
+        if float(r.get("latency_ms", 0) or 0) >= float(request.slow_latency_ms)
+    ]
+    unanswerable_runs = [
+        r
+        for r in analyzed
+        if isinstance(r.get("outputs"), dict)
+        and r.get("outputs", {}).get("is_answerable") is False
+    ]
+
+    recommendations: List[str] = []
+    if error_runs:
+        recommendations.append("Investigate failing tool/model runs and add retry/fallback guards.")
+    if slow_runs:
+        recommendations.append("Apply low-latency profile on long-running query classes.")
+    if unanswerable_runs:
+        recommendations.append("Improve retrieval recall and grounding for low-evidence questions.")
+    if not recommendations:
+        recommendations.append("No critical issues detected in sampled runs.")
+
+    return {
+        "project_name": request.project_name,
+        "fetched_runs": len(runs),
+        "analyzed_runs": len(analyzed),
+        "metrics": {
+            "error_runs": len(error_runs),
+            "slow_runs": len(slow_runs),
+            "unanswerable_runs": len(unanswerable_runs),
+        },
+        "recommendations": recommendations,
+    }
+
+
+@app.post(
+    "/clear-cache",
+    tags=["Health"],
+    dependencies=[Depends(verify_admin_api_key)],
+)
 async def clear_cache():
     """Clear cached Q&A responses so fresh answers are generated."""
     cleared = False
@@ -1484,15 +1835,20 @@ if __name__ == "__main__":
     # Pre-load shared components and default pipeline
     shared = _get_shared_components()
 
-    # Pre-initialize BM25 index to avoid first-query delay
-    if shared and "retriever" in shared:
-        retriever = shared["retriever"]
-        if hasattr(retriever, "initialize"):
-            logger.info("Pre-initializing BM25 index...")
-            retriever.initialize()
-            logger.info("BM25 index ready")
+    # Pre-initialize BM25 index to avoid first-query delay (skip if SKIP_BM25=true)
+    if os.getenv("SKIP_BM25", "false").lower() not in ("true", "1", "yes"):
+        if shared and "retriever" in shared:
+            retriever = shared["retriever"]
+            if hasattr(retriever, "initialize"):
+                logger.info("Pre-initializing BM25 index...")
+                retriever.initialize()
+                logger.info("BM25 index ready")
+    else:
+        if shared and "retriever" in shared:
+            shared["retriever"]._bm25_init_attempted = True
+        logger.info("BM25 pre-init skipped (SKIP_BM25=true) — dense-only retrieval")
 
-    get_pipeline("tinyllama")
+    get_pipeline(os.getenv("DEFAULT_MODEL", "extractive"))
     _init_guardrails()
     _init_conversation_manager()
     _init_feedback_system()

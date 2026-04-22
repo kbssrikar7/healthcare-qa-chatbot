@@ -21,10 +21,22 @@ class ModelChoice(str, Enum):
     """Available LLM model choices."""
     TINYLLAMA = "tinyllama"
     BIOMISTRAL = "biomistral"
+    EXTRACTIVE = "extractive"
+    OLLAMA = "ollama"
 
 
 # Model registry with metadata
 AVAILABLE_MODELS: Dict[str, Dict[str, Any]] = {
+    "extractive": {
+        "model_name": "extractive",
+        "display_name": "Extractive QA",
+        "description": "Extracts answers directly from retrieved sources — fast, faithful, no hallucination",
+        "parameters": "0",
+        "max_new_tokens": 0,
+        "requires_gpu": False,
+        "load_in_4bit": False,
+        "backend": "extractive",
+    },
     "tinyllama": {
         "model_name": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
         "display_name": "TinyLlama 1.1B",
@@ -45,15 +57,27 @@ AVAILABLE_MODELS: Dict[str, Dict[str, Any]] = {
         "load_in_4bit": False,
         "backend": "gguf",
     },
+    "ollama": {
+        "model_name": os.getenv("OLLAMA_MODEL", "qwen2.5:7b"),
+        "display_name": "Qwen2.5-7B (Ollama)",
+        "description": "Qwen2.5-7B served via remote Ollama server — requires OLLAMA_BASE_URL",
+        "parameters": "7B",
+        "max_new_tokens": 512,
+        "requires_gpu": False,
+        "load_in_4bit": False,
+        "backend": "ollama",
+    },
 }
 
 
 @dataclass
 class EmbeddingConfig:
-    """Embedding model configuration."""
-    model_name: str = "ncbi/MedCPT-Query-Encoder"
+    """Embedding model configuration (defaults match KB build + API query encoder)."""
+    model_name: str = os.getenv(
+        "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
+    )
     model_name_article: str = "ncbi/MedCPT-Article-Encoder"
-    dimension: int = 768
+    dimension: int = int(os.getenv("EMBEDDING_DIMENSION", "384"))
     batch_size: int = 32
     device: str = "cuda" if os.getenv("USE_GPU", "true").lower() in ("true", "1", "yes") else "cpu"
     cache_dir: str = str(DATA_DIR / "embeddings")
@@ -80,8 +104,8 @@ class LLMConfig:
 class RetrievalConfig:
     """Retrieval system configuration."""
     vector_store_type: str = "chromadb"  # chromadb or pinecone
-    collection_name: str = os.getenv("CHROMA_COLLECTION", "medical_knowledge")
-    persist_directory: str = os.getenv("KB_PERSIST_DIR", str(DATA_DIR / "knowledge_base"))
+    collection_name: str = os.getenv("CHROMA_COLLECTION", "medical_knowledge_v2")
+    persist_directory: str = os.getenv("KB_PERSIST_DIR", str(DATA_DIR / "knowledge_base_v2"))
     top_k: int = 5
     dense_weight: float = 0.7
     sparse_weight: float = 0.3
@@ -92,10 +116,30 @@ class RetrievalConfig:
     rerank_fetch_multiplier: int = 3
     no_rerank_fetch_multiplier: int = 2
     # Score threshold: drop retrieved docs below this relevance score.
-    # 0.0 = no filtering. For RRF scores (~0.01-0.04 range) use 0.005.
+    # 0.0 = no filtering. After score normalization, typical cutoffs are 0.15–0.35.
     min_retrieval_score: float = float(os.getenv("MIN_RETRIEVAL_SCORE", "0.0"))
     # Context window expansion: sentences before/after each chunk (0 = disabled).
     context_window_sentences: int = int(os.getenv("CONTEXT_WINDOW_SENTENCES", "0"))
+    # BM25Okapi parameters (medical passages often benefit from slightly lower b).
+    bm25_k1: float = float(os.getenv("BM25_K1", "1.2"))
+    bm25_b: float = float(os.getenv("BM25_B", "0.5"))
+    # When False, use dense_weight/sparse_weight for RRF instead of query-type table.
+    use_adaptive_fusion: bool = os.getenv("USE_ADAPTIVE_FUSION", "true").lower() in (
+        "true",
+        "1",
+        "yes",
+    )
+    # Optional MMR re-query after embedding (adds latency; diversity vs pure RRF).
+    enable_mmr_diversity: bool = os.getenv("ENABLE_MMR_DIVERSITY", "false").lower() in (
+        "true",
+        "1",
+        "yes",
+    )
+    mmr_lambda: float = float(os.getenv("MMR_LAMBDA", "0.5"))
+    # Chroma HNSW metadata (applies when collection is created / rebuilt).
+    hnsw_construction_ef: int = int(os.getenv("HNSW_CONSTRUCTION_EF", "200"))
+    hnsw_M: int = int(os.getenv("HNSW_M", "16"))
+    hnsw_search_ef: int = int(os.getenv("HNSW_SEARCH_EF", "100"))
 
 @dataclass
 class SafetyConfig:
@@ -115,8 +159,13 @@ class PipelineConfig:
     enable_grounding_gate: bool = True
     # Adaptive threshold: doc is relevant if score >= max(absolute_floor, ratio * top_score)
     adaptive_threshold_ratio: float = 0.5
-    absolute_score_floor: float = 0.01  # Catches RRF-scale scores (~0.016)
-    
+    absolute_score_floor: float = 0.01  # Used for normalized scores in [0, 1]
+
+    # Fuse multiple query variants from QueryEnhancer (RRF over per-query rankings).
+    enable_multi_query_fusion: bool = True
+    # Grounding gate: require at least one doc with this token-overlap ratio vs query.
+    grounding_min_term_overlap: float = 0.3
+
     # Enhanced pipeline feature flags
     enable_reranker: bool = True
     enable_query_enhancement: bool = True
@@ -137,6 +186,11 @@ class PipelineConfig:
     mcp_search_cmd: str = os.getenv("MCP_SEARCH_CMD", "npx")
     mcp_search_args: str = os.getenv("MCP_SEARCH_ARGS", "-y @modelcontextprotocol/server-brave-search")
     
+    # Post-generation quality gate: answers with calibrated confidence below this
+    # Unused threshold kept for backward compat. Quality gate now uses
+    # medication-entity grounding check and caps-spam detection instead.
+    min_answer_confidence: float = float(os.getenv("MIN_ANSWER_CONFIDENCE", "0.0"))
+
     # Caching
     enable_response_cache: bool = True
     cache_ttl_seconds: int = 3600
@@ -209,7 +263,12 @@ class Config:
             return cls(
                 llm=LLMConfig(model_name="TinyLlama/TinyLlama-1.1B-Chat-v1.0", load_in_4bit=False),
                 safety=SafetyConfig(confidence_threshold=0.6),
-                pipeline=PipelineConfig(min_retrieval_score=0.4, cache_ttl_seconds=7200)
+                pipeline=PipelineConfig(
+                    min_retrieval_score=0.4,
+                    cache_ttl_seconds=7200,
+                    enable_response_cache=True,
+                    min_answer_confidence=0.3,
+                ),
             )
         elif env == "testing":
             return cls(
@@ -218,8 +277,14 @@ class Config:
             )
         else:  # development
             return cls(
-                llm=LLMConfig(model_name="tinyllama", load_in_4bit=False)
+                llm=LLMConfig(model_name="tinyllama", load_in_4bit=False),
+                # Cache enabled in dev too — same question twice should be instant.
+                # TTL is shorter (30 min) so stale answers don't linger during iteration.
+                pipeline=PipelineConfig(
+                    enable_response_cache=True,
+                    cache_ttl_seconds=1800,
+                ),
             )
 
-# Global config instance
-config = Config()
+# Global config instance — honor ENVIRONMENT for production/testing overrides.
+config = Config.from_env()
