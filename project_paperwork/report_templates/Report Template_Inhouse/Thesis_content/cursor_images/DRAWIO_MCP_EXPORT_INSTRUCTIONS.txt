@@ -1,0 +1,37 @@
+Architecture diagrams generated via the official draw.io MCP (open_drawio_mermaid).
+Each link opens diagrams.net with your thesis Mermaid already loaded as an editable diagram.
+
+HOW TO SAVE HIGH-QUALITY IMAGES
+1. Open the link in your browser (should open automatically when the MCP runs).
+2. In draw.io: Arrange → Insert → Fit page (or adjust canvas).
+3. File → Export as → PNG (or SVG for LaTeX).
+   - Recommended: Border 10–20, Transparent background OFF for print, scale 2x or 300% for crisp figures.
+4. Save into this folder with the suggested filenames below.
+
+DIAGRAMS (MCP editor URLs)
+---
+1) rag_pipeline — RAG / QA pipeline (horizontal flow)
+https://app.diagrams.net/?grid=0&pv=0&border=10&edit=_blank#create=%7B%22type%22%3A%22mermaid%22%2C%22compressed%22%3Atrue%2C%22data%22%3A%22nZPdbqMwEIWfxtLuRSVKkia5BPOTlchqQ5oHcJ2hsULtyDZt8%2FY7A22hIauVIoGBsc%2Fn8cyhqs2bPAjrWRgUJQsifH5dux9sFu8cWHzfNGDPbJb8xPe7OzZJKZbifDcRBqk%2BCC1x7YzrR6XPRS1eBMbh%2FST0nuLJBX6TDlirElmr85NVe%2FwqwVsFrx0tXoezVhHjmIB2MGahvGeVZYYwGsMga5wymjBHNkkegrG0W%2Fep5WWUo5gba0F69Qq0gkJcbxpRK09n5QeQxzGp1faoPGfzOLem0Xuln4mQCw9sfinLP0Rh4JqqUlKB9sOMeJuP9vDuCcLNy8mCc%2BZKSXuU0ldhq8seI72fLYo17kUjokCDFf6jeMOOspAKFiuzVs5bUY%2FT6Aif1IwOkAnpsX60o9EOhaDlmcgJxGn5SNzfxa8xKhvmx7ddKSq1Rzm1ZiuN7VxCFtmqZy1q92WWP7Xw%2FkqftkOzkMlLcCfTGotrod1ba3nGQxbPqS2msRLcMCT7JOifQP73LZw%2F15TfDu9K1TWb4PRkGi2DZMlCLk2N7WtjVVVhAAtpjoARbTT8g1V%2BY4XzKEU738hqjdLDssmS34e3wrp297RFOp1Gya201cU5l4sgvrlmbat72P1DFCxm%2F4X9BQ%3D%3D%22%7D
+Suggested export filename: rag_pipeline_drawio.png
+
+2) system_architecture — 8-stage pipeline + storage + safety
+https://app.diagrams.net/?grid=0&pv=0&border=10&edit=_blank#create=%7B%22type%22%3A%22mermaid%22%2C%22compressed%22%3Atrue%2C%22data%22%3A%22lZVRb6JAEMc%2FDUnvgcaiqH0EBGuirUV7yT1dtjDKxnWXW5a23qe%2FGfAs0qv0EqPD%2Fmd%2FO8zOjBuhXpOMaWM5vfXE6nn4e%2FoU5fNWszxDc3a%2FfFpbrm85zkzmJbnP2QE0Pltue1%2Fz8zTDXTGwhLZEWkkDMrXcQLKi4IVh0tglv4zwlsSIWGEqK5CWgw%2B7Sozq7%2FoxKowGtj96ZMCEyZpOiQCm7YQlGXw8kKLClU8TsJwtw%2FnsPqxzMLZXhm2B1nkOgksybdqhEzwpPy1Gv9jPv0%2FX%2BaEzXasbPOAGjccSNLr3QpkxmcAepKEXW3N5mAu2ZxTyW85kindwmYgn%2Bg4ad4dnzVM0YjCawwsTBPQXjls54mv1JiALOD3FcdSB7iO6j0agtIbE8BfaHHtTAmsQeAaGjkuY8WTXwRoga4DGVKtSplxuyWYGqlpJWX6km0xDkSmRduBcxLlVaFhxb6ay9jnuLbiSxDRqB9IWfM9JxIzsO4hDJA6p7ucLCg0kaGaOsOa1%2BFwtsLI15fcicITAEXUFNkeJ3lWw1BQgkwNRJ%2BCH8ZqY9%2FNZB2yMsHGN2PAU6ryvEqUpk8iiXBR8K5koThe8FMyY%2F2%2BF1fohPvbByihd9UFHWQd38cPCwz1XQabVnk18iuk71ozSRMQf%2BHYZQYUaEOFYsUHdx4HMebITcL393QF4nMTePc2wq8dU49whhlBlNYyWWqVlQrf5D0hnPrwoXP84JoRtwHS3%2BTRG99p3WjKN8XC8F3oZDfZXumX9sCSCUbn9qjR1dcSFoVmADFUYe9uozy%2B9EA5qHGG21Q%2BteuSey7TyrmP85zIuvKs4xM7V1U1Tddqq01CPlXLBoy6ECw7Hi77ggYOrpfab6qCtDpqq21bdpjpsq8OmStfW0mmp4TFq66OmOm6r44%2BX1qpTcxA0Cuo%2FcKe34UJYfXTph37kRlizAc4qnIX1onM77vm3nzBO%2F4FnGC8ahEEbM%2FLCYe8TTD0%2FmoxoEjnhbYsRDkeh066VE6PuuXNIOPkQSDgaBP3gDw%3D%3D%22%7D
+Suggested export filename: system_architecture_drawio.png
+
+3) hybrid_retrieval — BM25 + dense + RRF + diversity
+https://app.diagrams.net/?grid=0&pv=0&border=10&edit=_blank#create=%7B%22type%22%3A%22mermaid%22%2C%22compressed%22%3Atrue%2C%22data%22%3A%22nZLfb4IwEID%2FGhJ9IGEg23wUqovZfBiYZa9NPUJDbUlbtvnf7w43f5tlJsTGK%2Ffdx91VynyKmlsfxNEyC6IJnrvndRCk2WsHdhOkbIiBMAySKV1MtdhdxRH%2BMyuwQZprrlS4kFq%2BLMKX%2B%2FAjxsRT6AEnW8TpEkF0koBpQEu3JX3W0oNruYA%2BL8NfdAUruIMf6gmYpPbsnCF4kNfWrDnLiPgGwhuLVyUeQJE0wrJ5%2BjjC4MoINzzX3SoeKM8J%2ByM81yv4IlArRaNIVHBRw%2FCiHwrtMaxADAPtKKkA1ynvCORNGzZBwu6iCyrzA0BJgLLl9k%2FCMQQL7yFFMUNKAUK21giuKMR1g8esc9Jo4tE7cUTE%2BwtO5SnurOA2f6dNUylNZ%2FuxMvkB1km%2FoUIzqTyN%2FqzEUd%2BeqW8bzddS9FqYWHHhO5RPGM3EggNuRX2liQg42JHlO6340rR0Y0S3Bv3bRYw8gQbLaWdo%2Fc%2B%2BzPlNP3Pa6EoqFMDrZDQZR2yMayWMwsw%2BVlUVBpy3uOAY0UbDFRYaHdHih8kU%2B34jbdv7PW36MMqT%2FGY3dqw2foyymz%2B0X%2BZ%2Fw74B%22%7D
+Suggested export filename: hybrid_retrieval_drawio.png
+
+4) sequence_diagram — API / cache / safety / retrieval / LLM / XAI
+https://app.diagrams.net/?grid=0&pv=0&border=10&edit=_blank#create=%7B%22type%22%3A%22mermaid%22%2C%22compressed%22%3Atrue%2C%22data%22%3A%22nVVhb9owEP01SN0HJES1HwCBQiVYUdpJ%2BzbdnCNYMTa1nW38%2B93ZJMoMDVDJSi6x38vd8%2FPF4XuNWuBMQmlhPxhNBuNRO0B4Y%2Bn%2B3aFNpg5gvRTyANrT02TzzMsdXZ7AeX7sW77Im9WvsEV%2FXNRgCwtSuV7YsoUtj7%2BsLHL0VuLvK7llk2w5b4AZiB2uQUN5BbVarRtMDKcgKtRFL%2BjHpJUhhmtT1AoZ8z%2BMBR0OHuc0WKtHnty8vL6FWVKwooA2xh4THC0%2BwWJVAaiMqerDQ1j%2FJd1BxXkJrpruO%2BmT%2Be4IlMM0rYAtKLDoDkY77GHg9E74YJlA0OLGoy15I4jmdwkLqrCgSXQvXWqFyzKQk2KWOxTVTxfcdFmJc1Vwj7Yk8x8pLtCj8Jhu70djkZ%2FpZLGQljg4e3SODHYj10XRYiVd2o%2FJTtox5PPpm%2BqOdCN2mTeVx2MYdR%2BMM3pX9cnfHcs8YZuux1%2FpNsNomTx%2Fup0pLcqbw5CPUmFEvUft%2Bzx1uUY%2B%2B4GKjIIWPD4Ioz3%2B9bHMq07rDuI6yxC0%2B4M2pErdhXdRGDowd%2BfJ7SYah%2FHdnWi%2BkEUd3K3ZEmPKzfviZKlBcYfbKPA%2BfBGU1OXnaWc4nedvQNG3FTfNcJbvoDvrWEZvZcF%2FNXrYgVK1kBq8NKzvVkF5v7ydbut8InDT324V9uJ5b33gTG0FurQM0poi2euM878TvfkH%22%7D
+Suggested export filename: sequence_diagram_drawio.png
+
+5) xai_module — five signals + Platt + NLI
+https://app.diagrams.net/?grid=0&pv=0&border=10&edit=_blank#create=%7B%22type%22%3A%22mermaid%22%2C%22compressed%22%3Atrue%2C%22data%22%3A%22nZRbb5swFIB%2FDVL6kIlyWdtHMJBUytIWOmWvDjkQa8aOjJM0%2F77HVjsCdIlUCcnmXL5zhYrLY7mlSjueu8gdN8Lz39Pu17Wiuy1ei8fZMloUThg7npexA6CMSFGxDYjSvBSsFpS3qHXCZMA5f4pbZOSgFYMD5Sh42VPO9MkJiTg6fuL%2B8EJzF1I1qG2ACjzyPLuCxbDxDAQoqpkU%2FewGaC7r6U7JNRrh8Xa6QvaRXACvpkhsWasReZ6ta%2B750%2B9ZajrGGsapsvVchAYGKvfK9i6qFUADQg%2BxO8rUkbXGJv6FyXuuPIDidHeFjmXGqdAmDdMI9KH1WRtuLbyBDSvtCDTYXleKlrZ5IziIjZH0hThJz51OHd8UviIYcgWs3mrY2KDNmgn6NQ6H1fMcaP2L2uCiNrykRUGnfTbL%2FMypNqtfYCOYqMepolXnQsgEfQiarnHNPurstiy5GTcpWhaTbjOtSyTaIyhr3qHnCVolEKf5K8XX5eLRjGhOOd%2BXn3303AQ0lFqqcZ7k9c%2Bk%2B7A%2BU9PwpseB%2Bp4oONNmhjIMm3Faf11eq0%2Fc%2FgpMZyvGueOj3vfuovQn6kkpOWZrZVVVoaDVSv4FlAgp4D%2BwedaDpXcB8cl3YXaAHew%2BDYIo%2BS5sNSjz4d6NH67C3gE%3D%22%7D
+Suggested export filename: xai_module_drawio.png
+
+RE-RUN MCP YOURSELF (same as Cursor agent)
+Server: draw.io MCP  Tool: open_drawio_mermaid
+Paste the Mermaid from ../diagrams/*.mmd (or edit in draw.io after import).
+
+Source repo for skill style: ~/.cursor/skills/architecture-diagrams/

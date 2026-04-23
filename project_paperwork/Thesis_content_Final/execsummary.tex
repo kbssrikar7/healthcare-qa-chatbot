@@ -1,0 +1,15 @@
+\begin{center}
+	\Large{\textbf{EXECUTIVE SUMMARY}}
+\end{center}
+\vspace{1em}
+\normalsize
+
+When patients search for medical information online, they often find advice that is outdated, confusing, or just plain wrong. I designed this healthcare question-answering system to solve that problem directly. Instead of letting a language model guess an answer from its training memory, I built a pipeline that restricts every response to facts verified against a curated medical knowledge base.
+
+I structured the retrieval stage to fuse \ac{bm25} sparse search with dense vector search using the \ac{rrf} score combination method. For generation, I chose the TinyLlama 1.1B model which runs efficiently on a standard \ac{cpu} without needing cloud inference or external \ac{api} calls. I also implemented a five-signal confidence scorer on top of the generation step, backed by a DeBERTa \ac{nli} model that I configured to flag hallucinated claims before the answer ever reaches the user.
+
+My knowledge base draws from three primary sources: ChatDoctor-HealthCareMagic patient-doctor conversations, PubMedQA biomedical research abstracts, and MedMCQA postgraduate medical entrance questions. After processing these with my custom RecursiveSentenceChunker, the corpus contains 505,584 documents. I found that my chunking strategy alone accounted for a 0.292 point gain in keyword coverage, pushing the score from 0.3845 under flat character-based chunking to 0.6765 under sentence-boundary-aware chunking, measured on a 97-question evaluation set.
+
+I tested the system against clinical conversations, research abstracts, and surgical procedure data using keyword coverage, ROUGE-L, and BERTScore as my primary performance metrics. On the base TinyLlama model, I recorded 0.3845 keyword coverage. Using \ac{qlora} to fine-tune the model over 500 steps on MedMCQA and PubMedQA pairs raised this to 0.4634. While BioMistral-7B (using GGUF Q4\_K\_M\allowbreak{} quantisation) led on ROUGE-L with a score of 0.299, its discursive style resulted in lower keyword coverage compared to my fine-tuned TinyLlama. Finally, my 36-question end-to-end benchmark showed a retrieval hit rate of 97.2\%.
+
+The final system operates as a FastAPI service with a React frontend and starts with a simple \texttt{make\allowbreak{} run} command. I confirmed that no \ac{gpu} is required for full operation.

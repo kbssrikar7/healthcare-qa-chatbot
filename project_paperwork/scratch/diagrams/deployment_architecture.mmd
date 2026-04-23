@@ -1,0 +1,40 @@
+
+graph LR
+    subgraph "Development & CI"
+        Push[Git Push to Main]
+        GA[GitHub Actions CI<br/>Lint + Pytest]
+        Build[Docker Build<br/>Multistage]
+    end
+
+    subgraph "Docker Compose (Localhost Runtime)"
+        subgraph "Application Layer"
+            NextJS["<b>Next.js Frontend</b><br/>Node.js Container<br/>Port 3000"]
+            FastAPI["<b>FastAPI Backend</b><br/>Python Container<br/>Port 8000"]
+        end
+        
+        subgraph "Data Layer"
+            Vol[("<b>Docker Volume</b><br/>ChromaDB Vectors<br/>BM25 Pickle Index")]
+        end
+        
+        NextJS -->|HTTP API Proxy| FastAPI
+        FastAPI -->|Persistent Storage| Vol
+    end
+
+    subgraph "User Interface"
+        Browser(("User Browser<br/>localhost:3000"))
+    end
+
+    Push --> GA
+    GA --> Build
+    Build -->|Deploy| NextJS
+    Build -->|Deploy| FastAPI
+    Browser -->|Access UI| NextJS
+
+    %% Styling
+    style Push fill:#f5f5f5,stroke:#333
+    style GA fill:#5d9cec,stroke:#333,color:#fff
+    style Build fill:#5d9cec,stroke:#333,color:#fff
+    style NextJS fill:#4ecdc4,stroke:#333,color:#000
+    style FastAPI fill:#ffce54,stroke:#333,color:#000
+    style Vol fill:#ac92ec,stroke:#333,color:#fff
+    style Browser fill:#a0d468,stroke:#333,color:#000

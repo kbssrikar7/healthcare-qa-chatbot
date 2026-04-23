@@ -1,0 +1,15 @@
+\begin{center}
+	\Large{\textbf{EXECUTIVE SUMMARY}}
+\end{center}
+\vspace{1em}
+\normalsize
+
+When patients search for medical information online, what they find is frequently outdated, written for a different clinical context, or simply wrong. This report describes a healthcare question-answering system built to address that problem directly --- one that grounds every answer in a curated medical knowledge base rather than relying on what a language model happens to have memorised during training.
+
+The retrieval stage fuses \ac{bm25} sparse search with dense vector search through \ac{rrf} score combination. Generation is handled by TinyLlama 1.1B, running on \ac{cpu} without any cloud inference or external \ac{api} calls. A five-signal confidence scorer sits on top of the generation step, backed by a DeBERTa \ac{nli} model that flags hallucinated claims before the answer reaches the user.
+
+The knowledge base draws from three sources: ChatDoctor-HealthCareMagic patient-doctor conversations, PubMedQA biomedical research abstracts, and MedMCQA postgraduate medical entrance questions. After processing with a custom RecursiveSentenceChunker, the corpus contains 505,584 documents. The chunking strategy alone accounted for a 0.292 point gain in keyword coverage, pushing the score from 0.3845 under flat character-based chunking to 0.6765 under sentence-boundary-aware chunking, measured on a 97-question evaluation set.
+
+Three generation configurations were tested. The base TinyLlama model scored 0.3845 keyword coverage. \ac{qlora} fine-tuning over 500 steps on MedMCQA and PubMedQA training pairs raised that to 0.4634. BioMistral-7B (GGUF Q4\_K\_M\allowbreak{} quantisation) produced the best ROUGE-L score, 0.299 against TinyLlama's 0.208, but its more discursive output style resulted in lower keyword coverage. On the 36-question end-to-end benchmark, the retrieval pipeline achieved a 97.2\% hit rate.
+
+The full system runs as a FastAPI service with a React frontend and starts with a single \texttt{make\allowbreak{} run} command. No \ac{gpu} is required.

@@ -1,0 +1,48 @@
+flowchart TD
+    subgraph INPUT["Input Layer"]
+        UI[React Frontend\nassistant-ui]
+        API[FastAPI\n/ask · /ask/stream\n/health · /clear-cache]
+    end
+
+    subgraph PIPELINE["8-Stage Pipeline  —  src/pipeline/qa_pipeline.py"]
+        S1[1 · Query Enhancement\nTinyLlama expander]
+        S2[2 · Hybrid Retrieval\nBM25 + Dense + RRF]
+        S3[3 · Corrective RAG\nrelevance check]
+        S4[4 · Grounding Gate\nadaptive threshold]
+        S5[5 · Context Compression\ntoken-limit trim]
+        S6[6 · LLM Generation\nTinyLlama · BioMistral]
+        S7[7 · Factual Consistency\nDeBERTa NLI]
+        S8[8 · Confidence Scoring\n5 signals + Platt]
+    end
+
+    subgraph STORE["Storage"]
+        CHROMA[(ChromaDB\nVector Store)]
+        BM25C[(BM25 Cache\npickle.gz)]
+        QDRANT[(Qdrant Cloud\nProduction)]
+    end
+
+    subgraph SAFETY["Safety"]
+        GR[SafetyGuardrails\npre-check]
+        STOP[Stop-word Filter\npost-generation]
+    end
+
+    UI --> API
+    API --> GR
+    GR --> S1
+    S1 --> S2
+    S2 --> CHROMA
+    S2 --> BM25C
+    S2 --> QDRANT
+    S2 --> S3
+    S3 --> S4
+    S4 --> S5
+    S5 --> S6
+    S6 --> STOP
+    STOP --> S7
+    S7 --> S8
+    S8 --> API
+
+    style INPUT fill:#EBF5FB,stroke:#2980B9
+    style PIPELINE fill:#EAF4EC,stroke:#27AE60
+    style STORE fill:#FDF2E9,stroke:#E67E22
+    style SAFETY fill:#FDEDEC,stroke:#E74C3C

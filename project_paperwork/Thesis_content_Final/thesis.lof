@@ -1,0 +1,22 @@
+\acswitchoff 
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {1.1}{\ignorespaces The RAG pipeline: a retriever fetches relevant documents from the knowledge base, which are then passed as context to the language model for grounded generation.}}{2}{}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {4.1}{\ignorespaces High-level system architecture showing the eight pipeline stages from query input to response output.}}{17}{}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Hybrid retrieval component architecture showing BM25 and dense retrieval paths, RRF fusion, source diversity filtering, and dynamic-$k$ selection.}}{19}{}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces XAI module architecture showing the five confidence signals and their combination via Platt scaling into a preliminarily calibrated score.}}{20}{}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {5.1}{\ignorespaces Eight-stage RAG pipeline. Each evaluation query enters at Stage 1 (query enhancement) and exits at Stage 8 carrying a confidence-scored, source-attributed response. The dashed red path is the re-retrieval loop triggered when the grounding gate rejects the initial context.}}{23}{}%
+\contentsline {figure}{\numberline {5.2}{\ignorespaces System interaction sequence from API request receipt through retrieval, generation, confidence scoring, and response serialisation.}}{26}{}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {6.1}{\ignorespaces Data ingestion pipeline from raw source datasets through text cleaning, sentence-boundary chunking, and embedding to the ChromaDB vector store and BM25 pickle cache.}}{30}{}%
+\contentsline {figure}{\numberline {6.2}{\ignorespaces Metric comparison across the three generation backends (TinyLlama base, QLoRA fine-tuned TinyLlama, and BioMistral-7B). QLoRA achieves the highest keyword coverage; BioMistral leads on ROUGE-L and BERTScore.}}{31}{}%
+\contentsline {figure}{\numberline {6.3}{\ignorespaces Deployment architecture. A GitHub Actions CI pipeline manages automated linting and testing on push. Locally, Docker Compose coordinates the FastAPI container and Streamlit frontend, persisting both ChromaDB vectors and the BM25 index on a shared volume.}}{32}{}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {7.1}{\ignorespaces Metric comparison across generation backends. QLoRA fine-tuning raises keyword coverage the most; BioMistral leads on ROUGE-L and BERTScore F1.}}{34}{}%
+\contentsline {figure}{\numberline {7.2}{\ignorespaces Figure 7.2: Ablation impact on keyword coverage. Each bar shows the coverage change when the corresponding signal is removed. Source agreement has the largest effect.}}{36}{}%
+\contentsline {figure}{\numberline {7.3}{\ignorespaces Reliability diagram for raw confidence scores. If the system was perfectly calibrated, its points would follow the diagonal line. Instead, the model consistently undervalues its own empirical accuracy.}}{38}{}%
+\contentsline {figure}{\numberline {7.4}{\ignorespaces Per-stage latency breakdown. The 115-second warm path comes almost entirely from the retrieval (42.6s) and generation (69.9s) steps. The remaining filters and checks combine for under three seconds flat.}}{39}{}%
+\addvspace {10\p@ }

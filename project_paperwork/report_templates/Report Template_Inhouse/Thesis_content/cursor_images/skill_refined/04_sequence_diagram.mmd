@@ -1,0 +1,31 @@
+sequenceDiagram
+    actor U as User
+    participant A as FastAPI
+    participant G as Guardrails
+    participant H as HybridRetriever
+    participant C as Cache
+    participant L as LLM
+    participant X as XAI
+
+    U->>A: POST /ask
+    A->>C: lookup
+    alt cache hit
+        C-->>A: cached
+        A-->>U: fast response
+    else miss
+        A->>G: safety check
+        alt unsafe query
+            G-->>A: redirect text
+            A-->>U: safety redirect
+        else safe
+            G-->>A: ok
+            A->>H: retrieve
+            H-->>A: top-k docs
+            A->>L: generate
+            L-->>A: answer
+            A->>X: score and NLI
+            X-->>A: confidence
+            A->>C: store
+            A-->>U: full response
+        end
+    end

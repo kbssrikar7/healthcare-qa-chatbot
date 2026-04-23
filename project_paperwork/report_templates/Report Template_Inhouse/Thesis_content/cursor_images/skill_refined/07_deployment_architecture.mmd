@@ -1,0 +1,31 @@
+flowchart LR
+    subgraph DEV[Developer]
+        REPO[Source repo]
+        GIT[git push]
+    end
+
+    subgraph CI[GitHub Actions]
+        TST[Lint + tests]
+        IMG[Docker image]
+    end
+
+    subgraph RUN[Docker Compose]
+        API[FastAPI port 8000]
+        UI[Streamlit port 8501]
+        VOL[(Chroma + BM25 vol)]
+    end
+
+    subgraph USR[User]
+        BR[Browser]
+    end
+
+    REPO --> GIT --> TST --> IMG --> API
+    IMG --> UI
+    API --- VOL
+    BR --> UI
+    UI -. REST .-> API
+
+    style DEV fill:#EBF5FB,stroke:#2980B9
+    style CI fill:#FEF9E7,stroke:#F1C40F
+    style RUN fill:#E8F8F5,stroke:#1ABC9C
+    style USR fill:#F5EEF8,stroke:#8E44AD

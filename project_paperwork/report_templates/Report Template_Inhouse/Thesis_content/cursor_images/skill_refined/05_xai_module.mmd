@@ -1,0 +1,36 @@
+flowchart TB
+    subgraph SIG[Signals]
+        S1[S1 Retrieval]
+        S2[S2 Generation]
+        S3[S3 Consistency]
+        S4[S4 Src agree]
+        S5[S5 Entities]
+    end
+
+    WC[Weighted sum]
+    PS[Platt scale]
+    CC([Calibrated p])
+
+    S1 --> WC
+    S2 --> WC
+    S3 --> WC
+    S4 --> WC
+    S5 --> WC
+    WC --> PS --> CC
+
+    subgraph HAL[NLI path]
+        ANS[Answer]
+        DOC[Docs]
+        HD[DeBERTa NLI]
+        HF([Contradict flag])
+    end
+
+    ANS --> HD
+    DOC --> HD
+    HD --> HF
+
+    style CC fill:#27AE60,color:#fff,stroke:#2c3e50
+    style HF fill:#E74C3C,color:#fff,stroke:#2c3e50
+    style PS fill:#8E44AD,color:#fff,stroke:#2c3e50
+    style WC fill:#2980B9,color:#fff,stroke:#2c3e50
+    style SIG fill:#F8F9FA,stroke:#34495e

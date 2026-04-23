@@ -1,0 +1,36 @@
+flowchart TB
+    subgraph Q[Query]
+        QQ([Query text])
+    end
+
+    subgraph PAR[Parallel paths]
+        ENC[Dense embed<br/>MiniLM-L6]
+        TOK[BM25 tokens]
+    end
+
+    subgraph IDX[Indexes]
+        CD[(ChromaDB)]
+        BI[(BM25 idx)]
+    end
+
+    subgraph FUSE[Fusion policy]
+        RRF[RRF merge<br/>k=60]
+        DIV[Source diversity]
+        DK[Dynamic k]
+    end
+
+    subgraph OUT0[Output]
+        CTX([Top docs])
+    end
+
+    QQ --> ENC --> CD --> DR[Dense top-k]
+    QQ --> TOK --> BI --> SR[Sparse top-k]
+    DR --> RRF
+    SR --> RRF
+    RRF --> DIV --> DK --> CTX
+
+    style QQ fill:#4A90D9,color:#fff,stroke:#2c3e50
+    style CTX fill:#27AE60,color:#fff,stroke:#2c3e50
+    style RRF fill:#E74C3C,color:#fff,stroke:#2c3e50
+    style CD fill:#2980B9,color:#fff,stroke:#2c3e50
+    style BI fill:#2980B9,color:#fff,stroke:#2c3e50

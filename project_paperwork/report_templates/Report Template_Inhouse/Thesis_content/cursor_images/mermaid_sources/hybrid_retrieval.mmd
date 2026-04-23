@@ -1,0 +1,22 @@
+flowchart TB
+    Q([Query]) --> QEnc[Query Encoder\nall-MiniLM-L6-v2]
+    Q --> BM25T[BM25 Tokeniser\nwhitespace + lowercase]
+
+    QEnc --> CD[(ChromaDB\nVector Store\n505,584 docs)]
+    BM25T --> BI[(BM25 Index\npickle cache)]
+
+    CD --> DR[Dense Results\ntop-k=10]
+    BI --> SR[Sparse Results\ntop-k=10]
+
+    DR --> RRF[Reciprocal Rank Fusion\nRRF score = Σ w_r / k+rank_r\nk=60]
+    SR --> RRF
+
+    RRF --> SD[Source Diversity\nFilter]
+    SD --> DK[Dynamic k\nfactual=5 · research=10]
+    DK --> CTX([Top Documents\nto Generator])
+
+    style Q fill:#4A90D9,color:#fff,stroke:none
+    style CTX fill:#27AE60,color:#fff,stroke:none
+    style RRF fill:#E74C3C,color:#fff,stroke:none
+    style CD fill:#2980B9,color:#fff,stroke:none
+    style BI fill:#2980B9,color:#fff,stroke:none

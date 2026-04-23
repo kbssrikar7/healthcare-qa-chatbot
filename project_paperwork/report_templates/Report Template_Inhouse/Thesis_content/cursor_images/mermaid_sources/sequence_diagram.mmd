@@ -1,0 +1,34 @@
+sequenceDiagram
+    actor User
+    participant API as FastAPI
+    participant GR as SafetyGuardrails
+    participant HR as HybridRetriever
+    participant CACHE as CacheManager
+    participant LLM as LLM Backend
+    participant XAI as XAI Module
+
+    User->>API: POST /ask {query}
+    API->>CACHE: lookup(query)
+    alt cache hit
+        CACHE-->>API: cached response
+        API-->>User: response (fast path)
+    else cache miss
+        API->>GR: check_safety(query)
+        alt emergency detected
+            GR-->>API: redirect message
+            API-->>User: safety redirect
+        else safe
+            GR-->>API: None
+            API->>HR: retrieve(query, k)
+            HR->>HR: BM25 + Dense + RRF
+            HR-->>API: top-k documents
+            API->>LLM: generate(context, query)
+            LLM-->>API: answer + token scores
+            API->>XAI: score(query, answer, docs)
+            XAI->>XAI: 5 signals + Platt scaling
+            XAI->>XAI: DeBERTa NLI check
+            XAI-->>API: confidence + hallucination flags
+            API->>CACHE: store(query, response)
+            API-->>User: answer · sources · confidence · latencies
+        end
+    end

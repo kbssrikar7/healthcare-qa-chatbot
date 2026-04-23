@@ -1,0 +1,25 @@
+\acswitchoff 
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces Hardware used for local development and evaluation}}{14}{}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Core software components and versions}}{14}{}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Knowledge base v2 composition}}{15}{}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {4.1}{\ignorespaces Confidence signals and their computation}}{19}{}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces API endpoints}}{22}{}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {5.1}{\ignorespaces QLoRA v2 training configuration}}{25}{}%
+\contentsline {table}{\numberline {5.2}{\ignorespaces Retrieval benchmark results (n=5)}}{28}{}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {7.1}{\ignorespaces Model quality comparison (n=97, KB v2, 95\% bootstrap CIs in brackets)}}{36}{}%
+\contentsline {table}{\numberline {7.2}{\ignorespaces Model latency performance (warm cache, CPU-only environment)}}{36}{}%
+\contentsline {table}{\numberline {7.3}{\ignorespaces Ablation study on confidence signals (n=97)}}{37}{}%
+\contentsline {table}{\numberline {7.4}{\ignorespaces System variant quality comparison (n=97, TinyLlama, 95\% bootstrap CIs in brackets)}}{38}{}%
+\contentsline {table}{\numberline {7.5}{\ignorespaces System variant latency comparison (TinyLlama, CPU-only environment)}}{39}{}%
+\contentsline {table}{\numberline {7.6}{\ignorespaces KB v1 vs KB v2 comparison (dense retrieval only, n=97)}}{39}{}%
+\contentsline {table}{\numberline {7.7}{\ignorespaces Confidence calibration results (n=97)}}{40}{}%
+\contentsline {table}{\numberline {7.8}{\ignorespaces Per-stage latency breakdown (TinyLlama, CPU-only)}}{41}{}%
+\contentsline {table}{\numberline {7.9}{\ignorespaces RAGAS metrics (TinyLlama, non-LLM metrics only, two sample sizes)}}{42}{}%
+\addvspace {10\p@ }

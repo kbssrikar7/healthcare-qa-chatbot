@@ -1,0 +1,120 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{singhal2023large,thirunavukarasu2023}
+\citation{lewis2020rag}
+\citation{amann2020xai}
+\citation{zhang2024tinyllama}
+\citation{lewis2020rag}
+\citation{robertson2009bm25}
+\citation{karpukhin2020dpr}
+\citation{jin2023medcpt}
+\@writefile{toc}{\contentsline {section}{\numberline {I}Introduction}{1}{section.1}\protected@file@percent }
+\newlabel{sec:intro}{{I}{1}{Introduction}{section.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {II}Related Work}{1}{section.2}\protected@file@percent }
+\newlabel{sec:related}{{II}{1}{Related Work}{section.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-A}}RAG for medical QA}{1}{subsection.2.1}\protected@file@percent }
+\citation{singhal2023large}
+\citation{labrak2024biomistral}
+\citation{li2023chatdoctor}
+\citation{zhang2024tinyllama}
+\citation{ma2022hybrid}
+\citation{cormack2009rrf}
+\citation{guo2017calibration}
+\citation{platt1999probabilistic}
+\citation{tjoa2020survey}
+\citation{amann2020xai}
+\citation{xiong2024medrag}
+\citation{jin2023medcpt}
+\citation{tjoa2020survey}
+\citation{jin2019pubmedqa}
+\citation{pmlr-v174-pal22a}
+\citation{li2023chatdoctor}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-B}}Medical language models}{2}{subsection.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-C}}Hybrid retrieval}{2}{subsection.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-D}}Confidence calibration and XAI}{2}{subsection.2.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-E}}Positioning}{2}{subsection.2.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {III}System Architecture}{2}{section.3}\protected@file@percent }
+\newlabel{sec:arch}{{III}{2}{System Architecture}{section.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces End-to-end system architecture. Queries enter through the Next.js assistant interface, pass through a FastAPI orchestrator, then through an eight-stage pipeline, and return with an answer, source list, confidence breakdown, and hallucination flag.}}{2}{figure.caption.1}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:arch}{{1}{2}{End-to-end system architecture. Queries enter through the Next.js assistant interface, pass through a FastAPI orchestrator, then through an eight-stage pipeline, and return with an answer, source list, confidence breakdown, and hallucination flag}{figure.caption.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-A}}Knowledge base}{2}{subsection.3.1}\protected@file@percent }
+\citation{dettmers2023qlora}
+\citation{he2021deberta}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-B}}Eight-stage pipeline}{3}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-C}}Adaptive retrieval weights}{3}{subsection.3.3}\protected@file@percent }
+\newlabel{sec:adaptive}{{\mbox  {III-C}}{3}{Adaptive retrieval weights}{subsection.3.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Adaptive RRF weight splits per query type.}}{3}{table.caption.2}\protected@file@percent }
+\newlabel{tab:weights}{{I}{3}{Adaptive RRF weight splits per query type}{table.caption.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-D}}QLoRA fine-tuning}{3}{subsection.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {IV}XAI Methodology}{3}{section.4}\protected@file@percent }
+\newlabel{sec:xai}{{IV}{3}{XAI Methodology}{section.4}{}}
+\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {IV-}0a}Hallucination detection.}{3}{paragraph.4.0.0.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {V}Evaluation}{3}{section.5}\protected@file@percent }
+\newlabel{sec:eval}{{V}{3}{Evaluation}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-A}}Setup}{3}{subsection.5.1}\protected@file@percent }
+\citation{guo2017calibration}
+\citation{guo2017calibration}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-B}}Model comparison}{4}{subsection.5.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces Model comparison (n=97, KB v2, 95\% CI in brackets). TinyLlama inference on CPU; BioMistral on NVIDIA T4 (Colab).}}{4}{table.caption.3}\protected@file@percent }
+\newlabel{tab:models}{{II}{4}{Model comparison (n=97, KB v2, 95\% CI in brackets). TinyLlama inference on CPU; BioMistral on NVIDIA T4 (Colab)}{table.caption.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-C}}Baseline comparisons}{4}{subsection.5.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces System variant comparison (TinyLlama backbone, n=97). BioMistral rows evaluated on NVIDIA T4 (Colab); all others on CPU. Latency comparisons between models are not directly comparable.}}{4}{table.caption.5}\protected@file@percent }
+\newlabel{tab:baselines}{{III}{4}{System variant comparison (TinyLlama backbone, n=97). BioMistral rows evaluated on NVIDIA T4 (Colab); all others on CPU. Latency comparisons between models are not directly comparable}{table.caption.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-D}}Ablation study}{4}{subsection.5.4}\protected@file@percent }
+\newlabel{sec:ablation}{{\mbox  {V-D}}{4}{Ablation study}{subsection.5.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {IV}{\ignorespaces Ablation results (n=97, keyword coverage). Each row removes one architectural component.}}{4}{table.caption.6}\protected@file@percent }
+\newlabel{tab:ablation}{{IV}{4}{Ablation results (n=97, keyword coverage). Each row removes one architectural component}{table.caption.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-E}}Calibration}{4}{subsection.5.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-F}}Retrieval quality}{4}{subsection.5.6}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Keyword coverage, ROUGE-L, and BERTScore F1 for the three generation backends. Instruction-tuning allows the smaller TinyLlama model to outperform the 7B BioMistral on extraction tasks (KW coverage).}}{5}{figure.caption.4}\protected@file@percent }
+\newlabel{fig:models}{{2}{5}{Keyword coverage, ROUGE-L, and BERTScore F1 for the three generation backends. Instruction-tuning allows the smaller TinyLlama model to outperform the 7B BioMistral on extraction tasks (KW coverage)}{figure.caption.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Keyword coverage across system variants. The gap between dense-only and hybrid retrieval demonstrates the value of RRF fusion (Table~\ref {tab:baselines}).}}{5}{figure.caption.4}\protected@file@percent }
+\newlabel{fig:baselines}{{3}{5}{Keyword coverage across system variants. The gap between dense-only and hybrid retrieval demonstrates the value of RRF fusion (Table~\ref {tab:baselines})}{figure.caption.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Ablation of individual XAI confidence signals. A higher bar means keyword coverage rises when that signal is removed, so that signal is suppressing coverage.}}{5}{figure.caption.7}\protected@file@percent }
+\newlabel{fig:ablation}{{4}{5}{Ablation of individual XAI confidence signals. A higher bar means keyword coverage rises when that signal is removed, so that signal is suppressing coverage}{figure.caption.7}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {V}{\ignorespaces Retrieval metrics at $k=5$ (n=20 probe questions, keyword-overlap relevance proxy).}}{5}{table.caption.9}\protected@file@percent }
+\newlabel{tab:retrieval}{{V}{5}{Retrieval metrics at $k=5$ (n=20 probe questions, keyword-overlap relevance proxy)}{table.caption.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-G}}Latency}{5}{subsection.5.7}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Reliability diagram after Platt scaling. The diagonal is perfect calibration. Responses with confidence $\geq 0.6$ are correct (KW $\geq 0.4$) in roughly 75\% of cases. n=97.}}{5}{figure.caption.8}\protected@file@percent }
+\newlabel{fig:calib}{{5}{5}{Reliability diagram after Platt scaling. The diagonal is perfect calibration. Responses with confidence $\geq 0.6$ are correct (KW $\geq 0.4$) in roughly 75\% of cases. n=97}{figure.caption.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-H}}Sample system output}{5}{subsection.5.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {VI}Discussion}{5}{section.6}\protected@file@percent }
+\newlabel{sec:discussion}{{VI}{5}{Discussion}{section.6}{}}
+\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {VI-}0a}RAG substantially reduces hallucination risk.}{5}{paragraph.6.0.0.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Per-stage latency breakdown (TinyLlama, CPU, warm path, mean over $n=5$ runs). Cold first query: 276.8\,s (model load included).}}{6}{figure.caption.10}\protected@file@percent }
+\newlabel{fig:latency}{{6}{6}{Per-stage latency breakdown (TinyLlama, CPU, warm path, mean over $n=5$ runs). Cold first query: 276.8\,s (model load included)}{figure.caption.10}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Sample ExplainRAG response for a treatment query.}}{6}{figure.caption.11}\protected@file@percent }
+\newlabel{fig:sample}{{7}{6}{Sample ExplainRAG response for a treatment query}{figure.caption.11}{}}
+\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {VI-}0b}Instruction-following ability versus domain pretraining.}{6}{paragraph.6.0.0.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {VI-}0c}Reproducibility and experimental settings.}{6}{paragraph.6.0.0.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {VI-}0d}XAI transparency creates a precision--coverage tradeoff.}{6}{paragraph.6.0.0.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\numberline {\mbox  {VI-}0e}Sentence-aware chunking dominates all other improvements.}{6}{paragraph.6.0.0.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {VII}Threats to Validity}{6}{section.7}\protected@file@percent }
+\newlabel{sec:limitations}{{VII}{6}{Threats to Validity}{section.7}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {VIII}Conclusion}{6}{section.8}\protected@file@percent }
+\newlabel{sec:conclusion}{{VIII}{6}{Conclusion}{section.8}{}}
+\bibcite{lewis2020rag}{1}
+\bibcite{singhal2023large}{2}
+\bibcite{thirunavukarasu2023}{3}
+\bibcite{karpukhin2020dpr}{4}
+\bibcite{robertson2009bm25}{5}
+\bibcite{ma2022hybrid}{6}
+\bibcite{cormack2009rrf}{7}
+\bibcite{jin2023medcpt}{8}
+\bibcite{amann2020xai}{9}
+\bibcite{tjoa2020survey}{10}
+\bibcite{guo2017calibration}{11}
+\bibcite{platt1999probabilistic}{12}
+\bibcite{he2021deberta}{13}
+\bibcite{dettmers2023qlora}{14}
+\bibcite{zhang2024tinyllama}{15}
+\bibcite{labrak2024biomistral}{16}
+\bibcite{jin2019pubmedqa}{17}
+\bibcite{pmlr-v174-pal22a}{18}
+\bibcite{li2023chatdoctor}{19}
+\bibcite{xiong2024medrag}{20}
+\@writefile{toc}{\contentsline {section}{References}{7}{section*.13}\protected@file@percent }
+\gdef \@abspage@last{7}

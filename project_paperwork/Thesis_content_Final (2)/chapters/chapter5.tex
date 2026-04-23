@@ -1,0 +1,127 @@
+\chapter{\MakeUppercase{Methodology and Testing}}
+
+\section{Evaluation methodology}
+
+\subsection{Test set construction}
+
+The primary evaluation set contains 97 questions drawn from the three source datasets: 40 from ChatDoctor-HealthCareMagic (clinical symptom and advice questions), 32 from PubMedQA (research-oriented biomedical questions), and 25 from MedMCQA (factual medical knowledge questions). Questions were selected to cover the four query types the system handles: factual definitions, symptom-based questions, research questions, and clinical procedural questions. All 97 questions were held out from knowledge base construction; the source documents are in the knowledge base, but the specific question-answer pairs were not used during any training or fine-tuning step.
+
+Figure \ref{fig:eval_pipeline} shows the eight-stage pipeline each evaluation query passes through, from query enhancement to confidence-scored response.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.95\linewidth,height=0.85\textheight,keepaspectratio]{images/rag_pipeline_final.png}
+    \caption{Eight-stage RAG pipeline. Each evaluation query enters at Stage 1 (query enhancement) and exits at Stage 8 carrying a confidence-scored, source-attributed response. The dashed red path is the re-retrieval loop triggered when the grounding gate rejects the initial context.}
+    \label{fig:eval_pipeline}
+\end{figure}
+
+\subsection{Evaluation metrics}
+
+Results are reported using three complementary metrics, chosen because no single metric captures all relevant aspects of medical answer quality.
+
+\begin{enumerate}
+    \item \textbf{Keyword coverage}: Fraction of medical terms from the reference answer that appear in the generated answer. Terms are identified by matching against a biomedical terminology list. This metric measures clinical-vocabulary overlap; it is only partially robust to paraphrasing because it depends heavily on how well the terminology matcher handles synonyms.
+    \item \textbf{ROUGE-L}: Longest common subsequence F1 between the generated and reference answers~\cite{lin2004rouge}. ROUGE-L captures structural similarity but tends to be overly sensitive to phrasing variation. A model that answers correctly in entirely different words will score lower than one that closely parrots the reference.
+    \item \textbf{BERTScore F1}: Contextual embedding similarity between generated and reference answers~\cite{zhang2019bertscore}. This is far more robust to paraphrasing than ROUGE because it evaluates semantic meaning rather than just counting surface-level text overlap. Scores are reported in rescaled mode (with the baseline for uninformative responses subtracted).
+\end{enumerate}
+
+Confidence intervals throughout are 95\% bootstrap intervals over the 97-question set unless stated otherwise.
+
+\subsection{QLoRA fine-tuning methodology}
+
+QLoRA~\cite{dettmers2023qlora} adapts TinyLlama by inserting low-rank matrices into the attention projection layers. The base model is loaded in 4-bit NF4 quantisation; only the adapter weights are updated during training. This makes fine-tuning feasible on a Colab T4 without running out of \ac{gpu} memory.
+
+Table \ref{tab:qlora_config} records the v2 adapter training configuration.
+
+\begin{table}[htbp]
+\centering
+\caption{QLoRA v2 training configuration}
+\label{tab:qlora_config}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Parameter} & \textbf{Value} \\
+\hline
+Base model & TinyLlama-1.1B-Chat-v1.0 \\
+LoRA rank ($r$) & 16 \\
+LoRA alpha & 32 \\
+Target modules & q\_proj, v\_proj \\
+LoRA dropout & 0.05 \\
+Training steps & 500 \\
+Batch size & 8 \\
+Learning rate & $2 \times 10^{-4}$ \\
+Training data & 800 MedMCQA + 1000 PubMedQA samples \\
+Starting train loss & 2.057 \\
+Final train loss & 1.519 \\
+\hline
+\end{tabular}
+\end{table}
+
+The adapter was evaluated on the 97-question set by loading it over the frozen base model. No knowledge base access was used during fine-tuning; the model learns directly from question-answer pairs.
+
+\subsection{Calibration methodology}
+
+Calibration was measured using Expected Calibration Error (\ac{ece})~\cite{naeini2015obtaining}, which quantifies the mean absolute difference between predicted confidence and empirical accuracy across confidence bins:
+
+\begin{equation}
+    \text{ECE} = \sum_{b=1}^{B} \frac{|B_b|}{n} \left|\text{acc}(B_b) - \text{conf}(B_b)\right|
+\end{equation}
+
+where $B_b$ is the set of samples in bin $b$, $n$ is total sample count, and $\text{acc}(B_b)$ and $\text{conf}(B_b)$ are mean accuracy and mean confidence within that bin. Ten equal-width bins were used. The binary label for calibration was keyword coverage thresholded at 0.3: a response is counted as correct if at least 30\% of reference keywords appear in the generated answer.
+
+Platt scaling fits a logistic function $\sigma(at + b)$ to the raw combined confidence score $t$, where $a$ and $b$ are learned on the 97-question calibration set. Because the same 97 questions were used for both evaluation and calibration fitting, the post-Platt \ac{ece} is not reported as a separate metric; a proper estimate would require a disjoint hold-out set.
+
+\section{Testing}
+
+\subsection{Unit tests}
+
+The test suite contains 250 passing tests, run with \texttt{pytest tests/\allowbreak{} -k "not langsmith"}. Coverage includes:
+
+\begin{itemize}
+    \item \texttt{RecursiveSentenceChunker}: 10 tests covering chunk size bounds, overlap, sentence boundary preservation, and edge cases (empty input, single sentence, very short text).
+    \item \texttt{MultiSignalConfidenceScorer}: one test per signal using synthetic inputs with known expected outputs.
+    \item \texttt{SafetyGuardrails}: pattern matching for emergency, prescription, and self-harm trigger categories.
+    \item \texttt{CacheManager}: TTL expiry, cache hit and miss paths, schema version invalidation.
+    \item Text cleaning utilities: stop pattern removal and MCQ-format detection.
+\end{itemize}
+
+\subsection{Integration tests}
+
+Integration tests in \texttt{tests/test\_integration.py} run the full pipeline against a mock ChromaDB instance and a mock LLM backend. They verify that every response contains the required fields (\texttt{answer}, \texttt{sources}, \texttt{confidence}, \texttt{stage\_latencies}) and that cache hit and miss behaviour matches the configured TTL. Figure \ref{fig:sequence} shows the interaction sequence exercised by these tests.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.95\linewidth,height=0.85\textheight,keepaspectratio]{images/sequence_diagram_final.png}
+    \caption{System interaction sequence from API request receipt through retrieval, generation, confidence scoring, and response serialisation.}
+    \label{fig:sequence}
+\end{figure}
+
+\subsection{Safety adversarial tests}
+
+\texttt{tests/test\_safety\_adversarial.py} covers 24 adversarial inputs targeting three failure modes: emergency redirect bypass attempts, MCQ-format leakage from the MedMCQA training data, and sign-off pattern injection. All 24 pass following the stop-word list hardening commits.
+
+\subsection{End-to-end evaluation}
+
+The end-to-end benchmark (\texttt{evaluation/run\_e2e\_benchmark.py}) runs 36 questions through the offline pipeline and checks whether the retrieved context contains at least one keyword from the reference answer. The retrieval hit proxy is 0.972 --- 35 of 36 questions retrieve at least one relevant document. The single failure is a PubMedQA question about a rare surgical technique whose reference answer uses specialised terminology not well-represented in the knowledge base.
+
+\subsection{Retrieval benchmark}
+
+The retrieval benchmark (\texttt{evaluation/run\_retrieval\_benchmark.py}) evaluates hybrid retrieval on 5 gold-labelled queries with known relevant documents:
+
+\begin{table}[htbp]
+\centering
+\caption{Retrieval benchmark results (n=5)}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Metric} & \textbf{Value} \\
+\hline
+Hit@10 & 0.80 \\
+MRR@10 & 0.80 \\
+Precision@10 & 0.660 \\
+NDCG@10 & 0.787 \\
+\hline
+\end{tabular}
+\end{table}
+
+By query category: definition queries hit at 0.0, symptom at 1.0, causation at 1.0, factual at 1.0. The definition miss points to a gap in the knowledge base --- it indexes case-based HealthCareMagic content well but is not as strong on encyclopaedic definitions.

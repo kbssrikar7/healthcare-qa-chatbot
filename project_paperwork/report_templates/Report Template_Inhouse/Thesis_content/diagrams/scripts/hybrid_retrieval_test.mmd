@@ -1,0 +1,54 @@
+
+graph TB
+    Query[User Query]
+
+    subgraph "Encoding Layer"
+        QENC[Query Encoder<br/>all-MiniLM-L6-v2]
+        BM25T[BM25 Tokeniser<br/>whitespace + lowercase]
+    end
+
+    subgraph "Storage Layer"
+        CHROMA[(ChromaDB Vector Store<br/>505,584 docs)]
+        BM25I[(BM25 Index<br/>pickle.gz cache)]
+    end
+
+    subgraph "Retrieval Results Layer"
+        DR[Dense Results<br/>top-k = 10]
+        SR[Sparse Results<br/>top-k = 10]
+    end
+
+    subgraph "Fusion & Processing Layer"
+        RRF[Reciprocal Rank Fusion<br/>RRF]
+        SD[Source Diversity Filter]
+        DK[Dynamic k Selection<br/>factual=5, research=10]
+    end
+
+    CTX[Top Documents<br/>to Generator]
+
+    Query --> QENC
+    Query --> BM25T
+
+    QENC --> CHROMA
+    BM25T --> BM25I
+
+    CHROMA --> DR
+    BM25I --> SR
+
+    DR --> RRF
+    SR --> RRF
+
+    RRF --> SD
+    SD --> DK
+    DK --> CTX
+
+    style Query fill:#f5f5f5
+    style CTX fill:#f5f5f5
+    style QENC fill:#4ecdc4
+    style BM25T fill:#4ecdc4
+    style CHROMA fill:#a0d468
+    style BM25I fill:#a0d468
+    style DR fill:#ffce54
+    style SR fill:#ffce54
+    style RRF fill:#fc6e51
+    style SD fill:#fc6e51
+    style DK fill:#fc6e51

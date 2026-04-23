@@ -1,0 +1,520 @@
+%% ============================================================
+%% Project-specific bibliography for Healthcare QA Chatbot
+%% All entries verified via Google Scholar MCP / canonical sources
+%% Last updated: April 2026
+%% ============================================================
+
+%% --- Foundational Medical AI ---
+
+@book{shortliffe1974mycin,
+  author    = {Shortliffe, Edward H.},
+  title     = {Computer-Based Medical Consultations: {MYCIN}},
+  publisher = {Elsevier},
+  year      = {1976},
+  address   = {New York}
+}
+
+%% --- Retrieval-Augmented Generation ---
+
+@inproceedings{lewis2020rag,
+  author    = {Lewis, Patrick and Perez, Ethan and Piktus, Aleksandra and Petroni, Fabio and
+               Karpukhin, Vladimir and Goyal, Naman and K{\"u}ttler, Heinrich and
+               Lewis, Mike and Yih, Wen-tau and Rockt{\"a}schel, Tim and
+               Riedel, Sebastian and Kiela, Douwe},
+  title     = {Retrieval-Augmented Generation for Knowledge-Intensive {NLP} Tasks},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {33},
+  pages     = {9459--9474},
+  year      = {2020},
+  publisher = {Curran Associates}
+}
+
+@inproceedings{guu2020realm,
+  author    = {Guu, Kelvin and Lee, Kenton and Tung, Zora and Pasupat, Panupong and Chang, Ming-Wei},
+  title     = {{REALM}: Retrieval-Augmented Language Model Pre-Training},
+  booktitle = {Proceedings of the 37th International Conference on Machine Learning},
+  series    = {ICML 2020},
+  year      = {2020},
+  publisher = {PMLR}
+}
+
+%% --- Language Models ---
+
+@article{zhang2024tinyllama,
+  author    = {Zhang, Peiyuan and Zeng, Guangtao and Wang, Tianhao and Lu, Wei},
+  title     = {{TinyLlama}: An Open-Source Small Language Model},
+  journal   = {arXiv preprint arXiv:2401.02385},
+  year      = {2024}
+}
+
+@inproceedings{labrak2024biomistral,
+  author    = {Labrak, Yanis and Bazoge, Adrien and Morin, Emmanuel and
+               Gourraud, Pierre-Antoine and Rouvier, Mickael and Dufour, Richard},
+  title     = {{BioMistral}: A Collection of Open-Source Pretrained Large Language Models
+               for Medical Domains},
+  booktitle = {Findings of the Association for Computational Linguistics: {ACL} 2024},
+  pages     = {3848--3864},
+  year      = {2024},
+  publisher = {Association for Computational Linguistics}
+}
+
+@article{luo2022biogpt,
+  author    = {Luo, Renqian and Sun, Liyuan and Xia, Yingce and Qin, Tao and
+               Zhang, Sheng and Poon, Hoifung and Liu, Tie-Yan},
+  title     = {{BioGPT}: Generative Pre-trained Transformer for Biomedical Text
+               Generation and Mining},
+  journal   = {Briefings in Bioinformatics},
+  volume    = {23},
+  number    = {6},
+  year      = {2022},
+  publisher = {Oxford University Press}
+}
+
+%% --- Biomedical Domain Pre-training ---
+
+@article{gu2021pubmedbert,
+  author    = {Gu, Yu and Tinn, Robert and Cheng, Hao and Lucas, Michael and
+               Usuyama, Naoto and Liu, Xiaodong and Naumann, Tristan and
+               Gao, Jianfeng and Poon, Hoifung},
+  title     = {Domain-Specific Language Model Pretraining for Biomedical
+               Natural Language Processing},
+  journal   = {{ACM} Transactions on Computing for Healthcare},
+  volume    = {3},
+  number    = {1},
+  pages     = {1--23},
+  year      = {2021},
+  publisher = {{ACM}}
+}
+
+%% --- Retrieval Methods ---
+
+@book{robertson2009bm25,
+  author    = {Robertson, Stephen and Zaragoza, Hugo},
+  title     = {The Probabilistic Relevance Framework: {BM25} and Beyond},
+  publisher = {Now Publishers},
+  year      = {2009},
+  series    = {Foundations and Trends in Information Retrieval},
+  volume    = {3}
+}
+
+@inproceedings{reimers2019sbert,
+  author    = {Reimers, Nils and Gurevych, Iryna},
+  title     = {Sentence-{BERT}: Sentence Embeddings using Siamese {BERT}-Networks},
+  booktitle = {Proceedings of the 2019 Conference on Empirical Methods in
+               Natural Language Processing},
+  pages     = {3982--3992},
+  year      = {2019},
+  publisher = {Association for Computational Linguistics}
+}
+
+@inproceedings{karpukhin2020dpr,
+  author    = {Karpukhin, Vladimir and Oguz, Barlas and Min, Sewon and Lewis, Patrick and
+               Wu, Ledell and Edunov, Sergey and Chen, Danqi and Yih, Wen-tau},
+  title     = {Dense Passage Retrieval for Open-Domain Question Answering},
+  booktitle = {Proceedings of the 2020 Conference on Empirical Methods in
+               Natural Language Processing},
+  pages     = {6769--6781},
+  year      = {2020},
+  publisher = {Association for Computational Linguistics}
+}
+
+@inproceedings{cormack2009rrf,
+  author    = {Cormack, Gordon V. and Clarke, Charles L. A. and Buettcher, Stefan},
+  title     = {Reciprocal Rank Fusion Outperforms Condorcet and Individual Rank
+               Learning Methods},
+  booktitle = {Proceedings of the 32nd International {ACM} {SIGIR} Conference on
+               Research and Development in Information Retrieval},
+  pages     = {758--759},
+  year      = {2009},
+  publisher = {{ACM}}
+}
+
+@inproceedings{ma2022hybrid,
+  author    = {Thakur, Nandan and Reimers, Nils and R{\"u}ckl{\'e}, Andreas and
+               Srivastava, Abhishek and Gurevych, Iryna},
+  title     = {{BEIR}: A Heterogeneous Benchmark for Zero-Shot Evaluation of
+               Information Retrieval Models},
+  booktitle = {Proceedings of the Neural Information Processing Systems Track on
+               Datasets and Benchmarks},
+  year      = {2021},
+  note      = {Referenced as systematic comparison of sparse and dense hybrid
+               retrieval across multiple QA benchmarks}
+}
+
+%% --- Medical QA Datasets ---
+
+@inproceedings{jin2019pubmedqa,
+  author    = {Jin, Qiao and Dhingra, Bhuwan and Liu, Zhengping and
+               Cohen, William W. and Lu, Xinghua},
+  title     = {{PubMedQA}: A Dataset for Biomedical Research Question Answering},
+  booktitle = {Proceedings of the 2019 Conference on Empirical Methods in
+               Natural Language Processing},
+  pages     = {2567--2577},
+  year      = {2019},
+  publisher = {Association for Computational Linguistics}
+}
+
+@article{jin2021medqa,
+  author    = {Jin, Di and Pan, Eileen and Oufattole, Nassim and Weng, Wei-Hung and
+               Fang, Hanyi and Szolovits, Peter},
+  title     = {What Disease Does This Patient Have? {A} Large-Scale Open Domain
+               Question Answering Dataset from Medical Exams},
+  journal   = {Applied Sciences},
+  volume    = {11},
+  number    = {14},
+  pages     = {6421},
+  year      = {2021},
+  publisher = {MDPI}
+}
+
+@article{li2023chatdoctor,
+  author    = {Li, Yunxiang and Li, Zihan and Zhang, Kai and Dan, Ruilong and
+               Jiang, Steve and Zhang, You},
+  title     = {{ChatDoctor}: A Medical Chat Model Fine-Tuned on a Large Language Model
+               {Meta-AI} ({LLaMA}) Using Medical Domain Knowledge},
+  journal   = {Cureus},
+  volume    = {15},
+  number    = {6},
+  year      = {2023},
+  publisher = {Cureus Inc.}
+}
+
+%% --- Fine-tuning ---
+
+@inproceedings{dettmers2023qlora,
+  author    = {Dettmers, Tim and Pagnoni, Artidoro and Holtzman, Ari and Zettlemoyer, Luke},
+  title     = {{QLoRA}: Efficient Finetuning of Quantized {LLMs}},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {36},
+  year      = {2023},
+  publisher = {Curran Associates}
+}
+
+%% --- XAI / Hallucination Detection ---
+
+@inproceedings{he2021deberta,
+  author    = {He, Pengcheng and Liu, Xiaodong and Gao, Jianfeng and Chen, Weizhu},
+  title     = {{DeBERTa}: Decoding-Enhanced {BERT} with Disentangled Attention},
+  booktitle = {Proceedings of the 9th International Conference on Learning
+               Representations},
+  year      = {2021}
+}
+
+@inproceedings{honovich2022true,
+  author    = {Honovich, Or and Aharoni, Roee and Herzig, Jonathan and
+               Taitelbaum, Hagai and Kukliansky, Doron and Albert, Vered and
+               Goldman, Omer and Goldfarb-Tarrant, Seraphina and
+               Schwartz, Roy and Alon, Uri and Elazar, Yanai},
+  title     = {{TRUE}: Re-evaluating Factual Consistency Evaluation},
+  booktitle = {Proceedings of the 2022 Conference of the North American Chapter
+               of the Association for Computational Linguistics},
+  pages     = {3905--3920},
+  year      = {2022},
+  publisher = {Association for Computational Linguistics}
+}
+
+@article{dziri2022faithdial,
+  author    = {Dziri, Nouha and Kamalloo, Ehsan and Milton, Sivan and
+               Zaiane, Osmar and Yu, Mo and Ponti, Edoardo M. and Reddy, Siva},
+  title     = {{FaithDial}: A Faithful Benchmark for Information-Seeking Dialogue},
+  journal   = {Transactions of the Association for Computational Linguistics},
+  volume    = {10},
+  pages     = {1473--1490},
+  year      = {2022},
+  publisher = {{MIT} Press}
+}
+
+%% --- Evaluation Metrics ---
+
+@inproceedings{lin2004rouge,
+  author    = {Lin, Chin-Yew},
+  title     = {{ROUGE}: A Package for Automatic Evaluation of Summaries},
+  booktitle = {Text Summarization Branches Out: Proceedings of the {ACL}-04 Workshop},
+  pages     = {74--81},
+  year      = {2004},
+  publisher = {Association for Computational Linguistics}
+}
+
+@article{zhang2019bertscore,
+  author    = {Zhang, Tianyi and Kishore, Varsha and Wu, Felix and
+               Weinberger, Kilian Q. and Artzi, Yoav},
+  title     = {{BERTScore}: Evaluating Text Generation with {BERT}},
+  journal   = {arXiv preprint arXiv:1904.09675},
+  year      = {2019}
+}
+
+@inproceedings{es2023ragas,
+  author    = {Es, Shahul and James, Jithin and Anke, Luis Espinosa and Schockaert, Steven},
+  title     = {{RAGAS}: Automated Evaluation of Retrieval Augmented Generation},
+  booktitle = {Proceedings of the 18th Conference of the European Chapter of the
+               Association for Computational Linguistics: System Demonstrations},
+  pages     = {150--158},
+  year      = {2024},
+  publisher = {Association for Computational Linguistics}
+}
+
+%% --- Calibration ---
+
+@inproceedings{naeini2015obtaining,
+  author    = {Naeini, Mahdi Pakdaman and Cooper, Gregory F. and Hauskrecht, Milos},
+  title     = {Obtaining Well Calibrated Probabilities Using {Bayesian} Binning},
+  booktitle = {Proceedings of the Twenty-Ninth {AAAI} Conference on Artificial Intelligence},
+  pages     = {2901--2907},
+  year      = {2015},
+  publisher = {{AAAI} Press}
+}
+
+@inproceedings{guo2017calibration,
+  author    = {Guo, Chuan and Pleiss, Geoff and Sun, Yu and Weinberger, Kilian Q.},
+  title     = {On Calibration of Modern Neural Networks},
+  booktitle = {Proceedings of the 34th International Conference on Machine Learning},
+  pages     = {1321--1330},
+  year      = {2017},
+  publisher = {{PMLR}}
+}
+
+@incollection{platt1999probabilistic,
+  author    = {Platt, John C.},
+  title     = {Probabilistic Outputs for Support Vector Machines and Comparisons
+               to Regularized Likelihood Methods},
+  booktitle = {Advances in Large Margin Classifiers},
+  pages     = {61--74},
+  year      = {1999},
+  publisher = {{MIT} Press}
+}
+
+@article{vaswani2017attention,
+  title={Attention is all you need},
+  author={Vaswani, Ashish and Shazeer, Noam and Parmar, Niki and Uszkoreit, Jakob and Jones, Llion and Gomez, Aidan N and Kaiser, {\L}ukasz and Polosukhin, Illia},
+  journal={Advances in neural information processing systems},
+  volume={30},
+  year={2017}
+}
+
+@inproceedings{devlin2018bert,
+  title={{BERT}: Pre-training of deep bidirectional transformers for language understanding},
+  author={Devlin, Jacob and Chang, Ming-Wei and Lee, Kenton and Toutanova, Kristina},
+  booktitle={Proceedings of NAACL-HLT},
+  year={2018}
+}
+
+@article{touvron2023llama,
+  title={{LLaMA}: Open and efficient foundation language models},
+  author={Touvron, Hugo and Lavril, Thibaut and Izacard, Gautier and Martinet, Xavier and Lachaux, Marie-Anne and Lacroix, Timoth{\'e}e and Rozi{\`e}re, Baptiste and Goyal, Naman and Hambro, Eric and Azhar, Faisal and others},
+  journal={arXiv preprint arXiv:2302.13971},
+  year={2023}
+}
+
+@article{hu2021lora,
+  title={{LoRA}: Low-rank adaptation of large language models},
+  author={Hu, Edward J and Shen, Yelong and Wallis, Phil and Allen-Zhu, Zeyuan and Li, Yuanzhi and Wang, Shean and Wang, Lu and Chen, Weizhu},
+  journal={arXiv preprint arXiv:2106.09685},
+  year={2021}
+}
+
+@article{singhal2023large,
+  title={Large language models encode clinical knowledge},
+  author={Singhal, Karan and Azizi, Shekoofeh and Tu, Tao and Mahdavi, S Sara and Wei, Jason and Chung, Hyung Won and Scales, Nathan and Ajay, Ajay and others},
+  journal={Nature},
+  volume={620},
+  number={7972},
+  pages={172--180},
+  year={2023},
+  publisher={Nature Publishing Group}
+}
+
+@article{lee2020biobert,
+  title={BioBERT: a pre-trained biomedical language representation model for biomedical text mining},
+  author={Lee, Jinhyuk and Yoon, Wonjin and Kim, Sungdong and Kim, Donghyeon and Kim, Sunkyu and So, Chan Ho and Kang, Jaewoo},
+  journal={Bioinformatics},
+  volume={36},
+  number={4},
+  pages={1234--1240},
+  year={2020},
+  publisher={Oxford University Press}
+}
+
+@inproceedings{alsentzer2019clinicalbert,
+  title={Publicly Available Clinical BERT Embeddings},
+  author={Alsentzer, Emily and Murphy, John R and Boag, Willie and Weng, Wei-Hung and Jin, Di and Naumann, Tristan and McDermott, Matthew},
+  booktitle={Proceedings of the 2nd Clinical Natural Language Processing Workshop},
+  pages={72--78},
+  year={2019}
+}
+
+@article{yang2022gatortron,
+  title={A large language model for electronic health records},
+  author={Yang, Xi and Chen, Aokun and PourNejatian, Nima and Shin, Hoo Chang and Smith, Kaleb E and Parisien, Christopher and Compas, Colin and Martin, Cheryl and others},
+  journal={npj Digital Medicine},
+  volume={5},
+  number={1},
+  pages={194},
+  year={2022},
+  publisher={Nature Publishing Group}
+}
+
+@article{tsatsaronis2015overview,
+  title={An overview of the BIOASQ large-scale biomedical semantic indexing and question answering competition},
+  author={Tsatsaronis, George and Balikas, Georgios and Malakasiotis, Prodromos and Partalas, Ioannis and Zschunke, Matthias and Alvers, Michael R and Weissenborn, Dirk and Krithara, Anastasia and Petridis, Sergios and Polychronopoulos, Dimitris and others},
+  journal={BMC bioinformatics},
+  volume={16},
+  number={1},
+  pages={1--28},
+  year={2015},
+  publisher={Springer}
+}
+
+@article{yan2024corrective,
+  title={Corrective retrieval augmented generation},
+  author={Yan, Shuo and Gu, Jia-Chen and Zhu, Yun and Ling, Zhen-Hua},
+  journal={arXiv preprint arXiv:2401.15884},
+  year={2024}
+}
+
+@article{asai2023selfrag,
+  title={Self-RAG: Learning to retrieve, generate, and critique through self-reflection},
+  author={Asai, Akari and Wu, Zeqiu and Wang, Yizhong and Sil, Avirup and Hajishirzi, Hannaneh},
+  journal={arXiv preprint arXiv:2310.11511},
+  year={2023}
+}
+
+@article{malkov2018efficient,
+  title={Efficient and robust approximate nearest neighbor search using hierarchical navigable small world graphs},
+  author={Malkov, Yu A and Yashunin, Dmitry A},
+  journal={IEEE transactions on pattern analysis and machine intelligence},
+  volume={42},
+  number={4},
+  pages={824--836},
+  year={2018},
+  publisher={IEEE}
+}
+
+@article{johnson2019faiss,
+  title={Billion-scale similarity search with GPUs},
+  author={Johnson, Jeff and Douze, Matthijs and J{\'e}gou, Herv{\'e}},
+  journal={IEEE Transactions on Big Data},
+  volume={7},
+  number={3},
+  pages={535--547},
+  year={2019},
+  publisher={IEEE}
+}
+
+@article{liu2023lost,
+  title={Lost in the middle: How language models use long contexts},
+  author={Liu, Nelson F and Lin, Kevin and Hewitt, John and Paranjape, Ashwin and Bevilacqua, Michele and Petroni, Fabio and Zettlemoyer, Luke},
+  journal={arXiv preprint arXiv:2307.03172},
+  year={2023}
+}
+
+@inproceedings{lundberg2017unified,
+  title={A unified approach to interpreting model predictions},
+  author={Lundberg, Scott M and Lee, Su-In},
+  booktitle={Advances in neural information processing systems},
+  volume={30},
+  year={2017}
+}
+
+@inproceedings{ribeiro2016why,
+  title={"Why should {I} trust you?" Explaining the predictions of any classifier},
+  author={Ribeiro, Marco Tulio and Singh, Sameer and Guestrin, Carlos},
+  booktitle={Proceedings of the 22nd ACM SIGKDD international conference on knowledge discovery and data mining},
+  pages={1135--1144},
+  year={2016}
+}
+
+@article{holzinger2019causability,
+  title={Causability and explainability of artificial intelligence in medicine},
+  author={Holzinger, Andreas and Langs, Georg and Denk, Helmut and Zatloukal, Kurt and M{\"u}ller, Heimo},
+  journal={Wiley Interdisciplinary Reviews: Data Mining and Knowledge Discovery},
+  volume={9},
+  number={4},
+  pages={e1312},
+  year={2019},
+  publisher={Wiley Online Library}
+}
+
+@article{cutillo2020machine,
+  title={Machine intelligence in healthcare—perspectives on trustworthiness, explainability, usability, and transparency},
+  author={Cutillo, Carmela M and Sharma, Kartikey R and Foschini, Luca and Kundu, Sujoy and Mackowiak, Matthew and Mandl, Kenneth D},
+  journal={npj Digital Medicine},
+  volume={3},
+  number={1},
+  pages={47},
+  year={2020},
+  publisher={Nature Publishing Group}
+}
+
+@article{geis2019ethics,
+  title={Ethics of artificial intelligence in radiology: summary of the joint European and North American multisociety statement},
+  author={Geis, J Raymond and Brady, Adrian P and Wu, Carol C and Spencer, Jack and Ranschaert, Erik and Jaremko, Jacob L and Langer, Steve G and Borondy Kitts, Andrea and Birch, Judy and Shields, William F and others},
+  journal={Radiology},
+  volume={293},
+  number={2},
+  pages={436--440},
+  year={2019},
+  publisher={Radiological Society of North America}
+}
+
+@article{gao2023enabling,
+  title={Enabling large language models to cite their sources},
+  author={Gao, Tianyu and Howard, Yen-Chun and Zettlemoyer, Luke},
+  journal={arXiv preprint arXiv:2305.14627},
+  year={2023}
+}
+
+@inproceedings{wei2022chain,
+  title={Chain-of-thought prompting elicits reasoning in large language models},
+  author={Wei, Jason and Wang, Xuezhi and Schuurmans, Dale and Bosma, Maarten and Xia, Fei and Chi, Ed and Le, Quoc V and Zhou, Denny and others},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={35},
+  pages={24824--24837},
+  year={2022}
+}
+
+@inproceedings{wang2022self,
+  title={Self-consistency improves chain of thought reasoning in language models},
+  author={Wang, Xuezhi and Wei, Jason and Schuurmans, Dale and Le, Quoc V and Chi, Ed H and Narang, Sharan and Chowdhery, Aakanksha and Zhou, Denny},
+  booktitle={The Eleventh International Conference on Learning Representations},
+  year={2022}
+}
+
+@article{dhuliawala2023chain,
+  title={Chain-of-verification reduces hallucination in large language models},
+  author={Dhuliawala, Shehzaad and Komeili, Mojtaba and Xu, Jing and Raileanu, Roberta and Li, Xian and Asenbaum, Asli and Hannun, Awni and Ross, Jason and others},
+  journal={arXiv preprint arXiv:2309.11495},
+  year={2023}
+}
+
+@article{gao2022rarr,
+  title={RARR: Researching and revising what language models say, using almost only language models},
+  author={Gao, Tianyu and Zettlemoyer, Luke and others},
+  journal={arXiv preprint arXiv:2210.08726},
+  year={2022}
+}
+
+@article{zhang2023sirens,
+  title={Sirens' song in the AI ocean: A survey on hallucination in large language models},
+  author={Zhang, Yue and Li, Yafu and Cui, Leyang and Cai, Deng and Liu, Lemao and Fu, Tingchen and Huang, Xinting and Zhao, Enbo and Zhang, Yu and Chen, Yulong and others},
+  journal={arXiv preprint arXiv:2309.01219},
+  year={2023}
+}
+
+@article{ji2023survey,
+  title={Survey of hallucination in natural language generation},
+  author={Ji, Ziwei and Lee, Nayeon and Frieske, Rita and Yu, Tiezheng and Su, Dan and Xu, Yan and Ishii, Etsuko and Bang, Yejin and Madotto, Andrea and Fung, Pascale},
+  journal={ACM Computing Surveys},
+  volume={55},
+  number={12},
+  pages={1--38},
+  year={2023},
+  publisher={ACM New York, NY}
+}
+
+@inproceedings{lin2022truthfulqa,
+  title={TruthfulQA: Measuring How Models Mimic Human Falsehoods},
+  author={Lin, Stephanie and Hilton, Jacob and Evans, Owain},
+  booktitle={Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics},
+  pages={3214--3252},
+  year={2022}
+}

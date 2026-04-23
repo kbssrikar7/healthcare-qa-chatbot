@@ -1,0 +1,19 @@
+flowchart LR
+    U([User Query]) --> QE[Query Enhancer\nTinyLlama expander]
+    QE --> HR[Hybrid Retriever\nBM25 + Dense]
+    HR --> RRF[RRF Fusion\nk=60]
+    RRF --> CRAG[Corrective RAG\nQuality Check]
+    CRAG --> GG{Grounding\nGate}
+    GG -- sufficient --> CC[Context\nCompressor]
+    GG -- insufficient --> HR
+    CC --> LLM[LLM Generation\nTinyLlama / BioMistral]
+    LLM --> FC[Factual Consistency\nDeBERTa NLI]
+    FC --> CS[Confidence Scorer\n5 Signals + Platt]
+    CS --> R([Response\nanswer · sources · confidence])
+
+    style U fill:#4A90D9,color:#fff,stroke:none
+    style R fill:#27AE60,color:#fff,stroke:none
+    style GG fill:#F39C12,color:#fff,stroke:none
+    style LLM fill:#8E44AD,color:#fff,stroke:none
+    style HR fill:#2980B9,color:#fff,stroke:none
+    style CS fill:#16A085,color:#fff,stroke:none

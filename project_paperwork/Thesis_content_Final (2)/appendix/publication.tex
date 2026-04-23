@@ -1,0 +1,75 @@
+\begin{center}
+    {\Large \textbf{Appendix B}} \vspace*{0.5cm}
+
+    {\Large \textbf{Evaluation Data and Results}}
+\end{center}
+
+\noindent\textbf{Test set composition}
+
+The 97-question evaluation set was drawn from three source datasets:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Dataset} & \textbf{Questions} & \textbf{Query type} \\
+\hline
+ChatDoctor-HealthCareMagic & 40 & Clinical symptom and advice \\
+PubMedQA & 32 & Research-oriented biomedical \\
+MedMCQA & 25 & Factual medical knowledge \\
+\hline
+Total & 97 & -- \\
+\hline
+\end{tabular}
+\end{center}
+
+\vspace{0.5cm}
+\noindent\textbf{Evaluation result files}
+
+All evaluation outputs are stored in \texttt{evaluation/results/} in the project repository:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{File} & \textbf{Contents} \\
+\hline
+\texttt{metrics\_full\_tinyllama.json} & Full-system TinyLlama metrics (n=97) \\
+\texttt{metrics\_full\_qlora.json} & QLoRA adapter metrics (n=97) \\
+\texttt{metrics\_full\_biomistral.json} & BioMistral-7B metrics (n=97) \\
+\texttt{metrics\_baseline\_no\_rag.json} & No-RAG baseline (n=97) \\
+\texttt{metrics\_baseline\_dense\_only.json} & Dense-only retrieval baseline (n=97) \\
+\texttt{metrics\_baseline\_no\_xai.json} & No-XAI baseline (n=97) \\
+\texttt{calibration.json} & ECE and confidence calibration data \\
+\texttt{kb\_v1\_vs\_v2.json} & A/B comparison: KB v1 vs KB v2 (n=97) \\
+\texttt{latency.json} & Per-stage latency measurements \\
+\hline
+\end{tabular}
+\end{center}
+
+\vspace{0.5cm}
+\noindent\textbf{Reproducibility}
+
+To reproduce the evaluation results from a clean environment:
+
+\begin{lstlisting}[language=bash]
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Run the retrieval benchmark (requires KB v2 to be built)
+make eval-retrieval
+
+# 3. Run the end-to-end benchmark (36 questions)
+python evaluation/run_e2e_benchmark.py
+
+# 4. Run the full RAGAS evaluation (10-question sample)
+python evaluation/run_ragas_eval.py --n 10
+
+# 5. Run the full model evaluation (97 questions)
+python evaluation/run_evaluation.py \
+    --model tinyllama \
+    --kb-version v2 \
+    --output evaluation/results/
+\end{lstlisting}
+
+The Docker image (\texttt{make docker-build\allowbreak{} \&\& make run}) reproduces the API runtime. Model weights (TinyLlama bfloat16, QLoRA adapter, BioMistral GGUF) must be downloaded separately and placed in the \texttt{models/} directory before running evaluation.

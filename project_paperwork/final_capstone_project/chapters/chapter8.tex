@@ -1,0 +1,47 @@
+\chapter{\MakeUppercase{Conclusion and Further Enhancements}}
+
+I successfully developed a locally-running, privacy-preserving healthcare \ac{qa} system that achieves all my initial objectives: it provides grounded answers with calibrated uncertainty estimates while keeping sensitive data entirely offline. 
+
+The technical performance matches the mission of the project. I was able to optimize the system to search through over 500,000 documents on a standard \ac{cpu} in about 43 seconds, with the final answer generation taking another 70 seconds. On the 36-question gold set, my retriever surfaced relevant documents 97\% of the time, and I saw a marked improvement in keyword coverage after applying \ac{qlora} fine-tuning.
+
+In my view, the most critical lesson from this project is the impact of the data processing phase. Switching to the \texttt{RecursiveSentenceChunker}---which respects sentence boundaries---improved the system's quality more significantly than any model upgrade or algorithm tweak I attempted. This confirmed my suspicion that in \ac{rag} systems, the preparation of the knowledge base often dictates the final performance ceiling. 
+
+The confidence module also met its design goals, even with its intentionally conservative bias. By penalizing responses when retrieved sources conflict, I've prioritized accuracy and honesty over raw performance scores. While the 106-second latency remains high for consumer use, it serves as a viable proof of concept for a privacy-first research tool. I expect that moving to a \ac{gpu} would bring these generation times down to just a few seconds, making the system feel much more interactive.
+
+The current evaluation set of 97 questions is a solid starting point, but it remains relatively small. The noise floor means that small differences between system versions might be accidental. To be truly confident in the results, we’d need at least 500 questions and human ratings from medical professionals. While the safety guardrails are robust, they still rely on pattern matching rather than clinical reasoning. The system is accurate because its sources are accurate, but it doesn't "understand" medicine in the way a doctor does. 
+
+We also have a technical bottleneck with the BM25 index. If the cache is missing, rebuilding the index for 500k documents can use a lot of RAM. On low-memory machines, this can sometimes cause the system to crash if the embedding models are already running. For now, keeping the index pre-built and cached is the best way to avoid this.
+
+\section{Further enhancements}
+
+\subsection{Latency reduction}
+
+We project that moving to a machine with a T4 or equivalent GPU would heavily reduce generation latency from 70 seconds and accelerate dense-embedding phases of retrieval. No code changes are required; both the Transformers and llama-cpp-python backends are designed to use GPU automatically when CUDA is available.
+
+\subsection{Continuous knowledge base updates}
+
+The knowledge base is currently static. A production deployment would benefit from an ingestion pipeline that periodically pulls new PubMed abstracts and clinical guidelines, chunks them with the RecursiveSentenceChunker, and upserts them into ChromaDB. ChromaDB supports incremental upserts; the main cost is regenerating the BM25 index, which would need to run offline during low-traffic periods.
+
+\subsection{Extended multi-turn support}
+
+Multi-turn conversation with follow-up resolution is implemented across two components. The \texttt{ConversationManager} class maintains session history across queries within a session. Follow-up detection is handled by the \texttt{FollowUpDetector} class in \texttt{src/\allowbreak conversation/history.py}, which applies four checks in sequence: (1) a phrase match against the \texttt{FOLLOWUP\_PHRASES} list (``what about'', ``tell me more'', ``also'', ``why is that'', and others); (2) a leading-pronoun check against \texttt{REFERENCE\_\allowbreak PRONOUNS} (it, its, this, that, these, those, they, them, their, he, she, his, her); (3) a short-question heuristic that flags queries of six words or fewer; and (4) a \texttt{\_has\_clear\_subject()} test that returns false when a question opens with a reference pronoun but no independent subject starter follows. If any check fires, the question is classified as a follow-up.
+
+When a follow-up is detected, the pipeline augments the retrieval query by prepending the prior conversation context:
+
+\begin{lstlisting}[language=Python]
+retrieval_query = f"{conversation_context}\n\nCurrent question: {question}"
+\end{lstlisting}
+
+The hybrid retriever therefore searches the knowledge base against the full exchange rather than the new question in isolation. Extending support to longer context windows across many turns, and replacing the \texttt{\_has\_clear\_subject()} heuristic with a lightweight dependency parser, are natural next steps.
+
+\subsection{Clinical validation}
+
+Before this system could ever be used by actual patients, I would need licensed medical professionals to evaluate it against real clinical guidelines. While my automated results look good, they only measure how closely the generated responses match the reference answers; they don't actually prove that the advice is medically sound or safe.
+
+\subsection{Calibration improvement}
+
+The ECE of 0.144 with systematic under-confidence suggests the Platt scaling parameters were not fitted on a sufficiently large or representative set. A calibration set of at least 300 questions, balanced across the four query categories, would likely produce better-calibrated scores. Temperature scaling~\cite{guo2017calibration} is a simpler alternative to Platt scaling that is easier to tune and performs comparably on many classification tasks.
+
+\subsection{Larger evaluation set}
+
+The 97-question set is sufficient to observe large differences (the 0.292 KB v1-vs-v2 gap is clearly above the noise floor) but not small ones. Extending the gold set to 500 or more questions with human quality ratings would allow more reliable conclusions about differences between model and configuration variants.

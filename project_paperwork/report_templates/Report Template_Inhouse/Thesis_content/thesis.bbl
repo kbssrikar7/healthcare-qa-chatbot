@@ -1,0 +1,388 @@
+\begin{thebibliography}{52}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Alsentzer et~al.(2019)Alsentzer, Murphy, Boag, Weng, Jin, Naumann, and
+  McDermott]{alsentzer2019clinicalbert}
+Emily Alsentzer, John~R Murphy, Willie Boag, Wei-Hung Weng, Di~Jin, Tristan
+  Naumann, and Matthew McDermott.
+\newblock Publicly available clinical bert embeddings.
+\newblock In \emph{Proceedings of the 2nd Clinical Natural Language Processing
+  Workshop}, pages 72--78, 2019.
+
+\bibitem[Asai et~al.(2023)Asai, Wu, Wang, Sil, and Hajishirzi]{asai2023selfrag}
+Akari Asai, Zeqiu Wu, Yizhong Wang, Avirup Sil, and Hannaneh Hajishirzi.
+\newblock Self-rag: Learning to retrieve, generate, and critique through
+  self-reflection.
+\newblock \emph{arXiv preprint arXiv:2310.11511}, 2023.
+
+\bibitem[Cormack et~al.(2009)Cormack, Clarke, and Buettcher]{cormack2009rrf}
+Gordon~V. Cormack, Charles L.~A. Clarke, and Stefan Buettcher.
+\newblock Reciprocal rank fusion outperforms condorcet and individual rank
+  learning methods.
+\newblock In \emph{Proceedings of the 32nd International {ACM} {SIGIR}
+  Conference on Research and Development in Information Retrieval}, pages
+  758--759. {ACM}, 2009.
+
+\bibitem[Cutillo et~al.(2020)Cutillo, Sharma, Foschini, Kundu, Mackowiak, and
+  Mandl]{cutillo2020machine}
+Carmela~M Cutillo, Kartikey~R Sharma, Luca Foschini, Sujoy Kundu, Matthew
+  Mackowiak, and Kenneth~D Mandl.
+\newblock Machine intelligence in healthcare—perspectives on trustworthiness,
+  explainability, usability, and transparency.
+\newblock \emph{npj Digital Medicine}, 3\penalty0 (1):\penalty0 47, 2020.
+
+\bibitem[Dettmers et~al.(2023)Dettmers, Pagnoni, Holtzman, and
+  Zettlemoyer]{dettmers2023qlora}
+Tim Dettmers, Artidoro Pagnoni, Ari Holtzman, and Luke Zettlemoyer.
+\newblock {QLoRA}: Efficient finetuning of quantized {LLMs}.
+\newblock In \emph{Advances in Neural Information Processing Systems},
+  volume~36. Curran Associates, 2023.
+
+\bibitem[Devlin et~al.(2018)Devlin, Chang, Lee, and Toutanova]{devlin2018bert}
+Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova.
+\newblock {BERT}: Pre-training of deep bidirectional transformers for language
+  understanding.
+\newblock In \emph{Proceedings of NAACL-HLT}, 2018.
+
+\bibitem[Dhuliawala et~al.(2023)Dhuliawala, Komeili, Xu, Raileanu, Li,
+  Asenbaum, Hannun, Ross, et~al.]{dhuliawala2023chain}
+Shehzaad Dhuliawala, Mojtaba Komeili, Jing Xu, Roberta Raileanu, Xian Li, Asli
+  Asenbaum, Awni Hannun, Jason Ross, et~al.
+\newblock Chain-of-verification reduces hallucination in large language models.
+\newblock \emph{arXiv preprint arXiv:2309.11495}, 2023.
+
+\bibitem[Dziri et~al.(2022)Dziri, Kamalloo, Milton, Zaiane, Yu, Ponti, and
+  Reddy]{dziri2022faithdial}
+Nouha Dziri, Ehsan Kamalloo, Sivan Milton, Osmar Zaiane, Mo~Yu, Edoardo~M.
+  Ponti, and Siva Reddy.
+\newblock {FaithDial}: A faithful benchmark for information-seeking dialogue.
+\newblock \emph{Transactions of the Association for Computational Linguistics},
+  10:\penalty0 1473--1490, 2022.
+
+\bibitem[Es et~al.(2024)Es, James, Anke, and Schockaert]{es2023ragas}
+Shahul Es, Jithin James, Luis~Espinosa Anke, and Steven Schockaert.
+\newblock {RAGAS}: Automated evaluation of retrieval augmented generation.
+\newblock In \emph{Proceedings of the 18th Conference of the European Chapter
+  of the Association for Computational Linguistics: System Demonstrations},
+  pages 150--158. Association for Computational Linguistics, 2024.
+
+\bibitem[Gao et~al.(2022)Gao, Zettlemoyer, et~al.]{gao2022rarr}
+Tianyu Gao, Luke Zettlemoyer, et~al.
+\newblock Rarr: Researching and revising what language models say, using almost
+  only language models.
+\newblock \emph{arXiv preprint arXiv:2210.08726}, 2022.
+
+\bibitem[Gao et~al.(2023)Gao, Howard, and Zettlemoyer]{gao2023enabling}
+Tianyu Gao, Yen-Chun Howard, and Luke Zettlemoyer.
+\newblock Enabling large language models to cite their sources.
+\newblock \emph{arXiv preprint arXiv:2305.14627}, 2023.
+
+\bibitem[Geis et~al.(2019)Geis, Brady, Wu, Spencer, Ranschaert, Jaremko,
+  Langer, Borondy~Kitts, Birch, Shields, et~al.]{geis2019ethics}
+J~Raymond Geis, Adrian~P Brady, Carol~C Wu, Jack Spencer, Erik Ranschaert,
+  Jacob~L Jaremko, Steve~G Langer, Andrea Borondy~Kitts, Judy Birch, William~F
+  Shields, et~al.
+\newblock Ethics of artificial intelligence in radiology: summary of the joint
+  european and north american multisociety statement.
+\newblock \emph{Radiology}, 293\penalty0 (2):\penalty0 436--440, 2019.
+
+\bibitem[Gu et~al.(2021)Gu, Tinn, Cheng, Lucas, Usuyama, Liu, Naumann, Gao, and
+  Poon]{gu2021pubmedbert}
+Yu~Gu, Robert Tinn, Hao Cheng, Michael Lucas, Naoto Usuyama, Xiaodong Liu,
+  Tristan Naumann, Jianfeng Gao, and Hoifung Poon.
+\newblock Domain-specific language model pretraining for biomedical natural
+  language processing.
+\newblock \emph{{ACM} Transactions on Computing for Healthcare}, 3\penalty0
+  (1):\penalty0 1--23, 2021.
+
+\bibitem[Guo et~al.(2017)Guo, Pleiss, Sun, and Weinberger]{guo2017calibration}
+Chuan Guo, Geoff Pleiss, Yu~Sun, and Kilian~Q. Weinberger.
+\newblock On calibration of modern neural networks.
+\newblock In \emph{Proceedings of the 34th International Conference on Machine
+  Learning}, pages 1321--1330. {PMLR}, 2017.
+
+\bibitem[Guu et~al.(2020)Guu, Lee, Tung, Pasupat, and Chang]{guu2020realm}
+Kelvin Guu, Kenton Lee, Zora Tung, Panupong Pasupat, and Ming-Wei Chang.
+\newblock {REALM}: Retrieval-augmented language model pre-training.
+\newblock In \emph{Proceedings of the 37th International Conference on Machine
+  Learning}, ICML 2020. PMLR, 2020.
+
+\bibitem[He et~al.(2021)He, Liu, Gao, and Chen]{he2021deberta}
+Pengcheng He, Xiaodong Liu, Jianfeng Gao, and Weizhu Chen.
+\newblock {DeBERTa}: Decoding-enhanced {BERT} with disentangled attention.
+\newblock In \emph{Proceedings of the 9th International Conference on Learning
+  Representations}, 2021.
+
+\bibitem[Holzinger et~al.(2019)Holzinger, Langs, Denk, Zatloukal, and
+  M{\"u}ller]{holzinger2019causability}
+Andreas Holzinger, Georg Langs, Helmut Denk, Kurt Zatloukal, and Heimo
+  M{\"u}ller.
+\newblock Causability and explainability of artificial intelligence in
+  medicine.
+\newblock \emph{Wiley Interdisciplinary Reviews: Data Mining and Knowledge
+  Discovery}, 9\penalty0 (4):\penalty0 e1312, 2019.
+
+\bibitem[Honovich et~al.(2022)Honovich, Aharoni, Herzig, Taitelbaum,
+  Kukliansky, Albert, Goldman, Goldfarb-Tarrant, Schwartz, Alon, and
+  Elazar]{honovich2022true}
+Or~Honovich, Roee Aharoni, Jonathan Herzig, Hagai Taitelbaum, Doron Kukliansky,
+  Vered Albert, Omer Goldman, Seraphina Goldfarb-Tarrant, Roy Schwartz, Uri
+  Alon, and Yanai Elazar.
+\newblock {TRUE}: Re-evaluating factual consistency evaluation.
+\newblock In \emph{Proceedings of the 2022 Conference of the North American
+  Chapter of the Association for Computational Linguistics}, pages 3905--3920.
+  Association for Computational Linguistics, 2022.
+
+\bibitem[Hu et~al.(2021)Hu, Shen, Wallis, Allen-Zhu, Li, Wang, Wang, and
+  Chen]{hu2021lora}
+Edward~J Hu, Yelong Shen, Phil Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean
+  Wang, Lu~Wang, and Weizhu Chen.
+\newblock {LoRA}: Low-rank adaptation of large language models.
+\newblock \emph{arXiv preprint arXiv:2106.09685}, 2021.
+
+\bibitem[Ji et~al.(2023)Ji, Lee, Frieske, Yu, Su, Xu, Ishii, Bang, Madotto, and
+  Fung]{ji2023survey}
+Ziwei Ji, Nayeon Lee, Rita Frieske, Tiezheng Yu, Dan Su, Yan Xu, Etsuko Ishii,
+  Yejin Bang, Andrea Madotto, and Pascale Fung.
+\newblock Survey of hallucination in natural language generation.
+\newblock \emph{ACM Computing Surveys}, 55\penalty0 (12):\penalty0 1--38, 2023.
+
+\bibitem[Jin et~al.(2021)Jin, Pan, Oufattole, Weng, Fang, and
+  Szolovits]{jin2021medqa}
+Di~Jin, Eileen Pan, Nassim Oufattole, Wei-Hung Weng, Hanyi Fang, and Peter
+  Szolovits.
+\newblock What disease does this patient have? {A} large-scale open domain
+  question answering dataset from medical exams.
+\newblock \emph{Applied Sciences}, 11\penalty0 (14):\penalty0 6421, 2021.
+
+\bibitem[Jin et~al.(2019)Jin, Dhingra, Liu, Cohen, and Lu]{jin2019pubmedqa}
+Qiao Jin, Bhuwan Dhingra, Zhengping Liu, William~W. Cohen, and Xinghua Lu.
+\newblock {PubMedQA}: A dataset for biomedical research question answering.
+\newblock In \emph{Proceedings of the 2019 Conference on Empirical Methods in
+  Natural Language Processing}, pages 2567--2577. Association for Computational
+  Linguistics, 2019.
+
+\bibitem[Johnson et~al.(2019)Johnson, Douze, and J{\'e}gou]{johnson2019faiss}
+Jeff Johnson, Matthijs Douze, and Herv{\'e} J{\'e}gou.
+\newblock Billion-scale similarity search with gpus.
+\newblock \emph{IEEE Transactions on Big Data}, 7\penalty0 (3):\penalty0
+  535--547, 2019.
+
+\bibitem[Karpukhin et~al.(2020)Karpukhin, Oguz, Min, Lewis, Wu, Edunov, Chen,
+  and Yih]{karpukhin2020dpr}
+Vladimir Karpukhin, Barlas Oguz, Sewon Min, Patrick Lewis, Ledell Wu, Sergey
+  Edunov, Danqi Chen, and Wen-tau Yih.
+\newblock Dense passage retrieval for open-domain question answering.
+\newblock In \emph{Proceedings of the 2020 Conference on Empirical Methods in
+  Natural Language Processing}, pages 6769--6781. Association for Computational
+  Linguistics, 2020.
+
+\bibitem[Labrak et~al.(2024)Labrak, Bazoge, Morin, Gourraud, Rouvier, and
+  Dufour]{labrak2024biomistral}
+Yanis Labrak, Adrien Bazoge, Emmanuel Morin, Pierre-Antoine Gourraud, Mickael
+  Rouvier, and Richard Dufour.
+\newblock {BioMistral}: A collection of open-source pretrained large language
+  models for medical domains.
+\newblock In \emph{Findings of the Association for Computational Linguistics:
+  {ACL} 2024}, pages 3848--3864. Association for Computational Linguistics,
+  2024.
+
+\bibitem[Lee et~al.(2020)Lee, Yoon, Kim, Kim, Kim, So, and
+  Kang]{lee2020biobert}
+Jinhyuk Lee, Wonjin Yoon, Sungdong Kim, Donghyeon Kim, Sunkyu Kim, Chan~Ho So,
+  and Jaewoo Kang.
+\newblock Biobert: a pre-trained biomedical language representation model for
+  biomedical text mining.
+\newblock \emph{Bioinformatics}, 36\penalty0 (4):\penalty0 1234--1240, 2020.
+
+\bibitem[Lewis et~al.(2020)Lewis, Perez, Piktus, Petroni, Karpukhin, Goyal,
+  K{\"u}ttler, Lewis, Yih, Rockt{\"a}schel, Riedel, and Kiela]{lewis2020rag}
+Patrick Lewis, Ethan Perez, Aleksandra Piktus, Fabio Petroni, Vladimir
+  Karpukhin, Naman Goyal, Heinrich K{\"u}ttler, Mike Lewis, Wen-tau Yih, Tim
+  Rockt{\"a}schel, Sebastian Riedel, and Douwe Kiela.
+\newblock Retrieval-augmented generation for knowledge-intensive {NLP} tasks.
+\newblock In \emph{Advances in Neural Information Processing Systems},
+  volume~33, pages 9459--9474. Curran Associates, 2020.
+
+\bibitem[Li et~al.(2023)Li, Li, Zhang, Dan, Jiang, and Zhang]{li2023chatdoctor}
+Yunxiang Li, Zihan Li, Kai Zhang, Ruilong Dan, Steve Jiang, and You Zhang.
+\newblock {ChatDoctor}: A medical chat model fine-tuned on a large language
+  model {Meta-AI} ({LLaMA}) using medical domain knowledge.
+\newblock \emph{Cureus}, 15\penalty0 (6), 2023.
+
+\bibitem[Lin(2004)]{lin2004rouge}
+Chin-Yew Lin.
+\newblock {ROUGE}: A package for automatic evaluation of summaries.
+\newblock In \emph{Text Summarization Branches Out: Proceedings of the {ACL}-04
+  Workshop}, pages 74--81. Association for Computational Linguistics, 2004.
+
+\bibitem[Lin et~al.(2022)Lin, Hilton, and Evans]{lin2022truthfulqa}
+Stephanie Lin, Jacob Hilton, and Owain Evans.
+\newblock Truthfulqa: Measuring how models mimic human falsehoods.
+\newblock In \emph{Proceedings of the 60th Annual Meeting of the Association
+  for Computational Linguistics}, pages 3214--3252, 2022.
+
+\bibitem[Liu et~al.(2023)Liu, Lin, Hewitt, Paranjape, Bevilacqua, Petroni, and
+  Zettlemoyer]{liu2023lost}
+Nelson~F Liu, Kevin Lin, John Hewitt, Ashwin Paranjape, Michele Bevilacqua,
+  Fabio Petroni, and Luke Zettlemoyer.
+\newblock Lost in the middle: How language models use long contexts.
+\newblock \emph{arXiv preprint arXiv:2307.03172}, 2023.
+
+\bibitem[Lundberg and Lee(2017)]{lundberg2017unified}
+Scott~M Lundberg and Su-In Lee.
+\newblock A unified approach to interpreting model predictions.
+\newblock In \emph{Advances in neural information processing systems},
+  volume~30, 2017.
+
+\bibitem[Luo et~al.(2022)Luo, Sun, Xia, Qin, Zhang, Poon, and
+  Liu]{luo2022biogpt}
+Renqian Luo, Liyuan Sun, Yingce Xia, Tao Qin, Sheng Zhang, Hoifung Poon, and
+  Tie-Yan Liu.
+\newblock {BioGPT}: Generative pre-trained transformer for biomedical text
+  generation and mining.
+\newblock \emph{Briefings in Bioinformatics}, 23\penalty0 (6), 2022.
+
+\bibitem[Malkov and Yashunin(2018)]{malkov2018efficient}
+Yu~A Malkov and Dmitry~A Yashunin.
+\newblock Efficient and robust approximate nearest neighbor search using
+  hierarchical navigable small world graphs.
+\newblock \emph{IEEE transactions on pattern analysis and machine
+  intelligence}, 42\penalty0 (4):\penalty0 824--836, 2018.
+
+\bibitem[Naeini et~al.(2015)Naeini, Cooper, and
+  Hauskrecht]{naeini2015obtaining}
+Mahdi~Pakdaman Naeini, Gregory~F. Cooper, and Milos Hauskrecht.
+\newblock Obtaining well calibrated probabilities using {Bayesian} binning.
+\newblock In \emph{Proceedings of the Twenty-Ninth {AAAI} Conference on
+  Artificial Intelligence}, pages 2901--2907. {AAAI} Press, 2015.
+
+\bibitem[Platt(1999)]{platt1999probabilistic}
+John~C. Platt.
+\newblock Probabilistic outputs for support vector machines and comparisons to
+  regularized likelihood methods.
+\newblock In \emph{Advances in Large Margin Classifiers}, pages 61--74. {MIT}
+  Press, 1999.
+
+\bibitem[Reimers and Gurevych(2019)]{reimers2019sbert}
+Nils Reimers and Iryna Gurevych.
+\newblock Sentence-{BERT}: Sentence embeddings using siamese {BERT}-networks.
+\newblock In \emph{Proceedings of the 2019 Conference on Empirical Methods in
+  Natural Language Processing}, pages 3982--3992. Association for Computational
+  Linguistics, 2019.
+
+\bibitem[Ribeiro et~al.(2016)Ribeiro, Singh, and Guestrin]{ribeiro2016why}
+Marco~Tulio Ribeiro, Sameer Singh, and Carlos Guestrin.
+\newblock "why should {I} trust you?" explaining the predictions of any
+  classifier.
+\newblock In \emph{Proceedings of the 22nd ACM SIGKDD international conference
+  on knowledge discovery and data mining}, pages 1135--1144, 2016.
+
+\bibitem[Robertson and Zaragoza(2009)]{robertson2009bm25}
+Stephen Robertson and Hugo Zaragoza.
+\newblock \emph{The Probabilistic Relevance Framework: {BM25} and Beyond},
+  volume~3 of \emph{Foundations and Trends in Information Retrieval}.
+\newblock Now Publishers, 2009.
+
+\bibitem[Shortliffe(1976)]{shortliffe1974mycin}
+Edward~H. Shortliffe.
+\newblock \emph{Computer-Based Medical Consultations: {MYCIN}}.
+\newblock Elsevier, New York, 1976.
+
+\bibitem[Singhal et~al.(2023)Singhal, Azizi, Tu, Mahdavi, Wei, Chung, Scales,
+  Ajay, et~al.]{singhal2023large}
+Karan Singhal, Shekoofeh Azizi, Tao Tu, S~Sara Mahdavi, Jason Wei, Hyung~Won
+  Chung, Nathan Scales, Ajay Ajay, et~al.
+\newblock Large language models encode clinical knowledge.
+\newblock \emph{Nature}, 620\penalty0 (7972):\penalty0 172--180, 2023.
+
+\bibitem[Thakur et~al.(2021)Thakur, Reimers, R{\"u}ckl{\'e}, Srivastava, and
+  Gurevych]{ma2022hybrid}
+Nandan Thakur, Nils Reimers, Andreas R{\"u}ckl{\'e}, Abhishek Srivastava, and
+  Iryna Gurevych.
+\newblock {BEIR}: A heterogeneous benchmark for zero-shot evaluation of
+  information retrieval models.
+\newblock In \emph{Proceedings of the Neural Information Processing Systems
+  Track on Datasets and Benchmarks}, 2021.
+\newblock Referenced as systematic comparison of sparse and dense hybrid
+  retrieval across multiple QA benchmarks.
+
+\bibitem[Touvron et~al.(2023)Touvron, Lavril, Izacard, Martinet, Lachaux,
+  Lacroix, Rozi{\`e}re, Goyal, Hambro, Azhar, et~al.]{touvron2023llama}
+Hugo Touvron, Thibaut Lavril, Gautier Izacard, Xavier Martinet, Marie-Anne
+  Lachaux, Timoth{\'e}e Lacroix, Baptiste Rozi{\`e}re, Naman Goyal, Eric
+  Hambro, Faisal Azhar, et~al.
+\newblock {LLaMA}: Open and efficient foundation language models.
+\newblock \emph{arXiv preprint arXiv:2302.13971}, 2023.
+
+\bibitem[Tsatsaronis et~al.(2015)Tsatsaronis, Balikas, Malakasiotis, Partalas,
+  Zschunke, Alvers, Weissenborn, Krithara, Petridis, Polychronopoulos,
+  et~al.]{tsatsaronis2015overview}
+George Tsatsaronis, Georgios Balikas, Prodromos Malakasiotis, Ioannis Partalas,
+  Matthias Zschunke, Michael~R Alvers, Dirk Weissenborn, Anastasia Krithara,
+  Sergios Petridis, Dimitris Polychronopoulos, et~al.
+\newblock An overview of the bioasq large-scale biomedical semantic indexing
+  and question answering competition.
+\newblock \emph{BMC bioinformatics}, 16\penalty0 (1):\penalty0 1--28, 2015.
+
+\bibitem[Vaswani et~al.(2017)Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez,
+  Kaiser, and Polosukhin]{vaswani2017attention}
+Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones,
+  Aidan~N Gomez, {\L}ukasz Kaiser, and Illia Polosukhin.
+\newblock Attention is all you need.
+\newblock \emph{Advances in neural information processing systems}, 30, 2017.
+
+\bibitem[Wang et~al.(2022)Wang, Wei, Schuurmans, Le, Chi, Narang, Chowdhery,
+  and Zhou]{wang2022self}
+Xuezhi Wang, Jason Wei, Dale Schuurmans, Quoc~V Le, Ed~H Chi, Sharan Narang,
+  Aakanksha Chowdhery, and Denny Zhou.
+\newblock Self-consistency improves chain of thought reasoning in language
+  models.
+\newblock In \emph{The Eleventh International Conference on Learning
+  Representations}, 2022.
+
+\bibitem[Wei et~al.(2022)Wei, Wang, Schuurmans, Bosma, Xia, Chi, Le, Zhou,
+  et~al.]{wei2022chain}
+Jason Wei, Xuezhi Wang, Dale Schuurmans, Maarten Bosma, Fei Xia, Ed~Chi, Quoc~V
+  Le, Denny Zhou, et~al.
+\newblock Chain-of-thought prompting elicits reasoning in large language
+  models.
+\newblock In \emph{Advances in Neural Information Processing Systems},
+  volume~35, pages 24824--24837, 2022.
+
+\bibitem[Yan et~al.(2024)Yan, Gu, Zhu, and Ling]{yan2024corrective}
+Shuo Yan, Jia-Chen Gu, Yun Zhu, and Zhen-Hua Ling.
+\newblock Corrective retrieval augmented generation.
+\newblock \emph{arXiv preprint arXiv:2401.15884}, 2024.
+
+\bibitem[Yang et~al.(2022)Yang, Chen, PourNejatian, Shin, Smith, Parisien,
+  Compas, Martin, et~al.]{yang2022gatortron}
+Xi~Yang, Aokun Chen, Nima PourNejatian, Hoo~Chang Shin, Kaleb~E Smith,
+  Christopher Parisien, Colin Compas, Cheryl Martin, et~al.
+\newblock A large language model for electronic health records.
+\newblock \emph{npj Digital Medicine}, 5\penalty0 (1):\penalty0 194, 2022.
+
+\bibitem[Zhang et~al.(2024)Zhang, Zeng, Wang, and Lu]{zhang2024tinyllama}
+Peiyuan Zhang, Guangtao Zeng, Tianhao Wang, and Wei Lu.
+\newblock {TinyLlama}: An open-source small language model.
+\newblock \emph{arXiv preprint arXiv:2401.02385}, 2024.
+
+\bibitem[Zhang et~al.(2019)Zhang, Kishore, Wu, Weinberger, and
+  Artzi]{zhang2019bertscore}
+Tianyi Zhang, Varsha Kishore, Felix Wu, Kilian~Q. Weinberger, and Yoav Artzi.
+\newblock {BERTScore}: Evaluating text generation with {BERT}.
+\newblock \emph{arXiv preprint arXiv:1904.09675}, 2019.
+
+\bibitem[Zhang et~al.(2023)Zhang, Li, Cui, Cai, Liu, Fu, Huang, Zhao, Zhang,
+  Chen, et~al.]{zhang2023sirens}
+Yue Zhang, Yafu Li, Leyang Cui, Deng Cai, Lemao Liu, Tingchen Fu, Xinting
+  Huang, Enbo Zhao, Yu~Zhang, Yulong Chen, et~al.
+\newblock Sirens' song in the ai ocean: A survey on hallucination in large
+  language models.
+\newblock \emph{arXiv preprint arXiv:2309.01219}, 2023.
+
+\end{thebibliography}

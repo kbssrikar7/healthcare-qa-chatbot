@@ -1,0 +1,45 @@
+\chapter{\MakeUppercase{Conclusion and Further Enhancements}}
+
+I successfully developed a local, privacy-first healthcare \ac{qa} architecture. My main goal was to deliver answers grounded in verified medical texts with clear uncertainty scores, all while keeping user data strictly offline. I found this approach keeps the data secure without needing external cloud APIs.
+
+The technical performance is solid. The system can search through over 500,000 documents on a standard \ac{cpu} in about 43 seconds and generate a full answer in another 70 seconds. On our 36-question gold set, the retriever hit relevant documents 97\% of the time, and after fine-tuning with QLoRA, our keyword coverage improved significantly.
+
+If I had to pick the most important takeaway, it would be the impact of the data processing stage. Switching to the \texttt{RecursiveSentenceChunker} (which respects sentence boundaries) did more for the system’s quality than any model upgrade or algorithm tweak. It proved that in RAG systems, how you prepare your knowledge base is the real ceiling for performance.
+
+Our confidence module also did its job, though it’s intentionally conservative. By penalizing responses when sources conflict, I have created a system that prioritizes honesty over raw scores. While the 106-second latency is high for consumer use, it’s a completely workable proof of concept for a privacy-first research tool. Moving to a \ac{gpu} would easily bring these generation times down to a few seconds, making it feel much more interactive.
+
+The current evaluation set of 97 questions is a good start, but it's small. Hard conclusions about tiny algorithmic tweaks can be difficult to draw because the sample size is close to the statistical noise floor. Expanding this set to hundreds of curated questions, ideally reviewed by medical experts, is necessary for a robust baseline. Furthermore, while the safety filters work well for obvious cases, they rely on pattern matching rather than clinical logic. The system ultimately reflects its underlying database and possesses no independent medical understanding.
+
+Cold-start memory management remains a challenge. The sparse BM25 index requires significant RAM to initialize if no cache is present. High concurrent load can cause out-of-memory issues if multiple model instances start simultaneously. The use of persistent cache files for the BM25 index is the primary mitigation for this.
+
+\section{Further enhancements}
+
+\subsection{Latency reduction}
+
+We project that moving to a machine with a T4 or equivalent GPU would heavily reduce generation latency from 70 seconds and accelerate dense-embedding phases of retrieval. No code changes are required; both the Transformers and llama-cpp-python backends are designed to use GPU automatically when CUDA is available.
+
+\subsection{Continuous knowledge base updates}
+
+The knowledge base is currently static. A production deployment would benefit from an ingestion pipeline that periodically pulls new PubMed abstracts and clinical guidelines, chunks them with the RecursiveSentenceChunker, and upserts them into ChromaDB. ChromaDB supports incremental upserts; the main cost is regenerating the BM25 index, which would need to run offline during low-traffic periods.
+
+\subsection{Extended multi-turn support}
+
+Multi-turn conversation with follow-up resolution is implemented across two components. The \texttt{ConversationManager} class maintains session history across queries within a session. Follow-up detection is handled by the \texttt{FollowUpDetector} class in \texttt{src/\allowbreak conversation/history.py}, which applies four checks in sequence: (1) a phrase match against the \texttt{FOLLOWUP\_PHRASES} list (``what about'', ``tell me more'', ``also'', ``why is that'', and others); (2) a leading-pronoun check against \texttt{REFERENCE\_\allowbreak PRONOUNS} (it, its, this, that, these, those, they, them, their, he, she, his, her); (3) a short-question heuristic that flags queries of six words or fewer; and (4) a \texttt{\_has\_clear\_subject()} test that returns false when a question opens with a reference pronoun but no independent subject starter follows. If any check fires, the question is classified as a follow-up.
+
+When a follow-up is detected, the pipeline augments the retrieval query by prepending the prior conversation context:
+
+\begin{lstlisting}[language=Python]
+retrieval_query = f"{conversation_context}\n\nCurrent question: {question}"
+\end{lstlisting}
+
+The hybrid retriever therefore searches the knowledge base against the full exchange rather than the new question in isolation. Extending support to longer context windows across many turns, and replacing the \texttt{\_has\_clear\_subject()} heuristic with a lightweight dependency parser, are natural next steps.
+
+\subsection{8.1.4 Clinical validation}
+
+Deploying in any patient-facing context would require evaluation by licensed medical professionals against established clinical guidelines. The current automated metrics measure textual similarity to reference answers; they do not measure clinical accuracy or safety. I make no claim that these scores provide a guarantee of medical validity.
+
+\subsection{Calibration improvement}
+
+The ECE of 0.144 with systematic under-confidence suggests the Platt scaling parameters were not fitted on a sufficiently large or representative set. A calibration set of at least 300 questions, balanced across the four query categories, would likely produce better-calibrated scores. Temperature scaling~\cite{guo2017calibration} is a simpler alternative to Platt scaling that is easier to tune and performs comparably on many classification tasks.
+
+

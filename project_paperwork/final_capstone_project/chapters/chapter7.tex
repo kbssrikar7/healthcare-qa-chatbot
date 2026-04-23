@@ -1,0 +1,242 @@
+\chapter{\MakeUppercase{Results and Discussion}}
+
+\section{Model comparison}
+
+I compiled the quality and latency results for each model in Tables \ref{tab:model_quality_comparison} and \ref{tab:model_latency_comparison}, using the v2 knowledge base and the 97-question test set.
+
+\begin{table}[htbp]
+\centering
+\caption{Evaluation of model quality on 97 test questions using the v2 knowledge base, with 95\% bootstrap confidence intervals shown in brackets.}
+\label{tab:model_quality_comparison}
+\renewcommand{\arraystretch}{1.3}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{Model} & \textbf{KW Coverage} & \textbf{ROUGE-L} & \textbf{BERTScore F1} \\
+\hline
+TinyLlama-1.1B (base) & 0.3845 [0.32, 0.46] & 0.2076 [0.17, 0.25] & 0.1398 [0.08, 0.20] \\
+TinyLlama + QLoRA v2  & 0.4634 [0.39, 0.53] & 0.2374 [0.20, 0.28] & 0.179 [0.12, 0.23]  \\
+BioMistral-7B (\ac{gguf} Q4\_K\_M) & 0.3088 [0.23, 0.39] & 0.2988 [0.23, 0.37] & 0.2676 [0.19, 0.34] \\
+\hline
+\end{tabular}}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Model latency performance (warm cache, CPU-only environment)}
+\label{tab:model_latency_comparison}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Model} & \textbf{Latency (warm, ms)} \\
+\hline
+TinyLlama-1.1B (base) & 115,451 \\
+TinyLlama + QLoRA v2  & 35,282  \\
+BioMistral-7B (\ac{gguf} Q4\_K\_M) & 143,149 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.95\linewidth,height=0.85\textheight,keepaspectratio]{images/fig1_model_comparison.png}
+    \caption{Metric comparison across generation backends. While \ac{qlora} fine-tuning delivered the most significant boost to keyword coverage, BioMistral consistently outperformed the other models in \ac{rouge}-L and \ac{bert_score} metrics.}
+    \label{fig:model_comparison}
+\end{figure}
+
+My QLoRA fine-tuning reached the highest keyword coverage at 0.4634, which is about an 8\% improvement over the base model. It seems the MedMCQA and PubMedQA training dialogues helped the model internalize specialized medical terms. While I noticed that BioMistral scored better on ROUGE-L and BERTScore, it actually trailed behind on keyword coverage. I don't see this as a flaw, but as a byproduct of its more detailed style; while TinyLlama gives a brief 2--3 sentence response, BioMistral often provides 4--6 sentences with much more context. This extra detail naturally lowers the keyword density, even if the answer is more informative for a regular user.
+
+In my view, the ``best'' model depends entirely on the audience. A clinician might prioritize QLoRA's technical precision, but a patient would likely find BioMistral's discursive explanations much more helpful. However, running these on a CPU-only setup involves a major latency tradeoff. BioMistral's initial response can take over three minutes (228 seconds), which effectively moves the interaction from a ``real-time'' chat into more of an asynchronous experience.
+
+\section{Ablation study}
+
+Table \ref{tab:ablation} shows how removing each confidence signal affects mean confidence and keyword coverage across the 97 questions.
+
+\begin{table}[htbp]
+\centering
+\caption{Summary of the ablation study results, showing how removing each confidence signal impacts the system's performance across 97 test cases.}
+\label{tab:ablation}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Configuration} & \textbf{Mean confidence} & \textbf{Keyword coverage} \\
+\hline
+All signals (full system) & 0.0161 & 0.3881 \\
+Ablate retrieval signal & 0.0070 & 0.4254 \\
+Ablate generation signal & 0.0036 & 0.4304 \\
+Ablate consistency signal & 0.0284 & 0.3794 \\
+Ablate source agreement & 0.1743 & 0.4493 \\
+Ablate entity coverage & 0.0169 & 0.3811 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.95\linewidth,height=0.85\textheight,keepaspectratio]{images/fig4_ablation_eval.png}
+    \caption{Ablation impact on keyword coverage. We can see how coverage drops as each signal is pulled out. Source agreement clearly has the most influence on the final score.}
+    \label{fig:ablation}
+\end{figure}
+
+I found that taking out the source agreement signal caused the biggest shift, with keyword coverage going up by 0.061 and confidence by 0.158. This makes sense because source agreement is the signal that's most aggressive about penalizing the model when its sources don't match up. Once I removed it, the system stopped ``hedging'' its answers, letting more specific responses through without any modification. Whether this is actually an improvement is debatable---it depends on if the sources were really in conflict or just looking at the problem from two different sides.
+
+Removing the retrieval and generation signals also pushed keyword coverage up by about 0.037--0.042. This tells me that these signals occasionally hold back responses that might have otherwise scored quite well. On the other hand, the entity coverage signal barely made a difference. It seems that when an answer scores well on the other signals, it usually hits the right medical entities anyway, so this particular check rarely changes the final outcome.
+
+\section{Baseline comparison}
+
+Tables \ref{tab:baseline_quality} and \ref{tab:baseline_latency} compare the full system against three structural variants: dense-only retrieval (no BM25 or RRF), no XAI (confidence scoring removed), and no RAG (LLM generating purely from parametric memory).
+
+\begin{table}[htbp]
+\centering
+\caption{Comparison of overall quality metrics for the full system and its architectural variants, including 95\% bootstrap confidence intervals.}
+\label{tab:baseline_quality}
+\renewcommand{\arraystretch}{1.3}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{Variant} & \textbf{KW Coverage} & \textbf{ROUGE-L} & \textbf{BERTScore F1} \\
+\hline
+Full system (TinyLlama) & 0.3845 [0.32, 0.46] & 0.2076 [0.17, 0.25] & 0.1398 [0.08, 0.20] \\
+Dense-only retrieval    & 0.4189 [0.35, 0.49] & 0.2335 [0.19, 0.28] & 0.1836 [0.12, 0.24] \\
+No XAI                  & 0.4337 [0.37, 0.50] & 0.2263 [0.19, 0.27] & 0.1757 [0.12, 0.23] \\
+No RAG (LLM only)       & 0.2364 [0.19, 0.29] & 0.1505 [0.13, 0.17] & 0.1142 [0.07, 0.16] \\
+\hline
+\end{tabular}}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Latency measurements and P90 response times for different system configurations running on a standard \ac{cpu} setup.}
+\label{tab:baseline_latency}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Variant} & \textbf{Latency (ms)} & \textbf{P90 (ms)} \\
+\hline
+Full system (TinyLlama) & 115,451 & 276,838 \\
+Dense-only retrieval    & 35,605  & 56,631  \\
+No XAI                  & 34,043  & 54,882  \\
+No RAG (LLM only)       & 12,290  & 14,160  \\
+\hline
+\end{tabular}
+\end{table}
+
+Comparing the system against a no-RAG baseline really highlights how much the retrieval stage matters. Removing retrieval entirely caused keyword coverage to drop by nearly 15 points, which proves the knowledge base is doing the heavy lifting rather than just adding latency.
+
+I was surprised to find that the dense-only variant actually outperformed the full system across every quality metric. My full system includes BM25, corrective RAG, and confidence scoring---all of which naturally increase complexity and latency. Because the dense-only version is faster and less filtered, it wins on raw scores for this specific test set. But I believe the value of these added safety layers goes beyond simple text overlap. For me, it's about making the system safer by reducing hallucinations and providing an auditable trail via source attribution and confidence signals. These are vital safety features that standard metrics like ROUGE-L simply can't capture.
+
+\section{Knowledge base version comparison}
+
+\begin{table}[htbp]
+\centering
+\caption{Direct comparison of keyword coverage improvements between the original and v2 knowledge base versions.}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Metric} & \textbf{Value} \\
+\hline
+KB v1 keyword coverage & 0.3845 \\
+KB v2 keyword coverage & 0.6765 \\
+Delta ($\ac{delta}$) & +0.2920 \\
+Decision threshold & 0.03 \\
+Decision & Use KB v2 \\
+KB v2 document count & 505,584 \\
+Chunking method & RecursiveSentenceChunker \\
+\hline
+\end{tabular}
+\end{table}
+
+The 0.292 jump I saw after switching to v2 was actually the biggest breakthrough in the whole project; it outpaced the \ac{qlora} improvement by nearly four times. I attribute this success to two main factors. First, the \texttt{RecursiveSentenceChunker} keeps medical statements intact, so the retriever finds complete context rather than the fragmented, truncated sentences that often led to lower scores in the baseline. Second, by expanding to 505k documents, I gave the system a much broader pool of candidates to pull from, which was particularly helpful for handling niche or unusual queries.
+
+\section{Calibration results}
+
+\begin{table}[htbp]
+\centering
+\caption{Confidence calibration results (n=97)}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Metric} & \textbf{Value} \\
+\hline
+ECE (raw confidence) & 0.1438 \\
+Mean predicted confidence & 0.0245 \\
+Mean empirical label & 0.433 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.95\linewidth,height=0.85\textheight,keepaspectratio]{images/fig3_reliability_diagram.png}
+    \caption{Confidence calibration for the raw system. In a perfect setup, the points would follow the diagonal line. Instead, our system is consistently cautious, underestimating its own accuracy across every bin.}
+    \label{fig:reliability}
+\end{figure}
+
+An \ac{ece} of 0.1438 showed me that the raw scores were quite far off from the actual keyword-coverage accuracy. There is a wide gap between the mean confidence (0.0245) and the average quality label (0.433), which means the system is systematically under-confident by design. I built it so the source agreement signal pushes confidence down whenever sources conflict, even if they're just discussing the same condition from different angles. While this conservatism is the right choice for a medical assistant, it also means I needed to apply Platt scaling before these scores could actually correspond to something meaningful.
+
+After applying Platt scaling, a separate ECE figure is not reported because the Platt parameters were fitted on the same 97-question set used for evaluation. A proper hold-out calibration set would be needed for a reliable post-scaling ECE estimate.
+
+\section{Latency analysis}
+
+\begin{table}[htbp]
+\centering
+\caption{Per-stage latency breakdown (TinyLlama, CPU-only)}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Stage} & \textbf{Mean latency (ms)} \\
+\hline
+Query enhancement & 0.02 \\
+Retrieval (BM25 + dense + RRF) & 42,624 \\
+Corrective RAG & 1,218 \\
+Generation & 69,868 \\
+Hallucination detection & 1,736 \\
+Confidence scoring & 5 \\
+Total (cold, p90) & 276,838 \\
+Total (warm, mean) & 115,451 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.95\linewidth,height=0.85\textheight,keepaspectratio]{images/fig5_latency.png}
+    \caption{Latency across pipeline stages. Retrieval and generation take up most of the 115-second total, taking 42.6s and 69.9s respectively. Everything else finishes in under 3 seconds.}
+    \label{fig:latency}
+\end{figure}
+
+Retrieval (42.6 s) and generation (69.9 s) account for all but 3 seconds of the 115-second warm-path mean. Query enhancement contributes 0.02 ms because it runs a lightweight string operation. Hallucination detection adds 1.7 seconds for the DeBERTa forward pass. The cold-path 90th-percentile of 277 seconds is higher because the first request also pays for loading the BM25 index from the pickle cache into memory; subsequent requests skip that step.
+
+We estimate that on modern GPU hardware, dense embedding speed would roughly halve the retrieval stage (pulling it toward 21.3 seconds) and TinyLlama generation would drop from 70 seconds to under 2 seconds. Given this, total inference latency remains explicitly lower-bounded by the ~21-second retrieval overhead unless further optimizations inside the RRF and BM25 index matching routines are performed.
+
+\section{RAGAS evaluation}
+
+RAGAS~\cite{es2023ragas} was used for supplementary evaluation using non-\ac{llm} metrics to avoid requiring an evaluator API key. On a 10-question sample:
+
+\begin{table}[htbp]
+\centering
+\caption{RAGAS metrics (TinyLlama, non-LLM metrics only, two sample sizes)}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Metric} & \textbf{n=8} & \textbf{n=10} \\
+\hline
+Context precision (non-LLM) & 0.125 & 0.100 \\
+Context recall (non-LLM) & 0.143 & 0.100 \\
+ROUGE score (F-measure) & 0.063 & 0.226 \\
+Exact match & 0.000 & 0.000 \\
+\hline
+\end{tabular}
+\end{table}
+
+I noticed a significant shift in results between the $n=8$ and $n=10$ runs, which just shows how sensitive these small-sample metrics can be to the specific questions chosen. The low precision and recall scores from RAGAS seem to stem from a mismatch between the tool's non-\ac{llm} logic and my actual pipeline. Since the non-\ac{llm} version of context recall relies on exact token matching, it doesn't quite work for a system like mine where answers are paraphrased rather than copied verbatim from the sources.
+
+\section{Discussion}
+
+The main takeaway here is that knowledge base quality matters much more than model tuning at this scale. Improving the chunking logic (v2) gave me a gain four times larger than I achieved through QLoRA fine-tuning. If this data shows one thing, it's that getting the processing right is far more important than picking the perfect model.
+
+The results also clearly show how \ac{xai} signals force a trade-off between coverage and honesty. While removing the source agreement signal made the coverage scores look better on paper, it meant the system stopped flagging cases where sources actually disagreed. In a medical context, I believe it's much safer for the system to admit when it's unsure rather than risk giving a confidently wrong or conflicting answer.
+
+If a user can tolerate the slower response times, BioMistral offers significantly higher semantic quality. While it runs about 35\% slower than TinyLlama on my \ac{cpu} setup, the extra detail and medical nuance it provides are well worth the wait. To make the system flexible, I built the architecture so that switching between these backends requires nothing more than a single configuration change, allowing for a choice between speed and precision. 
+
+Although reaching a 97.2\% retrieval hit rate is a positive result, the single failure I ran into---a question about a rare surgical technique---reminds me that the knowledge base still has its limits. The system is quite reliable for general clinical talks and research summaries, but it's clear that it still struggles with highly specific or obscure surgical procedures.

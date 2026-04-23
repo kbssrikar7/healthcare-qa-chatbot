@@ -1,0 +1,31 @@
+flowchart TB
+    subgraph IN0[Input]
+        U([User query])
+    end
+
+    subgraph PIPE[RAG pipeline]
+        QE[Query enhance]
+        HR[Hybrid retrieve]
+        RF[RRF k=60]
+        CR[Corrective RAG]
+        GG{Ground OK?}
+        CC[Context trim]
+        LM[LLM gen]
+        FC[NLI check]
+        SC[5-sig + Platt]
+    end
+
+    subgraph OUT0[Output]
+        R([Answer + sources + conf])
+    end
+
+    U --> QE --> HR --> RF --> CR --> GG
+    GG -->|yes| CC --> LM --> FC --> SC --> R
+    GG -->|retry| HR
+
+    style U fill:#4A90D9,color:#fff,stroke:#2c3e50
+    style R fill:#27AE60,color:#fff,stroke:#2c3e50
+    style GG fill:#F39C12,color:#fff,stroke:#2c3e50
+    style LM fill:#8E44AD,color:#fff,stroke:#2c3e50
+    style HR fill:#2980B9,color:#fff,stroke:#2c3e50
+    style SC fill:#16A085,color:#fff,stroke:#2c3e50

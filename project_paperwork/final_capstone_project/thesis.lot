@@ -1,0 +1,25 @@
+\acswitchoff 
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces Hardware used for local development and evaluation}}{13}{}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Core software components and versions}}{14}{}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Knowledge base v2 composition}}{14}{}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {4.1}{\ignorespaces Confidence signals and their computation}}{18}{}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces API endpoints}}{21}{}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {5.1}{\ignorespaces QLoRA v2 training configuration}}{24}{}%
+\contentsline {table}{\numberline {5.2}{\ignorespaces Retrieval benchmark results (n=5)}}{27}{}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {7.1}{\ignorespaces Evaluation of model quality on 97 test questions using the v2 knowledge base, with 95\% bootstrap confidence intervals shown in brackets.}}{34}{}%
+\contentsline {table}{\numberline {7.2}{\ignorespaces Model latency performance (warm cache, CPU-only environment)}}{34}{}%
+\contentsline {table}{\numberline {7.3}{\ignorespaces Summary of the ablation study results, showing how removing each confidence signal impacts the system's performance across 97 test cases.}}{35}{}%
+\contentsline {table}{\numberline {7.4}{\ignorespaces Comparison of overall quality metrics for the full system and its architectural variants, including 95\% bootstrap confidence intervals.}}{37}{}%
+\contentsline {table}{\numberline {7.5}{\ignorespaces Latency measurements and P90 response times for different system configurations running on a standard \ac {cpu} setup.}}{37}{}%
+\contentsline {table}{\numberline {7.6}{\ignorespaces Direct comparison of keyword coverage improvements between the original and v2 knowledge base versions.}}{38}{}%
+\contentsline {table}{\numberline {7.7}{\ignorespaces Confidence calibration results (n=97)}}{38}{}%
+\contentsline {table}{\numberline {7.8}{\ignorespaces Per-stage latency breakdown (TinyLlama, CPU-only)}}{40}{}%
+\contentsline {table}{\numberline {7.9}{\ignorespaces RAGAS metrics (TinyLlama, non-LLM metrics only, two sample sizes)}}{40}{}%
+\addvspace {10\p@ }

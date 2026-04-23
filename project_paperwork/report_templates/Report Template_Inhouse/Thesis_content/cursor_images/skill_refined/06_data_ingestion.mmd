@@ -1,0 +1,33 @@
+flowchart TB
+    subgraph SRC[Sources]
+        D1[ChatDoctor]
+        D2[PubMedQA]
+        D3[MedMCQA]
+    end
+
+    subgraph PRE[Preprocess]
+        FMT[Normalize]
+        CLN[Clean text]
+        CHK[Chunk 512t]
+    end
+
+    subgraph EMB[Embed]
+        E[MiniLM-L6]
+    end
+
+    subgraph IDX[Index store]
+        CH[(ChromaDB)]
+        BM[(BM25 file)]
+    end
+
+    D1 --> FMT
+    D2 --> FMT
+    D3 --> FMT
+    FMT --> CLN --> CHK
+    CHK --> E --> CH
+    CHK --> BM
+
+    style SRC fill:#F4F6F7,stroke:#7f8c8d
+    style PRE fill:#D5F5E3,stroke:#27AE60
+    style EMB fill:#FCF3CF,stroke:#f39c12
+    style IDX fill:#D6EAF8,stroke:#2980b9

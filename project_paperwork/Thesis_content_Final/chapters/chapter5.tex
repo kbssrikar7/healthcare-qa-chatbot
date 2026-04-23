@@ -1,0 +1,119 @@
+\chapter{\MakeUppercase{Methodology and Testing}}
+
+\section{Evaluation methodology}
+
+I built the evaluation set by drawing 97 questions from the source datasets: 40 questions from ChatDoctor-HealthCareMagic, 32 from PubMedQA, and 25 from MedMCQA. These cover the four fundamental query types: factual definitions, symptom-based queries, research summaries, and clinical procedures. All 97 questions were excluded from the knowledge base construction; while the source documents remain in the store, the specific question-answer pairs were never used for training or fine-tuning.
+
+Figure \ref{fig:eval_pipeline} shows the eight-stage pipeline each evaluation query passes through, from query enhancement to confidence-scored response.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.95\linewidth,height=0.85\textheight,keepaspectratio]{images/rag_pipeline_final.png}
+    \caption{Eight-stage RAG pipeline. Each evaluation query enters at Stage 1 (query enhancement) and exits at Stage 8 carrying a confidence-scored, source-attributed response. The dashed red path is the re-retrieval loop triggered when the grounding gate rejects the initial context.}
+    \label{fig:eval_pipeline}
+\end{figure}
+
+Evaluation uses three complementary metrics:
+
+\begin{enumerate}
+    \item \textbf{Keyword coverage}: The fraction of medical terms from the reference answer present in the generated answer. Terms are identified using a biomedical terminology list.
+    \item \textbf{ROUGE-L}: Longest common subsequence F1 between generated and reference answers~\cite{lin2004rouge}. ROUGE-L captures structural similarity but is sensitive to phrasing.
+    \item \textbf{BERTScore F1}: Contextual embedding similarity used to evaluate semantic meaning~\cite{zhang2019bertscore}.
+\end{enumerate}
+
+Confidence intervals throughout are 95\% bootstrap intervals over the 97-question set unless stated otherwise.
+
+TinyLlama was adapted using QLoRA~\cite{dettmers2023qlora} by inserting low-rank matrices into the attention projection layers. The base model was loaded in 4-bit NF4 quantisation, with only adapter weights updated during training. Table \ref{tab:qlora_config} shows the training configuration.
+
+\begin{table}[htbp]
+\centering
+\caption{QLoRA v2 training configuration}
+\label{tab:qlora_config}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Parameter} & \textbf{Value} \\
+\hline
+Base model & TinyLlama-1.1B-Chat-v1.0 \\
+LoRA rank ($r$) & 16 \\
+LoRA alpha & 32 \\
+Target modules & q\_proj, v\_proj \\
+LoRA dropout & 0.05 \\
+Training steps & 500 \\
+Batch size & 8 \\
+Learning rate & $2 \times 10^{-4}$ \\
+Training data & 800 MedMCQA + 1000 PubMedQA samples \\
+Starting train loss & 2.057 \\
+Final train loss & 1.519 \\
+\hline
+\end{tabular}
+\end{table}
+
+The adapter was evaluated on the 97-question set by loading it over the frozen base model. No knowledge base access was used during fine-tuning; the model learns directly from question-answer pairs.
+
+\subsection{Calibration methodology}
+
+Calibration was measured using Expected Calibration Error (\ac{ece})~\cite{naeini2015obtaining}, which quantifies the mean absolute difference between predicted confidence and empirical accuracy across confidence bins:
+
+\begin{equation}
+    \text{ECE} = \sum_{b=1}^{B} \frac{|B_b|}{n} \left|\text{acc}(B_b) - \text{conf}(B_b)\right|
+\end{equation}
+
+where $B_b$ represents the set of samples in my $b$-th bin, $n$ is my total sample count, and $\text{acc}(B_b)$ and $\text{conf}(B_b)$ are the mean accuracy and mean confidence within that specific bin. I used ten equal-width bins for this calculation. To create a binary label for calibration, I thresholded keyword coverage at 0.3: I count a response as correct if at least 30\% of my reference keywords appear in the final answer I generated.
+
+Because I used the same 97 questions for both evaluation and fitting the calibration curve, I've chosen not to report the post-Platt ECE as a separate metric; a more rigorous estimate would require a disjoint hold-out set to avoid overfitting the results.
+
+\section{Testing}
+
+\subsection{Unit tests}
+
+I designer the test suite to include 250 automated tests, which I run using the command \texttt{pytest tests/\allowbreak{} -k "not langsmith"}. The suite covers several core parts of the system:
+
+\begin{itemize}
+    \item \textbf{RecursiveSentenceChunker}: I wrote 10 tests to verify chunk size bounds, overlap, and how the system handles edge cases like empty inputs or single sentences.
+    \item \textbf{MultiSignalConfidenceScorer}: I used synthetic inputs with known outputs to test each confidence signal individually.
+    \item \textbf{SafetyGuardrails}: I verified that the pattern matching correctly identifies emergency, prescription, and self-harm triggers.
+    \item \textbf{CacheManager}: My tests cover TTL expiry, cache hits and misses, and version invalidation.
+    \item \textbf{Text cleaning}: I verified the logic forMCQ-format detection and stop pattern removal.
+\end{itemize}
+
+\subsection{Integration tests}
+
+I wrote integration tests in \texttt{tests/test\_integration.py} to run my full pipeline against a mock ChromaDB instance and a mock LLM backend. I used them to verify that every response contains the required fields (\texttt{answer}, \texttt{sources}, \texttt{confidence}, \texttt{stage\_latencies}) and to ensure the cache hit and miss behavior matches my configured TTL. Figure \ref{fig:sequence} illustrates the interaction sequence I exercised during these tests.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.95\linewidth,height=0.85\textheight,keepaspectratio]{images/sequence_diagram_final.png}
+    \caption{System interaction sequence from API request receipt through retrieval, generation, confidence scoring, and response serialisation.}
+    \label{fig:sequence}
+\end{figure}
+
+\subsection{Safety adversarial tests}
+
+\texttt{tests/test\_safety\_adversarial.py} covers 24 adversarial inputs targeting three failure modes: emergency redirect bypass attempts, MCQ-format leakage from the MedMCQA training data, and sign-off pattern injection. All 24 pass following the stop-word list hardening commits.
+
+\subsection{End-to-end evaluation}
+
+I developed an end-to-end benchmark (\texttt{evaluation/run\_e2e\_benchmark.py}) to run 36 questions through my offline pipeline. I used this to check whether the retrieved context contains at least one keyword from the reference answer. I recorded a retrieval hit proxy of 0.972, meaning my pipeline successfully found at least one relevant document for 35 out of 36 questions. I analyzed the single failure and found it was a PubMedQA question about an extremely rare surgical technique where the reference answer used highly specialized terminology that I hadn't properly represented in my knowledge base.
+
+\subsection{Retrieval benchmark}
+
+The retrieval benchmark (\texttt{evaluation/run\_retrieval\_benchmark.py}) evaluates hybrid retrieval on 5 gold-labelled queries with known relevant documents:
+
+\begin{table}[htbp]
+\centering
+\caption{Retrieval benchmark results (n=5)}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Metric} & \textbf{Value} \\
+\hline
+Hit@10 & 0.80 \\
+MRR@10 & 0.80 \\
+Precision@10 & 0.660 \\
+NDCG@10 & 0.787 \\
+\hline
+\end{tabular}
+\end{table}
+
+When I broke down the results by query category, I found that definition queries hit at 0.0, while symptom, causation, and factual queries all scored a perfect 1.0. I traced the definition miss back to a gap in my knowledge base: I found that while my indexing of case-based HealthCareMagic content is strong, it is less effective for purely encyclopaedic definitions.

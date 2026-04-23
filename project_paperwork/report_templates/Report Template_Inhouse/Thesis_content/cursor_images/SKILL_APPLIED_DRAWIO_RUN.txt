@@ -1,0 +1,59 @@
+Architecture-diagrams skill ( ~/.cursor/skills/architecture-diagrams/ ) — how it was applied
+========================================================================================
+
+Principles used (from SKILL.md)
+- One main aspect per figure (skill: avoid mixing abstraction levels).
+- Layered subgraphs with consistent palette (skill quick-start + DO list).
+- Short node labels and limited text per line (<br/> only where it aids wrapping).
+- Clear left-to-right or top-down flow; no Mermaid "A & B & C --> X" chains (skill: explicit edges).
+- Sequence diagram: short messages, alt/else for cache and safety (skill sequence template).
+- Deployment: environment clusters in one swimlane-style LR layout (skill deployment style).
+
+Anti-patterns avoided (skill DON'T list)
+- Removed overcrowded single-row pipelines; RAG is vertical TB stages.
+- Renamed subgraph id "API" to APIL (avoids parser clashes).
+- Dropped Unicode math and punctuation that break importers (Sigma, middle dot, colons in node IDs).
+
+Sources of truth
+- Mermaid sources: cursor_images/skill_refined/*.mmd
+- MCP payloads: cursor_images/skill_refined/_payloads/*.json
+- Draw.io MCP: user-drawio / open_drawio_mermaid (dark=false, lightbox=false for editable, print-friendly)
+
+After opening each URL in diagrams.net (anti-overlap in the editor)
+1. Select All, then Arrange → Layout → (try Vertical Tree / Horizontal Flow).
+2. Drag subgraphs to add whitespace; use View → Grid if helpful.
+3. Format → Style → increase font size uniformly if labels feel tight.
+4. Export: File → Export as → PNG, scale 2x or higher for thesis.
+
+DRAW.IO EDITOR URLS (skill-refined diagrams)
+--------------------------------------------
+
+01_rag_pipeline
+https://app.diagrams.net/?grid=0&pv=0&border=10&edit=_blank#create=%7B%22type%22%3A%22mermaid%22%2C%22compressed%22%3Atrue%2C%22data%22%3A%22pVPbjoIwEP2aJrsPJhVE9BFQLlnXC8oHaC1KZItbyrr8%2FU7LKmoUTUwK9MzlTKdziNPsQLZLLpCGFzbCFnxPKy9WG77cb2EbjDEy7IDtC4GMwVXc%2BYreIC7KKYf9d0F5CeHvV%2FGUraXlbrFpMB0CS2h5APbJnqYJo81lZzJhpupJ%2Fu2SkQeZfggZfrniyRoQp4In9OdBTujKY8FbwzukD7q4OdyRJZyMc0pEAtxAAC01pngeMm2PZwWTp5p8IN1FZmMNR9Vggv7KGUIXX80VRp%2BQMIK3hjeUNce6knw8CmBLtpTsmqPnMtpo5clGYVtOMl2KG4J5JIBJtJBymxTiod5CqTeL5QeluKpqnhWc0PyEScbiZ2UYwdNqIX1YiaoGoJcaKAkcgXPugQFeEnreyWs6JZzKdKqx1TlqGEfgnnvm5yBsYpYCLituP7xxuaJM6X97cZKmSAe33rH6eNBHmkOyNOOVLY5jMOSCZztaWTSiUwPfIQwvCDXTGsJf8Qqh6qpmdPW%2B09ZeYlTXWzP2hp2ONXiJ0b%2Fqut%2FD9mvXqAZdM7a7Fu4ZzzH%2BAQ%3D%3D%22%7D
+
+02_system_architecture
+https://app.diagrams.net/?grid=0&pv=0&border=10&edit=_blank#create=%7B%22type%22%3A%22mermaid%22%2C%22compressed%22%3Atrue%2C%22data%22%3A%22lVRtS8MwEP41Bf0w6NLXfUzbdAw2Gev0e6zZWqzNSKOyf%2B%2FdJprWrkEI5J7kuecul0sOjfwsK660Q9x94rgU5p%2FRvT8fFT9VYKbrFXvYO0GyVaITrea6lq0TZAMPczyugL4TvNTfYEgW7Quu3IxJt6s1SMAEoOFnoaYDsi2wc95p9Ph3tILmDPwLfhD6PB1oOb8WAszjO1cvitdNZ3Eh6CI7rEWn5Wl2qBs9diBrmvslKLH6WF2l%2BFFYQheY7Rzr01a8LYWFjYkSMHZCq1p82Oge0D1skB1dWqg%2BUH2sBdc21QCoAarKtxM0nO2EIdBDVBatUHb1COgRGA%2FrkT7pMWNgxmiUUo2o2i4ro3uKPaWlgnuajvUExLu0UvKNZ8n9NHeD3GRDsEQlLysxwh%2FN7RGf0mzmeMy5vJdfsJwboOgBMhApiLH7NLW5mdosPBP4JghMEJpZ9gQiE8T9k%2F29Fn1u8MV%2B%2F2TEhRfYOB5wPJbkQZ44JO20kq%2FiukgWsZssbohcviZTIgsZzeP%2FSFz%2BG1Miz1jG0oEEi%2FzUS29JwF%2FQOwfN%2FT8KJKIsdG8oXBq0n0RO2GKYRBgxQr4A%22%7D
+
+03_hybrid_retrieval
+https://app.diagrams.net/?grid=0&pv=0&border=10&edit=_blank#create=%7B%22type%22%3A%22mermaid%22%2C%22compressed%22%3Atrue%2C%22data%22%3A%22pVNtb4IwEP41TdwHEgK%2BzI9CMTHTKYKLXxGKNBZKStn03%2B86naBT2GZCCne9e%2B65e46Y8Y8wCYREhu5bSB%2FB%2B%2FwU5WYrgjyBTxf1LLck4oB6%2BCqq%2Frhu5xxo6JLsJcQ%2FXSWQLFKeu7UWoyWALAIRMEYYOPJAJkVzYefVhhxMsoKoCumGRMi0NwIZY2Q6M5rR6Uyb9ptB%2FPkLgFgzo6fI8x2g%2FUxoYz%2FBawCZZBHZkxbSNobIjp0IngbYemoOtiYq%2BESORvsb4W3UxivPAZBxWVCeqblyRsMWRZfLMaSo09BTIrakNtYdMnFfb87HkzfI93gpQqVMRN%2BJKKhsqYqVEPiQBSkNwdz9vdf5ygdm1ryUeSlbZPDXamt9niuCPCx%2Bu7OuC4emwSROG1hZIG1l4GVtNyXPtRv9XGCpRawsUL4yPIXl5YFoAoOCVYbS7vLaa74%2Bin0mDwLWrDoxGNwNDeSBke%2BGYsoYMuHe7I6GOh4iww454%2BLoi%2BMYHIUU8KsdPUZokp5%2BB1GVq0Mag5ED6%2FcI5LHVCtIZdG3TfowlviQ5fNatx%2Fr%2B0v9%2FiJ8%3D%22%7D
+
+04_sequence_diagram
+https://app.diagrams.net/?grid=0&pv=0&border=10&edit=_blank#create=%7B%22type%22%3A%22mermaid%22%2C%22compressed%22%3Atrue%2C%22data%22%3A%22nVTbbsMgDP2aPFaq2i9A2ZZMyrZqW6W8MnBa1BQyQ7b17wdJprWrkotkBQLH5vgYo%2BG7BcngQdAV0m0yJclsujfKjEI7Lt1cu4kGDDANRSOYaKg09o945BPVhiyeo%2BDMg7OWIkcqah3F5x6f775Q8HcwKODnAqPUO6WUrSEKLTy0KF6iwNIDS9JleIxdTpL5ozWSzN364u3js9uwkmwCKBmgaQ%2Btldq0TViE2h3JOvaz6VqYYP%2FQ0snx2Z0XjzgQ77DsHSpbNjsg6EZJHcoFtXYctkKHhRpLKutDalqB2Tkya2ChAKeJttI52Im9mLiLwA8tC%2FJG4AKBuXgG%2FmKKxcTYM9%2BHOx9nkKbjfh9nFdNmTN%2Fc59q3wZXeeXCsUc1kY0euWKyoYwSKPsIKJCA11xIoAgJU6t%2BTHr50dDlUiCmELga339cifG%2FOWRn2iZKV4O4hvJHH0LjaOB733bKqrevkbMsdGsiwle3KPw%3D%3D%22%7D
+
+05_xai_module
+https://app.diagrams.net/?grid=0&pv=0&border=10&edit=_blank#create=%7B%22type%22%3A%22mermaid%22%2C%22compressed%22%3Atrue%2C%22data%22%3A%22pVRbb4IwFP41JNuDCVKY8ggF1MQ4IyY%2BVyzQrCumdDP%2B%2B52D22To4MGE6OF8l%2FZcQi6rU1YybSzH3oaWHcD%2F71N%2F7AvNjiWE6WJmeWEqCsVkbXlRh9l%2B0jEyxxBtuNGCfzI5IHBQ4EA044prZkSlBhQEFQQiWqla1Iar7DwgcVHiYqQz%2BGWF5nxA4qHEgyhWRhjB7xTO1QEzf5M7CsIdF0Vp%2BKHp4%2Futcp0CaS2ZwdbXGZN3bkPpE5Aok2IPbWm8jsB6vj2y6fdoZJH4cn4HdXpR0ou6vajXh0LiikLB1xdKb2tords8WELhq%2BUCK2am7B9UsMJeBqo%2Bcd3PjF5xNFGVDezwPEIaD%2BPNlsErXqSfnzSDqpTR7CAyHGkuWfEzq6GFwQKuvZl3T8Jb98CQaKHJncaaM2xX03S4l5DSIoATZxLEL4DTrJKVvuTyPIdEbXT1xr9ZGeGe%2FY8jnNZ2jCcuJfQhx2ZLro7T2HWD6CHHXadqf2qH%2FkOO%2BDFsWybTxE%2BCjgNxXd%2FjXw%3D%3D%22%7D
+
+06_data_ingestion
+https://app.diagrams.net/?grid=0&pv=0&border=10&edit=_blank#create=%7B%22type%22%3A%22mermaid%22%2C%22compressed%22%3Atrue%2C%22data%22%3A%22lZNbb4IwFMc%2FTZPtwQTbgfgIpY1m1jj1Ya9cyiAiNRUyt0%2B%2FU102YVyypEk55%2Fzy77mRFuo9zkJdIWztfWR5cP%2Bccx296fCUweduS5Ht71StY3lGdtAi708wBZJmYRWouFJ6BMYAb%2BpIyOTFG0EJoMAJ2kXKMjGe3gI2W2Ze0vKkFZQwUgMXe6DXSh%2FDIv%2BUwzBdrU3FhQxLsCp5qUb4xfO1Q3V5AMue4g5%2BrBwmfNBgx0gmw4%2BZqkVe5isxWTn%2Ff2cZvILAskzkxQRgnmPNWAD%2FQDOtjmHgPw7DvjCwL7ANRpoXsoPvzBB2DFuTCSLse1itMB4Ok8Gw8fzGzXTvLJhdkzae3zhrsIMoFP%2B389VHIdHtd7t2pEAEAMKfuMNnCNNzpdVB3pyz1I3dpEfB7Pu9QmBzm5GWAp55zLF6FMyKNXKgnFDeUkjJPJ7iHgWzPI0cHOZxt53D3LWi%2BRc%3D%22%7D
+
+07_deployment_architecture
+https://app.diagrams.net/?grid=0&pv=0&border=10&edit=_blank#create=%7B%22type%22%3A%22mermaid%22%2C%22compressed%22%3Atrue%2C%22data%22%3A%22lVPRboIwFP0aku1BU1EyeKTQOhKdBobvyKoQwZJSNPv73YJRYYIxaaC3vef09NzbXcbPcRIJqelo4WvIhv91lNV2L6IigalLNpqBXXZiGS%2BY0Ay3k3s%2FfLJeQXbAKxEziAUr%2BDBi7n0DYJ8qGUVVJv%2Bz2fFHrfQKdDwgmKfys9pCZMcy5cdy%2BNDvQB26SI%2ByjjF8JSvlE5S3nCsneHwAG3SU5tGevS7XD7%2FuWRyeF7x8wHM%2F7LW6I41KqWZgFK%2FLZiKEhoGhwgVSsCjPGosvSANNhpGb1QKgb04ieB5dXcJL3YDfiWfvr988DHygDMtnTYRVGhb8%2FDDz4Sl13%2BloNNKm5NJUt0hV%2BxapKt4i5Webqr0fdrebAoxgv%2FGovQvSB7BhDR3XemtN47aKjnPyN1NvSD1AHe3SLNOmkDAlmBoUiuGUUvADaxZ1y0TY6mFwvBYBJdQiHx0COnFmiPYQqJ5tSTCpSY0Ow8TGjuX0MKjatzQYhFCzw2CS2cx2%2FwA%3D%22%7D
+
+Mapping to thesis LaTeX figures (replace after you export PNG from draw.io)
+- rag_pipeline_final.png      <- 01
+- system_architecture_final.png <- 02
+- hybrid_retrieval_final.png  <- 03
+- sequence_diagram_final.png  <- 04
+- xai_module_final.png        <- 05
+- data_ingestion_final.png    <- 06
+- deployment_architecture_final.png <- 07

@@ -1,0 +1,21 @@
+flowchart LR
+    subgraph SIGNALS["Five Confidence Signals"]
+        S1[Retrieval Quality\nw=0.25\nnorm. mean RRF score]
+        S2[Generation Confidence\nw=0.25\nlog-prob proxy]
+        S3[Self-Consistency\nw=0.20\nROUGE similarity]
+        S4[Source Agreement\nw=0.20\npairwise BM25 overlap]
+        S5[Entity Coverage\nw=0.10\nmedical term fraction]
+    end
+
+    S1 & S2 & S3 & S4 & S5 --> WC[Weighted\nCombination]
+    WC --> PS[Platt Scaling\nσ at + b]
+    PS --> CC([Calibrated\nConfidence ∈ 0,1])
+
+    ANS([Generated Answer]) --> HD[DeBERTa NLI\nHallucination Detector]
+    CTX([Retrieved Context]) --> HD
+    HD --> HF([Hallucination Flag\nif contradiction > 0.6])
+
+    style CC fill:#27AE60,color:#fff,stroke:none
+    style HF fill:#E74C3C,color:#fff,stroke:none
+    style PS fill:#8E44AD,color:#fff,stroke:none
+    style WC fill:#2980B9,color:#fff,stroke:none

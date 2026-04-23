@@ -1,0 +1,86 @@
+\acswitchoff 
+\contentsline {section}{Executive Summary}{}{}%
+\contentsline {section}{List of Tables}{i}{}%
+\contentsline {section}{List of Figures}{ii}{}%
+\contentsline {section}{List of Abbreviations}{iii}{}%
+\contentsline {section}{List of Symbols}{iv}{}%
+\contentsline {chapter}{\numberline {1}\MakeUppercase []{Introduction}}{1}{}%
+\contentsline {section}{\numberline {1.1}Background}{1}{}%
+\contentsline {section}{\numberline {1.2}Motivation}{3}{}%
+\contentsline {section}{\numberline {1.3}Scope of the project}{4}{}%
+\contentsline {subsection}{\numberline {1.3.1}Functional scope}{4}{}%
+\contentsline {subsection}{\numberline {1.3.2}Non-functional scope}{4}{}%
+\contentsline {subsection}{\numberline {1.3.3}Technical scope}{4}{}%
+\contentsline {subsection}{\numberline {1.3.4}Assumptions and constraints}{5}{}%
+\contentsline {chapter}{\numberline {2}\MakeUppercase []{Project Description and Goals}}{6}{}%
+\contentsline {section}{\numberline {2.1}Literature review}{6}{}%
+\contentsline {subsection}{\numberline {2.1.1}Retrieval-augmented generation}{6}{}%
+\contentsline {subsection}{\numberline {2.1.2}Medical language models}{6}{}%
+\contentsline {subsection}{\numberline {2.1.3}Hybrid retrieval}{7}{}%
+\contentsline {subsection}{\numberline {2.1.4}Explainability and calibration}{8}{}%
+\contentsline {section}{\numberline {2.2}Research gap}{8}{}%
+\contentsline {section}{\numberline {2.3}Objectives}{9}{}%
+\contentsline {section}{\numberline {2.4}Problem statement}{9}{}%
+\contentsline {section}{\numberline {2.5}Project plan}{10}{}%
+\contentsline {chapter}{\numberline {3}\MakeUppercase []{Technical Specification}}{11}{}%
+\contentsline {section}{\numberline {3.1}Requirements}{11}{}%
+\contentsline {subsection}{\numberline {3.1.1}Functional requirements}{11}{}%
+\contentsline {subsection}{\numberline {3.1.2}Non-functional requirements}{12}{}%
+\contentsline {subsection}{\numberline {3.1.3}Safety and guardrail requirements}{12}{}%
+\contentsline {section}{\numberline {3.2}Feasibility study}{13}{}%
+\contentsline {subsection}{\numberline {3.2.1}Technical feasibility}{13}{}%
+\contentsline {subsection}{\numberline {3.2.2}Data feasibility}{13}{}%
+\contentsline {subsection}{\numberline {3.2.3}Operational feasibility}{13}{}%
+\contentsline {section}{\numberline {3.3}System specification}{14}{}%
+\contentsline {subsection}{\numberline {3.3.1}Hardware specification}{14}{}%
+\contentsline {subsection}{\numberline {3.3.2}Software specification}{14}{}%
+\contentsline {subsection}{\numberline {3.3.3}Knowledge base specification}{14}{}%
+\contentsline {chapter}{\numberline {4}\MakeUppercase []{System Design}}{16}{}%
+\contentsline {section}{\numberline {4.1}System Architecture}{16}{}%
+\contentsline {section}{\numberline {4.2}Detailed Design}{19}{}%
+\contentsline {subsection}{\numberline {4.2.1}Hybrid retriever}{19}{}%
+\contentsline {subsection}{\numberline {4.2.2}Multi-signal confidence scorer}{19}{}%
+\contentsline {subsection}{\numberline {4.2.3}RecursiveSentenceChunker}{21}{}%
+\contentsline {subsection}{\numberline {4.2.4}Safety guardrails}{22}{}%
+\contentsline {subsection}{\numberline {4.2.5}API layer}{22}{}%
+\contentsline {chapter}{\numberline {5}\MakeUppercase []{Methodology and Testing}}{23}{}%
+\contentsline {section}{\numberline {5.1}Evaluation methodology}{23}{}%
+\contentsline {subsection}{\numberline {5.1.1}Test set construction}{23}{}%
+\contentsline {subsection}{\numberline {5.1.2}Evaluation metrics}{23}{}%
+\contentsline {subsection}{\numberline {5.1.3}QLoRA fine-tuning methodology}{25}{}%
+\contentsline {subsection}{\numberline {5.1.4}Calibration methodology}{26}{}%
+\contentsline {section}{\numberline {5.2}Testing}{26}{}%
+\contentsline {subsection}{\numberline {5.2.1}Unit tests}{26}{}%
+\contentsline {subsection}{\numberline {5.2.2}Integration tests}{27}{}%
+\contentsline {subsection}{\numberline {5.2.3}Safety adversarial tests}{27}{}%
+\contentsline {subsection}{\numberline {5.2.4}End-to-end evaluation}{28}{}%
+\contentsline {subsection}{\numberline {5.2.5}Retrieval benchmark}{28}{}%
+\contentsline {chapter}{\numberline {6}\MakeUppercase []{Project Implementation}}{29}{}%
+\contentsline {section}{\numberline {6.1}Repository structure}{29}{}%
+\contentsline {section}{\numberline {6.2}Knowledge base construction}{29}{}%
+\contentsline {section}{\numberline {6.3}Pipeline implementation}{31}{}%
+\contentsline {subsection}{\numberline {6.3.1}Retrieval module}{31}{}%
+\contentsline {subsection}{\numberline {6.3.2}Generation module}{31}{}%
+\contentsline {subsection}{\numberline {6.3.3}XAI module}{32}{}%
+\contentsline {subsection}{\numberline {6.3.4}Frontend implementation}{33}{}%
+\contentsline {section}{\numberline {6.4}LangGraph implementation}{33}{}%
+\contentsline {section}{\numberline {6.5}Deployment}{33}{}%
+\contentsline {subsection}{\numberline {6.5.1}Docker Compose deployment}{34}{}%
+\contentsline {subsection}{\numberline {6.5.2}Continuous integration}{34}{}%
+\contentsline {chapter}{\numberline {7}\MakeUppercase []{Results and Discussion}}{36}{}%
+\contentsline {section}{\numberline {7.1}Model comparison}{36}{}%
+\contentsline {section}{\numberline {7.2}Ablation study}{37}{}%
+\contentsline {section}{\numberline {7.3}Baseline comparison}{38}{}%
+\contentsline {section}{\numberline {7.4}Knowledge base version comparison}{39}{}%
+\contentsline {section}{\numberline {7.5}Calibration results}{40}{}%
+\contentsline {section}{\numberline {7.6}Latency analysis}{41}{}%
+\contentsline {section}{\numberline {7.7}RAGAS evaluation}{42}{}%
+\contentsline {section}{\numberline {7.8}Discussion}{42}{}%
+\contentsline {chapter}{\numberline {8}\MakeUppercase []{Conclusion and Further Enhancements}}{44}{}%
+\contentsline {section}{\numberline {8.1}Further enhancements}{45}{}%
+\contentsline {subsection}{\numberline {8.1.1}Latency reduction}{45}{}%
+\contentsline {subsection}{\numberline {8.1.2}Continuous knowledge base updates}{45}{}%
+\contentsline {subsection}{\numberline {8.1.3}Extended multi-turn support}{45}{}%
+\contentsline {subsection}{\numberline {8.1.4}Clinical validation}{46}{}%
+\contentsline {subsection}{\numberline {8.1.5}Calibration improvement}{46}{}%
+\contentsline {subsection}{\numberline {8.1.6}Larger evaluation set}{46}{}%

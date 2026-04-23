@@ -1,0 +1,96 @@
+import subprocess
+import os
+import json
+
+output_png = "/home/kbs/Documents/final_project/Report Template_Inhouse/Thesis_content/images/system_architecture_final.png"
+output_mmd = "/home/kbs/Documents/final_project/Report Template_Inhouse/Thesis_content/diagrams/scripts/system_architecture_test.mmd"
+
+mermaid_code = """
+graph TB
+    subgraph "Input Layer"
+        User[User Query]
+        React[React Frontend]
+        Streamlit[Streamlit Frontend]
+        FastAPI[FastAPI<br/>/ask /health]
+    end
+
+    subgraph "Safety Layer"
+        Guard[SafetyGuardrails<br/>emergency check]
+        StopFilter[Stop-word Filter]
+    end
+
+    subgraph "8-Stage Pipeline"
+        S1[1. Query Enhancement<br/>TinyLlama]
+        S2[2. Hybrid Retrieval<br/>BM25+Dense+RRF]
+        S3[3. Corrective RAG<br/>fallback query]
+        S4[4. Grounding Gate<br/>adaptive threshold]
+        S5[5. Context Compression<br/>token-limit trim]
+        S6[6. LLM Generation<br/>TinyLlama/BioMistral]
+        S7[7. Factual Consistency<br/>DeBERTa NLI]
+        S8[8. Confidence Scoring<br/>5 signals+Platt]
+        Resp[Response + Confidence<br/>+ Sources]
+    end
+
+    subgraph "Storage Layer"
+        Qdrant[(Qdrant Cloud<br/>production)]
+        Chroma[(ChromaDB<br/>local dense)]
+        BM25[(BM25 Index<br/>local sparse)]
+    end
+
+    User --> React
+    React --> Streamlit
+    Streamlit --> FastAPI
+
+    FastAPI --> Guard
+    Guard --> S1
+    
+    S1 --> S2
+    S2 --> S3
+    S3 --> S4
+    
+    S4 -->|sufficient| S5
+    S5 --> S6
+    S6 --> S7
+    S7 --> S8
+    S8 --> Resp
+
+    Guard -.-> S1
+    StopFilter -.-> S7
+
+    Resp -.->|answer + confidence| FastAPI
+
+    S2 -.-> Qdrant
+    S2 -.-> Chroma
+    S2 -.-> BM25
+
+    style User fill:#f5f5f5
+    style Resp fill:#f5f5f5
+    style React fill:#4ecdc4
+    style Streamlit fill:#4ecdc4
+    style FastAPI fill:#ffce54
+    style Guard fill:#fc6e51
+    style StopFilter fill:#fc6e51
+    style S1 fill:#a0d468
+    style S2 fill:#a0d468
+    style S3 fill:#a0d468
+    style S4 fill:#a0d468
+    style S5 fill:#a0d468
+    style S6 fill:#a0d468
+    style S7 fill:#a0d468
+    style S8 fill:#a0d468
+    style Qdrant fill:#5d9cec
+    style Chroma fill:#5d9cec
+    style BM25 fill:#5d9cec
+"""
+
+with open(output_mmd, "w") as f:
+    f.write(mermaid_code)
+
+puppeteer_config = {"args": ["--no-sandbox", "--disable-setuid-sandbox"]}
+with open("puppeteer-config.json", "w") as f:
+    json.dump(puppeteer_config, f)
+
+mmdc_path = "/home/kbs/Documents/final_project/node_modules/.bin/mmdc"
+subprocess.run([mmdc_path, "-i", output_mmd, "-o", output_png, "-t", "default", "-b", "white", "-s", "3", "-p", "puppeteer-config.json"])
+
+print(f"Written: {output_png}")

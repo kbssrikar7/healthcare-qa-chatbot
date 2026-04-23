@@ -1,0 +1,48 @@
+\chapter{\MakeUppercase{Introduction}}
+
+\section{Background}
+
+Internet searches remain the primary way people find medical answers. However, much of this online information lacks verified sourcing or personal specificity. Many consumer health websites provide generic advice and are rarely updated.
+
+Question-answering systems in medicine date back to the 1970s. Stanford's MYCIN~\cite{shortliffe1974mycin} used manual rules to suggest antibiotic treatments. It worked well for its specific use case, but required constant expert updates and failed to generalise beyond its programmed rules. That same limitation --- that medical knowledge is too large and changes too quickly to encode manually --- is precisely what motivates the retrieval-based approach taken in this project.
+
+Modern \ac{llm} systems solve the knowledge encoding problem but introduce a different one. A model trained on web-scale text has encountered a large volume of medical content and can produce fluent, specific-sounding answers. The difficulty is that it cannot reliably distinguish between what it knows accurately and what it has reconstructed from training distributions. \ac{rag}~\cite{lewis2020rag}, proposed by Lewis et al.\ in 2020, addresses this directly: rather than answering from memory, the model is supplied with retrieved documents at query time and asked to answer from those documents instead. Figure \ref{fig:rag_pipeline} illustrates the two-stage flow.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.95\linewidth,height=0.85\textheight,keepaspectratio]{images/rag_pipeline_final.png}
+    \caption{The RAG pipeline: a retriever fetches relevant documents from the knowledge base, which are then passed as context to the language model for grounded generation.}
+    \label{fig:rag_pipeline}
+\end{figure}
+
+A practical constraint runs through every design decision in this project: running a 7B-parameter model on a remote server costs money and routes queries through a third party. For medical questions, sending private data over the wire is a genuine privacy concern. You don't want your symptoms ending up in an external log. TinyLlama 1.1B~\cite{zhang2024tinyllama} is small enough to run on \ac{cpu} hardware that most students and small clinics already own. I built the system using TinyLlama as the primary generative engine, while exposing BioMistral-7B~\cite{labrak2024biomistral} exclusively as a heavier alternative for users who can tolerate slow inference queues.
+
+For retrieval, I chose a hybrid approach. Combining sparse (\ac{bm25})~\cite{robertson2009bm25} search with dense embeddings~\cite{reimers2019sbert} generally performs better than using either alone on open-domain \ac{qa} tasks~\cite{ma2022hybrid}. I used Reciprocal Rank Fusion (\ac{rrf})~\cite{cormack2009rrf} to merge the document lists because it avoids the need for score normalisation.
+
+Returning answers without confidence estimates poses risks in healthcare applications. Multi-signal confidence estimation~\cite{guo2017calibration} helps communicate model uncertainty to users. The built-in signals evaluate retrieval quality, generation consistency, source agreement, medical entity coverage, and \ac{nli} hallucination flags~\cite{he2021deberta}. I aggregated these metrics using Platt scaling~\cite{platt1999probabilistic} to output a calibrated score.
+
+\section{Motivation}
+
+I started this project because patients rarely find specific, contextual answers to their health questions on general search engines. Results for a query like ``knee swelling after a fall'' are written for a broad audience, padded with disclaimers, and stripped of specificity. A retrieval system indexed on real patient-doctor conversation data has a reasonable chance of matching a specific question pattern to a previously answered case with similar clinical context.
+
+There is also an academic angle. \ac{rag} for general domains is well studied, but healthcare-specific \ac{rag} with explicit confidence signals and hallucination detection is less common. Most published medical \ac{qa} systems report accuracy on structured benchmarks such as MedQA~\cite{jin2021medqa} \allowbreak{}or PubMedQA~\cite{jin2019pubmedqa} without reporting calibration or uncertainty estimates. A system that says ``80\% confident'' is more useful than one that says ``here is the answer'' --- provided that 80\% is actually calibrated to observed accuracy.
+
+The technical interest centred on running this entire stack on \ac{cpu}. Most published \ac{rag} systems assume \ac{gpu} availability for retrieval and generation alike. Making \ac{bm25} and dense retrieval and \ac{llm} generation work at acceptable quality on a machine without a \ac{gpu} required specific choices: \ac{bm25} caching via pickle file, \ac{lru} caching for embedding lookups, and \ac{gguf} quantisation for the 7B model.
+
+\section{Scope of the project}
+
+\subsection{Functional scope}
+
+The system accepts free-text medical questions in English and returns an answer grounded in retrieved documents, with source attribution, a confidence score, and a standard safety disclaimer. The pipeline supports factual definitions, symptom inquiries, and academic queries from PubMedQA and MedMCQA. I configured the safety module to reject and redirect questions about prescription dosages, emergencies, or self-harm.
+
+\subsection{Non-functional scope}
+
+I designed the application to run entirely offline on a \ac{cpu}, maintaining user privacy by dropping query logs. On my test hardware, warm-path resolution takes around 106 seconds. This places it outside the range of real-time consumer applications, but forms a strong baseline. This is a research prototype; latency and output quality would both improve substantially on \ac{gpu} hardware or with a more specialised model.
+
+\subsection{Technical scope}
+
+I built the system to handle the full pipeline from knowledge base construction and hybrid retrieval to generation, \ac{xai} confidence scoring, hallucination detection, a REST \ac{api} layer, and a React frontend. The project does not attempt clinical validation, regulatory compliance, or multi-turn conversation memory. The knowledge base is static once built; there is no mechanism for continuous ingestion of new literature.
+
+\subsection{Assumptions and constraints}
+
+I handled local development on \ac{cpu} hardware, reserving Colab \ac{tpu} and T4 instances for fine-tuning and evaluation. The project uses only public datasets without patient-identifiable data.

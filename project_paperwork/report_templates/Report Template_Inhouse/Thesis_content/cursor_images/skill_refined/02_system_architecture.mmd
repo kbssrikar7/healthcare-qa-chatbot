@@ -1,0 +1,40 @@
+flowchart TB
+    subgraph CLIENT[Presentation]
+        UI[React UI]
+    end
+
+    subgraph APIL[API layer]
+        EP[FastAPI]
+    end
+
+    subgraph SAFE[Safety]
+        G1[Pre guardrails]
+        G2[Post stop-filter]
+    end
+
+    subgraph STG[Eight stages]
+        S1[1 Enhance]
+        S2[2 Retrieve]
+        S3[3 CRAG]
+        S4[4 Gate]
+        S5[5 Compress]
+        S6[6 Generate]
+        S7[7 NLI]
+        S8[8 Score]
+    end
+
+    subgraph DATA[Storage]
+        V[(ChromaDB)]
+        M[(BM25 cache)]
+    end
+
+    UI --> EP --> G1 --> S1 --> S2
+    S2 --> V
+    S2 --> M
+    S2 --> S3 --> S4 --> S5 --> S6 --> G2 --> S7 --> S8 --> EP
+
+    style CLIENT fill:#EBF5FB,stroke:#2980B9
+    style APIL fill:#D6EAF8,stroke:#2980B9
+    style SAFE fill:#FDEDEC,stroke:#E74C3C
+    style STG fill:#EAF4EC,stroke:#27AE60
+    style DATA fill:#FDF2E9,stroke:#E67E22

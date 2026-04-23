@@ -1,0 +1,122 @@
+\chapter{\MakeUppercase{Technical Specification}}
+
+\section{Requirements}
+
+\subsection{Functional requirements}
+
+\begin{enumerate}
+    \item The system shall accept a free-text medical question in English and return a text answer.
+    \item The system shall retrieve relevant documents from the knowledge base before generating an answer.
+    \item The system shall return source attribution identifying \allowbreak{}which documents contributed to the answer.
+    \item The system shall compute and return a confidence score for each response.
+    \item The system shall run a hallucination check comparing \allowbreak{}the generated answer against retrieved sources.
+    \item The system shall apply a safety guardrail that detects and flags questions involving emergency symptoms, prescription dosages, or self-harm.
+    \item The system shall expose a \ac{rest} \ac{api} with endpoints for synchronous requests (\texttt{/ask}), streaming responses (\texttt{/ask/stream}), and a health check (\texttt{/health}).
+    \item The system shall support cache lookup so that identical or near-identical questions within a session return quickly without re-running the full pipeline.
+    \item The frontend shall display the answer, confidence breakdown, source list, and per-stage latency metrics.
+\end{enumerate}
+
+\subsection{Non-functional requirements}
+
+\begin{enumerate}
+    \item The system shall run without a \ac{gpu} and without internet access at inference time.
+    \item The system shall not persist or log user query text.
+    \item The system shall start up within 5 minutes on the target hardware.
+    \item Warm-path \ac{api} latency shall be below 200 seconds for TinyLlama on \ac{cpu}.
+    \item The system shall pass a suite of 250 automated tests covering unit, integration, and safety-adversarial cases.
+    \item The Docker image shall reproduce local runtime behaviour for all \ac{api} endpoints.
+    \item \ac{api} access shall require a key, with separate scopes for read and admin operations.
+\end{enumerate}
+
+\subsection{Safety and guardrail requirements}
+
+\begin{enumerate}
+    \item Questions matching emergency patterns --- chest pain, difficulty breathing, suicidal ideation, stroke symptoms --- shall receive a redirect to emergency services, not a generated answer.
+    \item Questions requesting specific prescription dosages shall receive a redirect to consult a physician.
+    \item All responses shall include a disclaimer that the system is not a substitute for professional medical advice.
+    \item The system shall use an aggressive stop-word list to prevent the generation model from producing exam-format MCQ patterns (e.g., ``A) \ldots B) \ldots C) \ldots'') when the underlying dataset contains such formats.
+\end{enumerate}
+
+\section{Feasibility study}
+
+\subsection{Technical feasibility}
+
+The 1.1B-parameter TinyLlama model in bfloat16 occupies roughly 2.2 GB of \ac{ram}. My test machine had 16 GB available; retrieval (the BM25 index plus ChromaDB vector store) adds another 2--4 GB depending on knowledge base size, leaving adequate headroom. While a warm-path latency of 106 seconds is definitely too slow for real-time consumer interaction, it works well enough for a research prototype or an asynchronous queue where users submit a question and read the response a few minutes later. The BioMistral-7B model in 4-bit \ac{gguf} quantisation requires roughly 4 GB and runs at approximately 143 seconds mean latency.
+
+\subsection{Data feasibility}
+
+The three source datasets are all publicly available under open licences for research use. ChatDoctor-HealthCareMagic contains 226,000 real patient-doctor conversation pairs. PubMedQA provides 1,000 expert-annotated and 61,000 unlabelled question-answer pairs drawn from PubMed abstracts. MedMCQA contributes 187,000 multiple-choice questions from postgraduate medical entrance examinations. After filtering, deduplication, and sentence-boundary chunking, the combined knowledge base reaches 505,584 documents.
+
+\subsection{Operational feasibility}
+
+The system is packaged as a Docker container with a single entry point (\texttt{make run}). No external database infrastructure is required: ChromaDB runs as an embedded in-process store, and the BM25 index is persisted as a local pickle file. Startup takes 2--3 minutes on the test hardware, dominated by the time needed to load TinyLlama in bfloat16 on \ac{cpu}. Setting \texttt{SKIP\_STARTUP\_WARMUP=true} reduces cold-start time by deferring the model load to the first query, at the cost of a slower first response.
+
+\section{System specification}
+
+\subsection{Hardware specification}
+
+\begin{table}[htbp]
+\centering
+\caption{Hardware used for local development and evaluation}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Component} & \textbf{Specification} \\
+\hline
+Processor & x86-64 \ac{cpu} (no \ac{gpu}) \\
+RAM & 16 GB \\
+Storage & \ac{ssd}, 500 GB \\
+Operating system & Ubuntu 22.04 / Ubuntu 24.04 \\
+Training (Colab) & \ac{tpu} v5e (knowledge base build), T4 \ac{gpu} (BioMistral eval) \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Software specification}
+
+\begin{table}[htbp]
+\centering
+\caption{Core software components and versions}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Component} & \textbf{Version} & \textbf{Purpose} \\
+\hline
+Python & 3.11 & Runtime \\
+FastAPI & 0.110+ & \ac{rest} \ac{api} framework \\
+LangChain & 0.1+ & Pipeline orchestration \\
+LangGraph & 0.1+ & Stateful pipeline graphs \\
+ChromaDB & 0.4+ & Vector store \\
+sentence-transformers & 2.7+ & Dense embeddings \\
+rank-bm25 & 0.2.2 & Sparse retrieval \\
+llama-cpp-python & 0.2+ & \ac{gguf} inference (BioMistral) \\
+transformers & 4.40+ & TinyLlama inference \\
+peft & 0.10+ & QLoRA adapter loading \\
+React (assistant-ui) & 18+ & Frontend \\
+Docker & 24+ & Containerisation \\
+pytest & 8+ & Testing \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Knowledge base specification}
+
+\begin{table}[htbp]
+\centering
+\caption{Knowledge base v2 composition}
+\renewcommand{\arraystretch}{1.3}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|l|r|}
+\hline
+\textbf{Dataset} & \textbf{Type} & \textbf{Docs after chunking} \\
+\hline
+ChatDoctor-HealthCareMagic & Patient-doctor QA pairs & 226,000 \\
+PubMedQA & Biomedical research abstracts & 62,000 \\
+MedMCQA & Medical MCQ pairs & 217,000 \\
+\hline
+Total & -- & 505,584 \\
+\hline
+\end{tabular}}
+\end{table}
+
+The embedding model is \texttt{all-MiniLM-L6-v2} from SentenceTransformers, producing 384-dimensional vectors stored in ChromaDB with cosine similarity as the distance metric. The BM25 index is built from the same document corpus and cached as a pickle file at \path{data/knowledge_base_v2/bm25_index.pkl}.

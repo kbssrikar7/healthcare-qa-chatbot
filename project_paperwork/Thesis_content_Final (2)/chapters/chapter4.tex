@@ -1,0 +1,135 @@
+\chapter{\MakeUppercase{System Design}}
+
+\section{System Architecture}
+
+The system is an eight-stage pipeline. A query enters at stage 1 and exits at stage 8 carrying an answer, source list, confidence breakdown, and hallucination flags. Every stage is designed to fail gracefully. If a component fails to initialise --- for example, if the DeBERTa NLI model isn't loaded because available \ac{ram} is too low --- the pipeline simply skips that stage rather than aborting entirely. On constrained hardware, disabling a heavy 400 MB NLI model while keeping everything else functional is far more practical than triggering a hard crash.
+
+\begin{enumerate}
+    \item \textbf{Query enhancement}: The raw question is passed through a query expander that generates 2--3 alternative phrasings using TinyLlama, broadening the retrieval pool. This stage is skipped if the expander is disabled.
+    \item \textbf{Hybrid retrieval}: \ac{bm25} and dense retrieval run in parallel. \ac{bm25} queries the pre-built \texttt{rank-bm25} index loaded from the pickle cache; dense retrieval queries ChromaDB with the SentenceTransformer embedding of the (possibly expanded) query. The top-$k$ results from each are merged using \ac{rrf}.
+    \item \textbf{Corrective RAG}: A lightweight quality check evaluates whether the retrieved documents are relevant to the question. If the top document scores below a threshold, the retriever issues a fallback query with a rephrased version of the question. This step was introduced after observing that questions with ambiguous medical terminology sometimes retrieved tangentially related passages.
+    \item \textbf{Grounding gate}: The \texttt{\_check\_answerability()} method applies a three-part test before generation is permitted. First, an adaptive threshold compares each candidate retrieved document's score against the value: \\ \texttt{max(abs\_floor,\allowbreak{} adaptive\_threshold\_ratio $\times$ top\_score)}, \\ which ensures the qualifying bar scales dynamically with the best match's quality rather than sticking to a rigid cutoff. Second, a minimum-count check rejects results where too few documents cross that threshold. Third, a term-overlap check requires that at least 30\% of the query's medical terms appear somewhere in the retrieved passages. If any test fails, the pipeline abstains from generating text entirely. Instead, it falls back to \texttt{\_build\_extractive\_answer()}, selecting the single most relevant passage from the set and returning it verbatim as a conservative, source-backed response. This hard "abstain-and-extract" boundary acts as the primary safety mechanism against hallucinating answers when the knowledge base lacks adequate support.
+    \item \textbf{Context compression}: For long-context queries, retrieved documents are summarised to fit within the model's context window. TinyLlama uses a 2048-token limit; BioMistral uses 4096 tokens.
+    \item \textbf{LLM generation}: The compressed context and question are formatted into a prompt and passed to the active backend. TinyLlama runs via the HuggingFace Transformers pipeline in bfloat16; BioMistral runs via llama-cpp-python.
+    \item \textbf{Factual consistency check}: The generated answer is compared against each retrieved source using the DeBERTa \ac{nli} model. A high contradiction score across multiple sources triggers a hallucination flag in the response.
+    \item \textbf{Confidence scoring and attribution}: Five signals are computed and combined using manually tuned fixed weights (implemented as \texttt{[0.25, 0.25, 0.20, 0.20, 0.10]}), then passed through Platt scaling to produce a preliminarily calibrated score. Signal descriptions appear in Section \ref{sec:confidence}.
+\end{enumerate}
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.95\linewidth,height=0.85\textheight,keepaspectratio]{images/system_architecture_final.png}
+    \caption{High-level system architecture showing the eight pipeline stages from query input to response output.}
+    \label{fig:system_arch}
+\end{figure}
+
+Figure \ref{fig:system_arch} shows the high-level architecture. The main implementation is the \texttt{HealthcareQAPipeline} class in \texttt{src/pipeline/\allowbreak qa\_pipeline.py}. Two API flags switch to alternative execution paths. Setting \texttt{use\_langchain=\allowbreak true} routes requests through the LangChain-based pipeline (\texttt{src/langchain/}), which wraps each stage as a LangChain chain. Setting \texttt{use\_langgraph=\allowbreak true} routes through the stateful LangGraph pipeline (\texttt{src/langgraph/}), which models the pipeline as a directed graph and handles conditional re-retrieval for multi-hop queries. All three paths share the same underlying retrieval, generation, and XAI components.
+
+\section{Detailed Design}
+
+\subsection{Hybrid retriever}
+
+The \texttt{HybridRetriever} class in \texttt{src/retrieval/hybrid\_retriever.py} manages both retrieval backends. At startup it loads the BM25 index from the pickle cache, or rebuilds it from ChromaDB if the cache is stale or missing. Rebuilding takes 30--60 seconds on the 505,584-document corpus, so the cache is essential for acceptable startup time.
+
+The \ac{rrf} fusion formula is:
+
+\begin{equation}
+    \text{RRF}(d) = \sum_{r \in R} \frac{w_r}{k_{\mathrm{RRF}} + \text{rank}_r(d)}
+\end{equation}
+
+where $R$ is the set of ranked lists (BM25 and dense), $k_{\mathrm{RRF}} = 60$ is the rank constant, $w_r$ is a per-list weight (1.0 for both by default), and $\text{rank}_r(d)$ is the rank position of document $d$ in list $r$. Documents absent from a list are assigned rank $\infty$ and contribute zero to the sum.
+
+After fusion, source diversity filtering limits the contribution from any single dataset to prevent the top results being dominated by one corpus. Dynamic $k$ selection adjusts the number of retrieved documents based on query complexity: factual queries use $k=5$; research-type queries use up to $k=10$.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.95\linewidth,height=0.85\textheight,keepaspectratio]{images/hybrid_retrieval_final.png}
+    \caption{Hybrid retrieval component architecture showing BM25 and dense retrieval paths, RRF fusion, source diversity filtering, and dynamic-$k$ selection.}
+    \label{fig:detailed_arch}
+\end{figure}
+
+\subsection{Multi-signal confidence scorer}
+\label{sec:confidence}
+
+The \texttt{MultiSignalConfidenceScorer} class in \path{src/xai/multi_signal_confidence.py} computes five signals and combines them linearly using the fixed manual weights before applying Platt scaling. Table \ref{tab:confidence_signals} lists each signal with its computation method and ablation impact.
+
+\begin{table}[htbp]
+\centering
+\caption{Confidence signals and their computation}
+\label{tab:confidence_signals}
+\renewcommand{\arraystretch}{1.3}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Signal} & \textbf{Computation} & \textbf{Ablation impact} \\
+\hline
+Retrieval confidence & Normalised mean \ac{rrf} score of top-$k$ docs & Removing raises kw by +0.037 \\
+Generation confidence & Log-probability proxy from model scores & Removing raises kw by +0.042 \\
+Self-consistency & ROUGE similarity between two sampled answers & Removing raises kw by +0.027 \\
+Source agreement & Pairwise BM25-overlap among top-3 sources & Removing raises kw by +0.061 \\
+Medical entity coverage & Fraction of query medical terms in answer & Removing raises kw by +0.008 \\
+\hline
+\end{tabular}}
+\end{table}
+
+The source agreement signal has the largest ablation effect. It actively reduces confidence when retrieved sources give conflicting answers to the same question, which explains why the full system has lower keyword coverage than the no-XAI baseline: the confidence module is trading raw coverage for more honest uncertainty estimates. Raw \ac{rrf} scores fall in the range 0.01--0.04; they are normalised to $[0,1]$ by dividing by the maximum score in the retrieved set before being passed to the scorer.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.95\linewidth,height=0.85\textheight,keepaspectratio]{images/xai_module_final.png}
+    \caption{XAI module architecture showing the five confidence signals and their combination via Platt scaling into a preliminarily calibrated score.}
+    \label{fig:xai_module}
+\end{figure}
+
+\subsection{RecursiveSentenceChunker}
+
+The \texttt{RecursiveSentenceChunker} class in \path{src/data_pipeline/preprocessors/chunker.py} splits documents at sentence boundaries rather than at fixed character positions. Algorithm \ref{alg:chunker} describes the procedure.
+
+\begin{algorithm}
+\caption{RecursiveSentenceChunker}\label{alg:chunker}
+\begin{algorithmic}
+    \Require document text $D$, target size $T$, overlap $O$, separators $S$
+    \Ensure list of chunks $C$
+    \State Recursively split $D$ on descending hierarchy of string delimiters $S$
+    \State $\text{current\_chunk} \gets []$, $\text{current\_len} \gets 0$
+    \For{each valid sub-piece $s$ in recursively split $D$}
+        \If{$\text{current\_len} + |s| > T$ and $\text{current\_chunk} \neq []$}
+            \State Append \texttt{join(current\_chunk)} to $C$
+            \State Keep last $O$ tokens in $\text{current\_chunk}$ for overlap
+            \State $\text{current\_len} \gets$ length of overlap
+        \EndIf
+        \State Append $s$ to $\text{current\_chunk}$
+        \State $\text{current\_len} \gets \text{current\_len} + |s|$
+    \EndFor
+    \If{$\text{current\_chunk} \neq []$}
+        \State Append \texttt{join(current\_chunk)} to $C$
+    \EndIf
+\end{algorithmic}
+\end{algorithm}
+
+Target chunk size is 512 tokens with a 64-token overlap. By splitting at sentence boundaries, we preserve the integrity of medical statements. This ensures a \ac{bm25} query for a specific term won't accidentally retrieve a chunk containing only the broken, out-of-context tail of a sentence. The overlap guarantees that sentences straddling boundaries appear in two consecutive chunks, heavily reducing the chance we'll miss a relevant passage entirely.
+
+\subsection{Safety guardrails}
+
+The \texttt{SafetyGuardrails} class in \texttt{src/safety/guardrails.py} applies two layers of filtering. The first checks for emergency patterns --- chest pain, difficulty breathing, stroke signs, self-harm language, requests for specific prescription quantities --- before retrieval runs. A match returns a redirect message immediately without running the pipeline. The second layer is applied post-generation: an aggressive stop-word list prevents the model from completing exam-style multiple-choice patterns that appear in the MedMCQA training data.
+
+\subsection{API layer}
+
+The FastAPI service in \texttt{api/main.py} exposes four endpoints:
+
+\begin{table}[htbp]
+\centering
+\caption{API endpoints}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Endpoint} & \textbf{Method} & \textbf{Description} \\
+\hline
+\texttt{/ask} & POST & Synchronous QA request \\
+\texttt{/ask/stream} & POST & Server-sent events streaming \\
+\texttt{/health} & GET & Health check, no auth required \\
+\texttt{/clear-cache} & POST & Admin-scoped cache invalidation \\
+\hline
+\end{tabular}
+\end{table}
+
+Keys are formatted as \texttt{KEY:scope} in the \texttt{API\_KEYS} environment variable. The \texttt{read} scope allows \texttt{/ask} and \texttt{/health}; \texttt{admin} allows all endpoints including \texttt{/clear-cache}. Legacy \texttt{API\_KEY} and \texttt{API\_KEY\_ADMIN} variables remain supported for backward compatibility.
