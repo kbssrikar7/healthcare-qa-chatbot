@@ -121,6 +121,7 @@ def test_ask_standard_pipeline_contract(monkeypatch):
         "/ask",
         json={
             "question": "What are the symptoms of diabetes?",
+            "model_choice": "tinyllama",
             "num_sources": 4,
             "include_explanation": True,
         },

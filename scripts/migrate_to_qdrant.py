@@ -9,7 +9,7 @@ from loguru import logger
 CHROMA_DIR = "/home/kbs/Documents/final_project/data/knowledge_base_v2"
 CHROMA_COLLECTION = "medical_knowledge_v2"
 QDRANT_URL = "https://5769e335-3865-41d8-bf3c-c6fd67c240fc.europe-west3-0.gcp.cloud.qdrant.io:6333"
-QDRANT_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIiwic3ViamVjdCI6ImFwaS1rZXk6MGRmOTg0NTctOGQ4Ni00ZjA0LWJmMzYtMzFjMTNlMzA5OTI1In0.VsfSaXANmPcXkIss17RH_IrKI3mFiAVDewE0RsLjOvs"
+QDRANT_API_KEY = os.environ.get("QDRANT_API_KEY", "")  # set QDRANT_API_KEY env var before running
 
 def migrate():
     logger.info("Initializing ChromaDB connection...")
