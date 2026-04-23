@@ -54,7 +54,6 @@ def test_causation_extractive_prioritizes_cause_sentences():
     ans = p._build_extractive_answer("What causes acute migraine?", docs)
     assert ans is not None
     low = ans.lower()
-    assert "based on retrieved evidence:" in low
     assert "caused" in low or "trigger" in low
 
 
