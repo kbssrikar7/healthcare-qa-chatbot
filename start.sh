@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Healthcare QA Chatbot — local startup script
-# Starts FastAPI backend + Streamlit frontend in the background
+# Starts FastAPI backend + React/assistant-ui frontend in the background
 # Usage: ./start.sh [--frontend-only | --api-only | --stop]
 
 set -euo pipefail
 
 VENV_DIR="${VENV_DIR:-venv}"
 API_PORT="${API_PORT:-8000}"
-FRONTEND_PORT="${FRONTEND_PORT:-8501}"
+FRONTEND_PORT="${FRONTEND_PORT:-3000}"
 API_LOG="/tmp/mediquery_api.log"
 FRONTEND_LOG="/tmp/mediquery_frontend.log"
 PID_FILE="/tmp/mediquery.pids"
@@ -15,7 +15,6 @@ PID_FILE="/tmp/mediquery.pids"
 # Resolve venv python
 PYTHON="${VENV_DIR}/bin/python"
 if [[ ! -f "$PYTHON" ]]; then
-    # Fallback: try venv312
     if [[ -f "venv312/bin/python" ]]; then
         PYTHON="venv312/bin/python"
     else
@@ -23,8 +22,6 @@ if [[ ! -f "$PYTHON" ]]; then
     fi
 fi
 UVICORN="${VENV_DIR}/bin/uvicorn"
-STREAMLIT="${VENV_DIR}/bin/streamlit"
-if [[ ! -f "$STREAMLIT" ]]; then STREAMLIT="$PYTHON -m streamlit"; fi
 
 stop_services() {
     if [[ -f "$PID_FILE" ]]; then
@@ -44,8 +41,8 @@ stop_services() {
 RUN_API=true
 RUN_FRONTEND=true
 case "${1:-}" in
-    --stop)         stop_services ;;
-    --api-only)     RUN_FRONTEND=false ;;
+    --stop)          stop_services ;;
+    --api-only)      RUN_FRONTEND=false ;;
     --frontend-only) RUN_API=false ;;
 esac
 
@@ -89,17 +86,15 @@ if [[ "$RUN_API" == true ]]; then
     done
 fi
 
-# ── Start Streamlit frontend ──────────────────────────────────────────────────
+# ── Start React/assistant-ui frontend ─────────────────────────────────────────
 if [[ "$RUN_FRONTEND" == true ]]; then
-    echo "Starting Streamlit frontend on port ${FRONTEND_PORT}..."
-    API_URL="http://localhost:${API_PORT}" \
-    "$STREAMLIT" run frontend/streamlit_app.py \
-        --server.port "$FRONTEND_PORT" \
-        --server.address 0.0.0.0 \
-        --server.headless true \
-        --browser.gatherUsageStats false \
+    echo "Starting React frontend on port ${FRONTEND_PORT}..."
+    cd frontend-react
+    NEXT_PUBLIC_API_URL="http://localhost:${API_PORT}" \
+    npm run dev -- --port "$FRONTEND_PORT" \
         >"$FRONTEND_LOG" 2>&1 &
     FRONTEND_PID=$!
+    cd ..
     echo "$FRONTEND_PID" >> "$PID_FILE"
     echo "  Frontend PID: $FRONTEND_PID  (log: $FRONTEND_LOG)"
 fi

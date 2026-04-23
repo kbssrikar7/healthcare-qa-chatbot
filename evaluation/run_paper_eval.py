@@ -169,15 +169,37 @@ def run_metrics(test_cases: list, pipeline, variant_name: str, n: int = None) ->
 
     import statistics
 
+    # G3: Abstention and false-negative rates
+    abstention_rate = abstention_count / total if total else 0.0
+    false_negative_rate = false_negative_count / total if total else 0.0
+    print(
+        f"    Abstention rate : {abstention_rate:.1%} ({abstention_count}/{total})"
+    )
+    print(
+        f"    False-neg rate  : {false_negative_rate:.1%}  (abstained when KB had answer)"
+    )
+
     result = {
         "variant": variant_name,
         "n": total,
         "answerable_pct": answerable / total if total else 0,
+        "abstention_rate": round(abstention_rate, 4),
+        "false_negative_rate": round(false_negative_rate, 4),
         "keyword_coverage_mean": statistics.mean(kw_scores) if kw_scores else 0,
         "rougeL_mean": statistics.mean(rouge_scores) if rouge_scores else 0,
         "bertscore_f1_mean": round(bs_f1_mean, 4),
-        "bertscore_mode": bs_mode,  # "rescaled" | "unscaled" | "skipped" | "unavailable"
+        "bertscore_mode": bs_mode,
     }
+
+    # G2: Per-category breakdowns
+    result["by_category"] = {}
+    for cat in sorted(set(list(cat_kw.keys()) + list(cat_rouge.keys()))):
+        result["by_category"][cat] = {
+            "n": cat_total.get(cat, 0),
+            "keyword_coverage": round(statistics.mean(cat_kw[cat]), 4) if cat_kw[cat] else 0.0,
+            "rougeL": round(statistics.mean(cat_rouge[cat]), 4) if cat_rouge[cat] else 0.0,
+            "abstention_count": cat_abstained.get(cat, 0),
+        }
 
     # Add bootstrap 95% confidence intervals
     if len(kw_scores) >= 5:

@@ -1,106 +1,174 @@
 # AGENTS.md
 
-This file provides guidance to WARP (warp.dev) when working with code in this repository.
+Guidance for AI coding agents working in this repository.
 
 ## Project Overview
 
-Explainable Healthcare QA Chatbot - A medical question-answering system combining LLM (BioMistral-7B) + RAG (hybrid dense/sparse retrieval) + XAI (confidence scoring, source attribution).
+Explainable Healthcare QA Chatbot: a medical question-answering system combining:
 
-## Development Commands
+- LLM generation (`TinyLlama` default, `BioMistral` optional)
+- Hybrid retrieval (dense embeddings + BM25 sparse search + fusion)
+- XAI confidence and attribution signals
+
+Core stack:
+
+- Backend: FastAPI (`api/main.py`)
+- Primary UI: Streamlit (`frontend/streamlit_app.py`)
+- Optional UI: Next.js app in `frontend-react/`
+
+## Preferred Development Workflow
+
+Prefer `make` targets where available.
 
 ### Setup
+
 ```bash
-python -m venv venv && source venv/bin/activate
+make install
+```
+
+Equivalent manual setup:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Data Pipeline
+### Run Services
+
 ```bash
-python scripts/download_data.py       # Download medical datasets (MedQuAD, PubMedQA, MedMCQA, etc.)
-python scripts/build_knowledge_base.py # Build ChromaDB vector store
+make run            # FastAPI backend on :8000
+make run-frontend   # Streamlit UI on :8501
 ```
 
-### Running Services
+Or:
+
 ```bash
-python api/main.py                    # FastAPI backend (port 8000)
-streamlit run frontend/streamlit_app.py # Streamlit UI (port 8501)
+python api/main.py
+streamlit run frontend/streamlit_app.py --server.port 8501
 ```
 
-### Testing
+### Tests
+
 ```bash
-export PYTHONPATH=$PYTHONPATH:$(pwd)
-pytest tests/ -v                      # Run all tests
-pytest tests/test_retrieval.py -v     # Run specific test file
-pytest tests/ -k "test_name" -v       # Run single test by name
-pytest tests/ -v --cov=src            # Run with coverage
+make test       # fast suite
+make test-all   # full suite
 ```
 
-### Linting
+Or direct pytest:
+
 ```bash
-black --check src/ api/ tests/        # Check formatting
-black src/ api/ tests/                # Apply formatting
-isort --check-only src/ api/ tests/   # Check import sorting
-flake8 src/ api/ --max-line-length=100 --ignore=E501,W503
+pytest tests/ -v
+pytest tests/test_retrieval.py -v
+pytest tests/ -k "test_name" -v
 ```
 
-### Docker
+### Lint / Format
+
 ```bash
-cd docker && docker-compose up -d     # Run full stack
+make lint
+make fmt
 ```
+
+Current linting/formatting uses `ruff` (not black/isort/flake8).
 
 ### Evaluation
+
 ```bash
+make eval
+make eval-quick
 python evaluation/run_evaluation.py --test-set evaluation/test_set.json
+```
+
+`evaluation/run_paper_eval.py` is the primary paper-quality pipeline used by `make eval`.
+
+### Docker
+
+```bash
+make docker-up
+make docker-down
+make docker-logs
 ```
 
 ## Architecture
 
 ### Core Pipeline Flow
-1. **Retrieval** (`src/retrieval/hybrid_retriever.py`): Hybrid search combining dense embeddings (MedCPT/MiniLM via ChromaDB) + sparse BM25, fused via Reciprocal Rank Fusion (RRF)
-2. **Grounding Gate** (`src/pipeline/qa_pipeline.py`): Answerability check - ensures retrieved context is sufficient before generation
-3. **Generation** (`src/generation/llm_wrapper.py`): Fine-tuned BioMistral-7B with QLoRA adapter support
-4. **XAI** (`src/xai/`): Confidence scoring, source attribution, and rationale generation
 
-### Three Pipeline Variants
-- **Standard Pipeline** (`src/pipeline/qa_pipeline.py`): Direct orchestration of components
-- **LangChain Pipeline** (`src/langchain/`): LCEL-based composition with LangChain wrappers
-- **LangGraph Pipeline** (`src/langgraph/`): Self-correcting RAG with StateGraph, includes query refinement and document grading
+1. Retrieval: `src/retrieval/hybrid_retriever.py`
+2. Grounding + orchestration: `src/pipeline/qa_pipeline.py`
+3. Generation: `src/generation/llm_wrapper.py` + prompt manager
+4. Explainability: `src/xai/` + confidence/safety modules
 
-### Key Component Interfaces
+### Pipeline Variants
 
-**Retriever** returns `RetrievedDocument(content, source, score, metadata)`:
-```python
-documents, context = retriever.retrieve_with_context(query, k=5)
+- Standard pipeline: `src/pipeline/qa_pipeline.py`
+- LangChain variant: `src/langchain/`
+- LangGraph variant: `src/langgraph/`
+
+API pipeline selection flags on `/ask`:
+
+- `use_langchain=true`
+- `use_langgraph=true`
+
+## Configuration
+
+Central config: `config/settings.py` (dataclasses + `Config.from_env()`).
+
+Important environment variables include:
+
+- `ENVIRONMENT`
+- `USE_GPU`
+- `HUGGINGFACE_TOKEN`
+- `KB_PERSIST_DIR`
+- `CHROMA_COLLECTION`
+- `DEFAULT_PIPELINE`
+- `ENABLE_LANGGRAPH_CHECKPOINTING`
+- `ENABLE_MCP_SEARCH`
+
+## Data and Model Paths
+
+- Raw datasets (download target): `data/raw/`
+- Vector store (default): `data/knowledge_base/`
+- Vector store (common v2 output): `data/knowledge_base_v2/`
+- Embedding metadata sidecar: `embedding_metadata.json` inside chosen KB directory
+- Fine-tuned/adapted models: `models/`
+- Evaluation outputs: `evaluation/results/`
+
+## Knowledge Base Build Notes
+
+Build script: `scripts/build_knowledge_base.py`
+
+- Default build:
+
+```bash
+python scripts/build_knowledge_base.py
 ```
 
-**LLM** returns `GenerationResult(response, input_tokens, generated_tokens, probabilities)`:
-```python
-result = llm.generate(prompt, max_new_tokens=512, return_probabilities=True)
+- Recursive chunking (KB v2-style):
+
+```bash
+python scripts/build_knowledge_base.py --chunker recursive --output-dir data/knowledge_base_v2 --collection medical_knowledge_v2
 ```
-
-**QA Pipeline** returns `QAResponse` with answer, sources, confidence, attributions:
-```python
-response = pipeline.answer(question, num_documents=5, include_explanation=True)
-```
-
-### API Request Flags
-The `/ask` endpoint supports pipeline selection:
-- `use_langchain=true`: Use LangChain LCEL pipeline
-- `use_langgraph=true`: Use LangGraph self-correcting pipeline
-
-### Configuration
-All settings in `config/settings.py` with dataclass configs for embedding, LLM, retrieval, safety, and pipeline. Environment-based loading via `Config.from_env()`. Key env vars: `USE_GPU`, `ENVIRONMENT`, `HUGGINGFACE_TOKEN`.
 
 ## Testing Conventions
 
-Tests use mock components defined in `tests/conftest.py`:
-- `MockEmbedder`, `MockRetriever`, `MockLLM` for testing without GPU/models
-- Fixtures: `sample_documents`, `sample_qa_pairs`, `edge_case_questions`, `emergency_inputs`
+Shared mocks and fixtures are in `tests/conftest.py`, including:
 
-Tests follow pattern `test_*.py` with pytest-asyncio for async tests.
+- `MockEmbedder`, `MockRetriever`, `MockLLM`
+- `sample_documents`, `sample_qa_pairs`, `edge_case_questions`, `emergency_inputs`
 
-## Data Locations
-- Raw datasets: `data/raw/` (downloaded from HuggingFace)
-- Vector store: `data/knowledge_base/` (ChromaDB)
-- Fine-tuned models: `models/fine_tuned/medical_adapter/`
-- Evaluation results: `evaluation/results/`
+## Agent Guidelines
+
+- Prefer minimal, focused changes over broad refactors.
+- Do not commit generated artifacts unless explicitly requested.
+- Keep retrieval/generation/XAI behavior changes covered by tests when possible.
+- When modifying evaluation scripts, preserve reproducibility of output files in `evaluation/results/`.
+
+## graphify
+
+This project has a graphify knowledge graph at graphify-out/.
+
+Rules:
+- Before answering architecture or codebase questions, read graphify-out/GRAPH_REPORT.md for god nodes and community structure
+- If graphify-out/wiki/index.md exists, navigate it instead of reading raw files
+- After modifying code files in this session, run `graphify update .` to keep the graph current (AST-only, no API cost)

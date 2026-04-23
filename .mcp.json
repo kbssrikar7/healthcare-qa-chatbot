@@ -4,6 +4,19 @@
       "command": "uvx",
       "args": ["git+https://github.com/googlecolab/colab-mcp"],
       "timeout": 30000
+    },
+    "shadcn": {
+      "command": "npx",
+      "args": ["shadcn@latest", "mcp"]
+    },
+    "google-scholar": {
+      "command": "python3",
+      "args": ["/home/kbs/Google-Scholar-MCP-Server/google_scholar_server.py"]
+    },
+    "mermaid": {
+      "command": "/home/kbs/.npm-global/bin/mmdc",
+      "args": [],
+      "timeout": 30000
     }
   }
 }

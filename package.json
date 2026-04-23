@@ -15,6 +15,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@mermaid-js/mermaid-cli": "^11.12.0",
     "docx": "^9.5.1",
     "playwright": "^1.58.0",
     "pptxgenjs": "^4.0.1",

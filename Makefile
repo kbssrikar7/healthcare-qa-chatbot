@@ -8,7 +8,6 @@ VENV      := venv
 PIP       := $(VENV)/bin/pip
 PYTEST    := $(VENV)/bin/pytest
 UVICORN   := $(VENV)/bin/uvicorn
-STREAMLIT := $(VENV)/bin/streamlit
 
 .PHONY: help install test test-all run run-frontend start stop eval eval-quick eval-table \
         lint fmt clean docker-build docker-run docker-up docker-down docker-logs freeze paper
@@ -20,7 +19,7 @@ help:
 	@echo "  test          — run fast test suite (excludes slow/GPU tests)"
 	@echo "  test-all      — run full test suite"
 	@echo "  run           — start FastAPI backend (port 8000)"
-	@echo "  run-frontend  — start Streamlit frontend (port 8501)"
+	@echo "  run-frontend  — start React/assistant-ui frontend (port 3000)"
 	@echo "  start         — start both API + frontend (background)"
 	@echo "  stop          — stop all background services"
 	@echo "  eval          — run paper evaluation on 97-question test set"
@@ -55,7 +54,7 @@ run:
 	$(PYTHON) api/main.py
 
 run-frontend:
-	$(STREAMLIT) run frontend/streamlit_app.py --server.port 8501
+	cd frontend-react && npm run dev
 
 start:
 	./start.sh

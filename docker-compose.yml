@@ -3,12 +3,15 @@
 # Stop with:  docker-compose down
 #
 # Requires:
-#   - data/knowledge_base/ (ChromaDB index)
-#   - models/             (TinyLlama cached from HuggingFace, GGUF if using BioMistral)
+#   - data/knowledge_base_v2/ (ChromaDB KB v2 index — 505K docs)
+#   - models/                 (TinyLlama cached from HuggingFace)
 #
 # First time setup:
 #   cp .env.example .env
 #   docker-compose up --build
+#
+# Fast dev startup (skips warmup query — first query is cold):
+#   docker-compose --profile dev up --build
 
 version: '3.9'
 
@@ -29,6 +32,12 @@ services:
       - API_KEY=${API_KEY:-}
       - CORS_ORIGINS=${CORS_ORIGINS:-*}
       - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN:-}
+      # KB v2 — 505K docs (RecursiveSentenceChunker, dense-only retrieval)
+      - CHROMA_COLLECTION=${CHROMA_COLLECTION:-medical_knowledge_v2}
+      - KB_PERSIST_DIR=${KB_PERSIST_DIR:-data/knowledge_base_v2}
+      # Skip BM25 to save ~2 GB RAM (KB v2 eval was dense-only, kw=0.6765)
+      - SKIP_BM25=${SKIP_BM25:-true}
+      - MIN_ANSWER_CONFIDENCE=${MIN_ANSWER_CONFIDENCE:-0.0}
     volumes:
       - ./data:/app/data
       - ./models:/app/models
@@ -42,21 +51,40 @@ services:
     networks:
       - mediquery-net
 
-  frontend:
+  api-dev:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: healthcare-qa-frontend
-    command: >
-      python3 -m streamlit run frontend/streamlit_app.py
-      --server.port=8501
-      --server.address=0.0.0.0
-      --server.headless=true
-      --browser.gatherUsageStats=false
+    container_name: healthcare-qa-api-dev
+    profiles: ["dev"]
     ports:
-      - "8501:8501"
+      - "${API_PORT:-8000}:8000"
     environment:
-      - API_URL=http://api:8000
+      - HF_HUB_OFFLINE=1
+      - TRANSFORMERS_OFFLINE=1
+      - USE_GPU=false
+      - LOG_LEVEL=DEBUG
+      - ENVIRONMENT=development
+      - CHROMA_COLLECTION=${CHROMA_COLLECTION:-medical_knowledge_v2}
+      - KB_PERSIST_DIR=${KB_PERSIST_DIR:-data/knowledge_base_v2}
+      - SKIP_BM25=true
+      - SKIP_STARTUP_WARMUP=true
+      - MIN_ANSWER_CONFIDENCE=0.0
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+    networks:
+      - mediquery-net
+
+  frontend:
+    build:
+      context: ./frontend-react
+      dockerfile: Dockerfile
+    container_name: healthcare-qa-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://api:8000
     depends_on:
       api:
         condition: service_healthy

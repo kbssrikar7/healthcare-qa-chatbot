@@ -147,3 +147,5 @@ nalavda.xml
 =0.4.0
 *.bak
 *.tmp
+.vercel
+.env*.local

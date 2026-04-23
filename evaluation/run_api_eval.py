@@ -14,6 +14,12 @@ Usage:
 """
 
 import os
+
+# Force fully offline mode — prevents BERTScore from retrying HuggingFace on SSL failure
+os.environ.setdefault("HF_HUB_OFFLINE", "1")
+os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+os.environ.setdefault("HF_DATASETS_OFFLINE", "1")
+
 import sys
 import json
 import time
@@ -330,6 +336,10 @@ def main():
         choices=["tinyllama", "biomistral"],
         help="Model to use for standard pipeline",
     )
+    parser.add_argument(
+        "--all-variants", action="store_true",
+        help="Also run langchain and langgraph variants (slower)",
+    )
     args = parser.parse_args()
 
     if not check_api():
@@ -346,11 +356,12 @@ def main():
     all_results = {}
 
     # Define variants
-    VARIANTS = [
-        {"name": f"standard_{args.model}", "model": args.model},
-        {"name": "langchain", "model": args.model, "langchain": True},
-        {"name": "langgraph", "model": args.model, "langgraph": True},
-    ]
+    VARIANTS = [{"name": f"standard_{args.model}", "model": args.model}]
+    if args.all_variants:
+        VARIANTS += [
+            {"name": "langchain", "model": args.model, "langchain": True},
+            {"name": "langgraph", "model": args.model, "langgraph": True},
+        ]
 
     # ── Metrics ──────────────────────────────────────────────────────────────
     if args.mode in ("metrics", "all"):

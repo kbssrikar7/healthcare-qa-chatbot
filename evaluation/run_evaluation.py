@@ -14,7 +14,7 @@ import sys
 import json
 import argparse
 from pathlib import Path
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
 
 # Add project root to path
@@ -417,7 +417,10 @@ class RAGEvaluationRunner:
         return results, aggregated
 
     def evaluate_pipeline(
-        self, test_cases: List[Dict], verbose: bool = True
+        self,
+        test_cases: List[Dict],
+        verbose: bool = True,
+        judge: Optional[LLMAsJudge] = None,
     ) -> List[Dict]:
         """
         Evaluate end-to-end pipeline on test cases.
@@ -436,7 +439,7 @@ class RAGEvaluationRunner:
 
         for case in test_cases:
             test_id = case["id"]
-            query = case["query"]
+            query = case.get("query", case.get("question", ""))
             expected_keywords = case.get("expected_keywords", [])
 
             try:
@@ -462,6 +465,20 @@ class RAGEvaluationRunner:
                     "num_sources": len(response.sources),
                     "keyword_coverage": keyword_coverage,
                 }
+                if judge is not None:
+                    gm = judge.evaluate(
+                        question=query,
+                        answer=response.answer,
+                        reference_answer=case.get("expected_answer", case.get("answer", None)),
+                    )
+                    result["judge"] = {
+                        "accuracy": gm.accuracy_score,
+                        "relevance": gm.relevance_score,
+                        "completeness": gm.completeness_score,
+                        "safety": gm.safety_score,
+                        "overall": gm.overall_score,
+                        "explanation": gm.explanation,
+                    }
                 results.append(result)
 
                 if verbose:
@@ -523,6 +540,11 @@ def main():
         default=None,
         help="Override output JSON path (default: evaluation/results/evaluation_summary.json)",
     )
+    parser.add_argument(
+        "--enable-judge",
+        action="store_true",
+        help="Enable LLM-as-judge scoring in pipeline mode",
+    )
 
     args = parser.parse_args()
 
@@ -555,6 +577,7 @@ def main():
     # 2. Initialize LLM + Pipeline only when needed (saves RAM for retrieval-only eval)
     llm = None
     pipeline = None
+    judge = None
     if args.mode in ["pipeline", "both"]:
         from src.generation.llm_wrapper import MedicalLLM
         from src.pipeline.qa_pipeline import HealthcareQAPipeline
@@ -567,6 +590,8 @@ def main():
         pipeline = HealthcareQAPipeline(
             retriever=retriever, llm=llm, prompt_manager=prompt_manager
         )
+        if args.enable_judge:
+            judge = LLMAsJudge(llm)
 
     # 5. Run Evaluation
     runner = RAGEvaluationRunner(retriever=retriever, pipeline=pipeline, k=args.k)
@@ -577,7 +602,9 @@ def main():
 
     if args.mode in ["pipeline", "both"]:
         print("\n🚀 Running Pipeline Evaluation...")
-        results = runner.evaluate_pipeline(test_cases, verbose=not args.quiet)
+        results = runner.evaluate_pipeline(
+            test_cases, verbose=not args.quiet, judge=judge
+        )
 
     if args.mode in ["retrieval", "both"]:
         print("\n🔎 Running Retrieval Evaluation...")
@@ -598,7 +625,7 @@ def main():
                 {
                     "question": tc.query
                     if hasattr(tc, "query")
-                    else tc.get("question", ""),
+                    else tc.get("query", tc.get("question", "")),
                     "answer": tc.expected_answer
                     if hasattr(tc, "expected_answer")
                     else tc.get("answer", ""),
