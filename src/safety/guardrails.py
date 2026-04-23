@@ -112,7 +112,7 @@ If you or someone else is experiencing a medical emergency, please:
    - US: 911
    - UK: 999
    - EU: 112
-   
+
 2. **Do not wait** - get professional help now
 
 3. **Stay calm** and follow dispatcher instructions
