@@ -17,9 +17,7 @@ Fixes applied (v2):
 - clean_llm_response is called on every generated answer.
 """
 
-import sys
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from langchain_core.documents import Document

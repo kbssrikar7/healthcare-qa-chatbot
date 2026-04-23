@@ -25,8 +25,6 @@ Fixes applied (v2):
   floor the node returns the unanswerable response immediately
 """
 
-import sys
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from langchain_core.documents import Document

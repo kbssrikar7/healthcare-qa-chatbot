@@ -14,7 +14,8 @@ from loguru import logger
 try:
     from src.utils.log_redaction import maybe_redact
 except Exception:
-    maybe_redact = lambda x: x
+    def maybe_redact(x):
+        return x
 
 
 class TrajectoryLogger:

@@ -163,7 +163,7 @@ class CorrectiveRAG:
         # Strategy 2: LLM-based reformulation
         if self.llm:
             prompt = f"""The search query "{original_query}" returned documents that weren't relevant enough.
-            
+
 Suggest a more specific query that might find better results.
 Return only the refined query, nothing else."""
 

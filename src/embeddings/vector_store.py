@@ -172,7 +172,8 @@ class VectorStore:
         for r in res:
             payload = r.payload or {}
             docs.append(payload.get("page_content", ""))
-            m = payload.copy(); m.pop("page_content", None)
+            m = payload.copy()
+            m.pop("page_content", None)
             metas.append(m)
             dists.append(1.0 - max(0.0, getattr(r, "score", 0.0)))
             ids.append(payload.get("chroma_id", str(r.id)))
@@ -254,7 +255,8 @@ class VectorStore:
         for r in res:
             payload = r.payload or {}
             e_docs.append(payload.get("page_content", ""))
-            m = payload.copy(); m.pop("page_content", None)
+            m = payload.copy()
+            m.pop("page_content", None)
             e_metas.append(m)
             e_dists.append(1.0 - max(0.0, r.score))
             e_embs.append(r.vector)

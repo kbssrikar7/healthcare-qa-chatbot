@@ -5,8 +5,6 @@ Wraps the existing HybridRetriever to work with LangChain's LCEL pipelines.
 """
 
 # Import the existing retriever
-import sys
-from pathlib import Path
 from typing import Any, List, Optional
 
 from langchain_core.callbacks.manager import CallbackManagerForRetrieverRun

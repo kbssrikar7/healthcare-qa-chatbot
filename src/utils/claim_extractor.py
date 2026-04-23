@@ -13,7 +13,7 @@ best features of all three.
 """
 
 import re
-from typing import List, Optional
+from typing import List
 
 # ---------------------------------------------------------------------------
 # Shared skip patterns (union of FactualConsistencyChecker + LangGraph nodes)

@@ -330,8 +330,25 @@ class MultiSignalConfidenceScorer:
         for doc in documents:
             source_ent.update(_extract(getattr(doc, "content", "")))
 
-        if not query_ent:
-            return 0.5  # neutral when no entities found
+        # Use only medical-specific patterns (dosage + conditions) to decide
+        # whether the query actually contains medical entities. The generic
+        # multi-word regex also matches common phrases like "tell me about it",
+        # so it must not drive the neutral-score early return.
+        _medical_pattern = (
+            r"\b\d+\s*(?:mg|ml|mcg|units|mmol|g)\b|"
+            r"\b(?:type\s*[12]\s*diabetes|diabetes\s*(?:mellitus|insipidus)?|"
+            r"hypertension|hypotension|cancer|infection|asthma|arthritis|"
+            r"anemia|depression|anxiety|pneumonia|bronchitis|hepatitis|"
+            r"cirrhosis|epilepsy|migraine|obesity|osteoporosis|copd|"
+            r"stroke|dementia|alzheimer|parkinson|thyroid|"
+            r"nausea|vomiting|fatigue|fever|diarrhea|constipation|"
+            r"urination|thirst|hunger|ketosis|ketones|blurred\s+vision|"
+            r"weight\s+loss|weight\s+gain|headache|dizziness|"
+            r"paracetamol|acetaminophen|ibuprofen|aspirin|metformin|"
+            r"chronic\s+\w+|acute\s+\w+)\b"
+        )
+        if not re.search(_medical_pattern, query, re.IGNORECASE):
+            return 0.5  # neutral when query has no recognised medical entities
 
         coverage = len(query_ent & answer_ent) / len(query_ent)
         grounding = len(answer_ent & source_ent) / len(answer_ent) if answer_ent else 0.5

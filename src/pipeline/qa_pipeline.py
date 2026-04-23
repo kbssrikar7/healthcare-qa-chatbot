@@ -12,7 +12,6 @@ Enhanced with:
 
 from loguru import logger
 
-import asyncio
 import time
 from dataclasses import dataclass
 from pathlib import Path

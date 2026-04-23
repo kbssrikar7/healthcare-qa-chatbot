@@ -14,7 +14,6 @@ This server exists ONLY for quick LLM-only smoke tests.
 For the full pipeline, use: python api/main.py
 """
 
-import sys
 from pathlib import Path
 
 from typing import Dict, List, Optional

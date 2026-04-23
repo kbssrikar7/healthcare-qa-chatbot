@@ -96,7 +96,7 @@ class MedicalGuardrails:
     DISCLAIMER = """
 ⚠️ **IMPORTANT MEDICAL DISCLAIMER**
 
-This information is for educational purposes only and is NOT a substitute for professional medical advice, diagnosis, or treatment. 
+This information is for educational purposes only and is NOT a substitute for professional medical advice, diagnosis, or treatment.
 
 - Always consult a qualified healthcare provider for medical concerns
 - Do not delay seeking medical care based on information provided here
@@ -108,7 +108,7 @@ This information is for educational purposes only and is NOT a substitute for pr
 
 If you or someone else is experiencing a medical emergency, please:
 
-1. **Call Emergency Services Immediately**: 
+1. **Call Emergency Services Immediately**:
    - US: 911
    - UK: 999
    - EU: 112

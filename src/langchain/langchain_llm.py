@@ -5,8 +5,6 @@ Wraps the existing MedicalLLM to work with LangChain's LCEL pipelines.
 """
 
 # Import the existing MedicalLLM
-import sys
-from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional
 
 from langchain_core.callbacks.manager import CallbackManagerForLLMRun

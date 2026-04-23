@@ -2,7 +2,6 @@
 QLoRA fine-tuning for medical QA models.
 """
 
-import sys
 from pathlib import Path
 
 
