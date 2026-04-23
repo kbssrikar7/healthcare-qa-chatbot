@@ -44,6 +44,7 @@ class VectorStore:
         self.collection_name = collection_name
         self.embedding_function = embedding_function
         self._meta_path = self.persist_directory / "embedding_metadata.json"
+        self._meta_cache: Optional[Dict[str, Any]] = None
         self.collection = self  # ChromaDB-style interface alias
 
         qdrant_url = os.getenv("QDRANT_URL")
@@ -318,12 +319,20 @@ class VectorStore:
 
     def verify_embedding_compatibility(self, model_name: str, dimension: int) -> bool:
         try:
+            meta = None
             if self._meta_path.exists():
                 with open(self._meta_path) as f:
                     meta = json.load(f)
-                stored = meta.get("embedding_model")
-                if stored and stored != model_name:
+            elif self._meta_cache is not None:
+                meta = self._meta_cache
+            if meta:
+                stored_model = meta.get("embedding_model")
+                stored_dim = meta.get("embedding_dimension")
+                if stored_model and stored_model != model_name:
                     logger.warning("Embedding model mismatch. Quality may drop.")
+                    return False
+                if stored_dim is not None and stored_dim != dimension:
+                    logger.warning("Embedding dimension mismatch. Quality may drop.")
                     return False
         except Exception:
             pass
@@ -337,6 +346,7 @@ class VectorStore:
                 "embedding_dimension": dimension,
                 "recorded_at": datetime.datetime.now(datetime.UTC).isoformat(),
             }
+            self._meta_cache = meta
             with open(self._meta_path, "w") as f:
                 json.dump(meta, f, indent=2)
         except Exception as e:

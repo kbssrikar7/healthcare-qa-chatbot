@@ -47,7 +47,7 @@ jobs:
         run: pip install ruff
 
       - name: Lint
-        run: ruff check src/ api/ --select E,W,F --ignore E501,W503
+        run: ruff check src/ api/ --select E,W,F --ignore E501
 
   # ── Backend tests ──────────────────────────────────────────────────────────
   test-backend:
