@@ -1,0 +1,87 @@
+---
+source_file: "/home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py"
+type: "code"
+community: "Community 5"
+location: "L21"
+tags:
+  - graphify/code
+  - graphify/INFERRED
+  - community/Community_5
+---
+
+# ConfidenceBreakdown
+
+## Connections
+- [[.compute_confidence()]] - `calls` [EXTRACTED]
+- [[.test_confidence_breakdown_default_values()]] - `calls` [INFERRED]
+- [[Ablation study support different weight profiles should produce         differe]] - `uses` [INFERRED]
+- [[All default weights must sum to exactly 1.0 after normalisation.]] - `uses` [INFERRED]
+- [[All numeric fields on the breakdown must be in 0, 1.]] - `uses` [INFERRED]
+- [[An explanation string must always be generated.]] - `uses` [INFERRED]
+- [[Answer closely matching document content should yield higher agreement.]] - `uses` [INFERRED]
+- [[Calibrated output must always stay within 0, 1.]] - `uses` [INFERRED]
+- [[Comprehensive tests for MultiSignalConfidenceScorer.      This is one of the nov]] - `uses` [INFERRED]
+- [[Confidence level and score appear in template rationale.]] - `uses` [INFERRED]
+- [[Confidence normalizes by max so absolute scale (cosine vs RRF) doesn't change ra]] - `uses` [INFERRED]
+- [[ConfidenceBreakdown should initialise all numerics to 0.0.]] - `uses` [INFERRED]
+- [[Custom weights provided at construction should be auto-normalised.]] - `uses` [INFERRED]
+- [[Default scorer with equal-ish weights.]] - `uses` [INFERRED]
+- [[Detailed breakdown of confidence signals for explainability.]] - `rationale_for` [EXTRACTED]
+- [[Documents with high scores should yield high retrieval confidence.]] - `uses` [INFERRED]
+- [[Empty document list should produce a low confidence score.]] - `uses` [INFERRED]
+- [[Empty document list should yield zero retrieval confidence.]] - `uses` [INFERRED]
+- [[Empty document list → retrieval confidence of 0.]] - `uses` [INFERRED]
+- [[Empty probability list should return 0.5 (neutral default).]] - `uses` [INFERRED]
+- [[Fewer than two alternatives → neutral score of 0.5.]] - `uses` [INFERRED]
+- [[Higher raw scores must produce higher (or equal) calibrated scores.]] - `uses` [INFERRED]
+- [[Identical alternatives should yield a consistency score of 1.0.]] - `uses` [INFERRED]
+- [[Lightweight mock documents with .content and .score attributes.]] - `uses` [INFERRED]
+- [[No documents should return 0.]] - `uses` [INFERRED]
+- [[None probabilities should return 0.5 (neutral default).]] - `uses` [INFERRED]
+- [[Omitting generation_probabilities should still produce a valid result.]] - `uses` [INFERRED]
+- [[Platt scaling parameters passed at init should be stored correctly.]] - `uses` [INFERRED]
+- [[Providing alternative_answers should influence consistency_score.]] - `uses` [INFERRED]
+- [[Query with recognised entities should produce a meaningful coverage score.]] - `uses` [INFERRED]
+- [[Score exactly at high threshold (0.75) should be 'high'.]] - `uses` [INFERRED]
+- [[Score exactly at medium threshold (0.45) should be 'medium'.]] - `uses` [INFERRED]
+- [[Template rationale works with just question and answer.]] - `uses` [INFERRED]
+- [[Test attribution coverage calculation.]] - `uses` [INFERRED]
+- [[Test claim extraction from text.]] - `uses` [INFERRED]
+- [[Test confidence color mapping.]] - `uses` [INFERRED]
+- [[Test confidence level determination.]] - `uses` [INFERRED]
+- [[Test finding evidence for a claim.]] - `uses` [INFERRED]
+- [[Test full answer attribution.]] - `uses` [INFERRED]
+- [[Test high confidence calculation.]] - `uses` [INFERRED]
+- [[Test low confidence calculation.]] - `uses` [INFERRED]
+- [[Test score calibration.]] - `uses` [INFERRED]
+- [[Test text overlap calculation.]] - `uses` [INFERRED]
+- [[Test that explanation is generated.]] - `uses` [INFERRED]
+- [[Test that short sentences are filtered.]] - `uses` [INFERRED]
+- [[Test with no probabilitiesscores.]] - `uses` [INFERRED]
+- [[TestConfidenceScorer]] - `uses` [INFERRED]
+- [[TestMultiSignalConfidenceScorer]] - `uses` [INFERRED]
+- [[TestRationaleGenerator]] - `uses` [INFERRED]
+- [[TestSourceAttributor]] - `uses` [INFERRED]
+- [[TestTokenImportance]] - `uses` [INFERRED]
+- [[Tests for ConfidenceScorer.]] - `uses` [INFERRED]
+- [[Tests for RationaleGenerator template and CoT paths.]] - `uses` [INFERRED]
+- [[Tests for SourceAttributor.]] - `uses` [INFERRED]
+- [[Tests for TokenImportance dataclass and attention visualizer fallback.]] - `uses` [INFERRED]
+- [[The breakdown should record the weights that were applied.]] - `uses` [INFERRED]
+- [[Unit tests for XAI components.]] - `uses` [INFERRED]
+- [[Updated params (a=14.44, b=-11.25) sigmoid(14.44x + -11.25).]] - `uses` [INFERRED]
+- [[Using only one non-zero signal should still produce a valid result.]] - `uses` [INFERRED]
+- [[Very different alternatives should yield a low consistency score.]] - `uses` [INFERRED]
+- [[Very high token probabilities should yield a confidence close to 1.]] - `uses` [INFERRED]
+- [[Very low token probabilities should yield low confidence.]] - `uses` [INFERRED]
+- [[When gradient computation fails, all tokens must have is_computed=False.]] - `uses` [INFERRED]
+- [[When the query contains no medical entities, score defaults to 0.5.]] - `uses` [INFERRED]
+- [[Zeroing retrieval weight should not crash and still produce valid output.]] - `uses` [INFERRED]
+- [[compute_confidence should return a ConfidenceBreakdown dataclass.]] - `uses` [INFERRED]
+- [[confidence_level must be one of the three valid strings.]] - `uses` [INFERRED]
+- [[generate_rationale uses template when llm=None.]] - `uses` [INFERRED]
+- [[is_computed can be set to False for placeholder scores.]] - `uses` [INFERRED]
+- [[is_computed defaults to True.]] - `uses` [INFERRED]
+- [[multi_signal_confidence.py]] - `contains` [EXTRACTED]
+
+#graphify/code #graphify/INFERRED #community/Community_5

@@ -1,0 +1,19 @@
+{
+  "hit@10": 0.8,
+  "mrr@10": 0.8,
+  "precision@10": 0.6599999999999999,
+  "recall@10": null,
+  "ndcg@10": 0.7865042183909647,
+  "n_queries": 5,
+  "n_queries_with_exact_recall_labels": 0,
+  "by_risk": {
+    "definition": 0.0,
+    "symptom": 1.0,
+    "causation": 1.0,
+    "factual": 1.0
+  },
+  "hit@10_ci95": [
+    0.4,
+    1.0
+  ]
+}

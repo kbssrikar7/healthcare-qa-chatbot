@@ -1,0 +1,211 @@
+{
+  "summary": {
+    "ragas_version": "0.4.3",
+    "test_set": "evaluation/test_set_v2.json",
+    "variant": "standard",
+    "model": "tinyllama",
+    "n": 8,
+    "num_sources": 5,
+    "metrics": {
+      "non_llm_context_precision_with_reference": {
+        "mean": 0.125,
+        "min": 0.0,
+        "max": 1.0
+      },
+      "non_llm_context_recall": {
+        "mean": 0.1429,
+        "min": 0.0,
+        "max": 1.0
+      },
+      "rouge_score(mode=fmeasure)": {
+        "mean": 0.063,
+        "min": 0.0,
+        "max": 0.1714
+      },
+      "exact_match": {
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      }
+    },
+    "notes": [
+      "reference_contexts are approximated from reference_answer because the test set lacks gold supporting passages",
+      "this runner uses non-LLM metrics only, so it does not require evaluator API keys"
+    ]
+  },
+  "rows": [
+    {
+      "id": "chatdoc_014",
+      "user_input": "So I playing a game at my church last weekend and the game involved running and I ended up tripping and falling down on my right knee and it hurt really bad and the next day my knee was swollen and bruised and it hurts to kneel on or when I put pressure on it and it has been like this for about a we",
+      "response": "I don't have enough information in my knowledge base to answer this question accurately. Please consult a healthcare professional for specific medical advice.",
+      "reference": "Welcome to Chat Doctor . I have gone through your query and can understand your concern. As per your complaint it seems that due to traumatic injury there has been inflammation of the soft tissues and there is accumulation of inflammatory exudate and cells in the area leading to swelling. The bruising is due to ruptured blood vessels leading to Hematoma formation. I would suggest you to do alternate warm and cool compresses over the swelling. Take anti-inflammatory painkiller like Ibuprofen. App",
+      "retrieved_contexts": [],
+      "reference_contexts": [
+        "Welcome to Chat Doctor . I have gone through your query and can understand your concern. As per your complaint it seems that due to traumatic injury there has been inflammation of the soft tissues and there is accumulation of inflammatory exudate and cells in the area leading to swelling. The bruising is due to ruptured blood vessels leading to Hematoma formation. I would suggest you to do alternate warm and cool compresses over the swelling. Take anti-inflammatory painkiller like Ibuprofen. App"
+      ],
+      "category": "clinical",
+      "source_dataset": "ChatDoctor-HealthCareMagic",
+      "num_retrieved_contexts": 0,
+      "non_llm_context_precision_with_reference": 0.0,
+      "non_llm_context_recall": NaN,
+      "rouge_score(mode=fmeasure)": 0.07547169811320753,
+      "exact_match": 0.0
+    },
+    {
+      "id": "pubmed_028",
+      "user_input": "Do supervised colorectal trainees differ from consultants in terms of quality of TME surgery?",
+      "response": "I don't have enough information in my knowledge base to answer this question accurately. Please consult a healthcare professional for specific medical advice.",
+      "reference": "No. We conclude that the quality of rectal cancer excision, as defined by mesorectal grades, achieved by supervised colorectal trainees is comparable with that achieved by consultants.",
+      "retrieved_contexts": [
+        "was compared with that of trainees. Statistical significance was tested using Pearson chi test. Eighty-nine operations were performed by consultants and 41 by senior colorectal trainees with consultant supervision. Forty-four patients (49%) had good mesorectum when operated by consultants in comparison with 17 (41.5%) by the trainees. There was no statistically significant difference (P = 0.717) between the two groups in terms of quality of mesorectum excised after potentially curative resection. Furthermore, there were seven local recurrences in patients operated by consultants (7.8%) when compared with four in the trainee group (9.5%) and once again there was no statistical significance between the two groups (P = 0.719). Question: Do supervised colorectal trainees differ from consultants in terms of quality of TME surgery? Answer: We conclude that the quality of rectal cancer excision, as defined by mesorectal grades, achieved by supervised colorectal trainees is comparable with that achieved by consultants.",
+        "Context: The quality of surgical excision is held to be a major determinant of outcome following surgery for rectal cancer. Macroscopic examination of the excised mesorectum allows for reproducible assessment of the quality of surgery. We aimed to determine whether quality of excision undertaken by colorectal trainees under supervision was comparable with that performed by consultants, as measured using mesorectal grades. A total of 130 consecutive patients undergoing potentially curative resection for primary adenocarcinoma of the rectum in our centre from 2001 to 2003 were included in the study. The pathologists graded the excised mesorectum according to staged classification proposed by Quirke. The outcome (quality of mesorectal excision and secondary outcomes including local recurrence and overall recurrence) of operations performed by consultants was compared with that of trainees. Statistical significance was tested using Pearson chi test.",
+        "were defined as any dialog by the participant who guided the assistant to perform an action. Thirty-six residents (58.3% female) participated in the study. Participants who rated lower levels of decay in their intraoperative decision-making and small bowel repair skills were noted to use their assistant more by giving more instructions. Similarly, a higher number of instructions correlated with lower perceived difficulty in selecting the correct suture, suture pattern, and completing the entire surgical task. Question: Do resident's leadership skills relate to ratings of technical skill? Answer: General surgery research residents' intraoperative leadership skills showed significant correlations to their perceptions of skill decay and task difficulty during a bowel repair. Evaluating resident's directional instructions may provide an additional individualized intraoperative assessment metric. Further evaluation relating to operative performance outcomes is warranted.",
+        "and improved links with local medical officers. They also developed new guidelines and protocols. Question: Can medical students contribute to quality assurance programmes in day surgery? Answer: Our study confirms that students are able to identify QA issues and propose solutions. We recommend that students have a formally recognized place in day surgery QA programmes, to close the QA loop and to adequately prepare them for medical practice in the 21st century."
+      ],
+      "reference_contexts": [
+        "No. We conclude that the quality of rectal cancer excision, as defined by mesorectal grades, achieved by supervised colorectal trainees is comparable with that achieved by consultants."
+      ],
+      "category": "research",
+      "source_dataset": "PubMedQA",
+      "num_retrieved_contexts": 4,
+      "non_llm_context_precision_with_reference": 0.0,
+      "non_llm_context_recall": 0.0,
+      "rouge_score(mode=fmeasure)": 0.03921568627450981,
+      "exact_match": 0.0
+    },
+    {
+      "id": "pubmed_031",
+      "user_input": "Characterization of the gender dimorphism after injury and hemorrhagic shock: are hormonal differences responsible?",
+      "response": "I don't have enough information in my knowledge base to answer this question accurately. Please consult a healthcare professional for specific medical advice.",
+      "reference": "No. The independent protective effect of female gender on multiple organ failure and nosocomial infection rates remains significant in both premenopausal and postmenopausal women when compared with similarly aged men. This is contrary to previous experimental studies and the known physiologic sex hormone changes that occur after menopause in women. These results suggest that factors other than sex hormones may be responsible for gender-based differences after injury.",
+      "retrieved_contexts": [
+        "were 20%, 40%, and 45%, respectively. Mean Injury Severity Score was 32 +/- 14 (mean +/- SD). Men (n = 680) and women (n = 356) were clinically similar except that men required higher crystalloid volumes, more often had a history of alcoholism and liver disease, and had greater ventilatory and intensive care unit requirements. Female gender was independently associated with a 43% and 23% lower risk of multiple organ failure and nosocomial infection, respectively. Gender remained an independent risk factor in young and old subgroup analysis, with the protection afforded by female gender remaining unchanged. Question: Characterization of the gender dimorphism after injury and hemorrhagic shock: are hormonal differences responsible? Answer: The independent protective effect of female gender on multiple organ failure and nosocomial infection rates remains significant in both premenopausal and postmenopausal women when compared with similarly aged men. This is contrary to previous experimental studies and the known physiologic sex hormone changes that occur after menopause in women.",
+        "Context: To characterize the gender dimorphism after injury with specific reference to the reproductive age of the women (young, 52 yrs of age) in a cohort of severely injured trauma patients for which significant variation in postinjury care is minimized. Secondary data analysis of an ongoing prospective multicenter cohort study. Academic, level I trauma and intensive care unit centers. Blunt-injured adults with hemorrhagic shock. None. Separate Cox proportional hazard regression models were formulated based on all patients to evaluate the effects of gender on mortality, multiple organ failure, and nosocomial infection, after controlling for all important confounders. These models were then used to characterize the effect of gender in young and old age groups. Overall mortality, multiple organ failure, and nosocomial infection rates for the entire cohort (n = 1,036) were 20%, 40%, and 45%, respectively. Mean Injury Severity Score was 32 +/- 14 (mean +/- SD).",
+        "studies and the known physiologic sex hormone changes that occur after menopause in women. These results suggest that factors other than sex hormones may be responsible for gender-based differences after injury.",
+        "hemorrhage, functional independence (modified Rankin Scale score, 0-2), and mortality at 3 months. Among 25 777 (57.2%) men and 19 302 (42.8%) women, we found no difference in the rate of symptomatic intracerebral hemorrhage (P=0.13), a significantly higher likelihood of functional independence at 3 months in men (P<0.0001) and a higher mortality in women when compared with men (P<0.00001). After adjustment for confounding variables, we did not observe any difference between sexes in functional outcome (odds ratio, 1.03; 95% confidence interval, 0.97-1.09; P=0.39), whereas male sex was related to a higher risk of mortality (odds ratio, 1.19; 95% confidence interval, 1.10-1.29; P=0.00003) and symptomatic intracerebral hemorrhage (odds ratio, 1.25, 95% confidence interval, 1.04-1.51; P=0.02)."
+      ],
+      "reference_contexts": [
+        "No. The independent protective effect of female gender on multiple organ failure and nosocomial infection rates remains significant in both premenopausal and postmenopausal women when compared with similarly aged men. This is contrary to previous experimental studies and the known physiologic sex hormone changes that occur after menopause in women. These results suggest that factors other than sex hormones may be responsible for gender-based differences after injury."
+      ],
+      "category": "research",
+      "source_dataset": "PubMedQA",
+      "num_retrieved_contexts": 4,
+      "non_llm_context_precision_with_reference": 0.0,
+      "non_llm_context_recall": 0.0,
+      "rouge_score(mode=fmeasure)": 0.06521739130434782,
+      "exact_match": 0.0
+    },
+    {
+      "id": "medqa_010",
+      "user_input": "A 3rd year resident in good standing with his residency training program would like to work more hours outside his residency obligations to gain more experience and pay for his medical school loans. He currently works and trains 60 hours per week as a resident and has a 10-hour shift external to his residency program on Saturdays. He is free of any educational and work obligations on Sundays. Based on the most recent standards set by the Accreditation Council for Graduate Medical Education (ACGME), which of the following is the most accurate statement regarding this resident\u2019s moonlighting and patient safety?",
+      "response": "Based on retrieved evidence: Regarding this particular case,",
+      "reference": "He may work longer shifts",
+      "retrieved_contexts": [
+        "Context: To evaluate the effect of the 80-hour workweek restrictions on resident education within surgical programs in the New England area. Web-based survey. All Accreditation Council for Graduate Medical Education (ACGME) accredited surgical residency programs in New England (n = 20). Program directors/coordinators in each surgical residency program in New England. First, American Board of Surgery In-Training Examination (ABSITE) scores and the passing rate of the ABS certifying examination were recorded for the years 2001, 2002, 2005, and 2006. Second, the changes in the curriculum of surgical education were documented as perceived by program coordinators and directors. In all, 85% (17/20) of surgical programs in New England responded to the survey. The programs began to implement the 80-hour workweek from 2002 to 2004. An equal distribution of community (n = 8) and university programs (n = 9) was sampled.",
+        "clerkships, and AOA membership demonstrated the strongest correlations with resident performance. Our goal in analyzing these data was to provide residency programs at large a sense of which criteria may be \"high yield\" in ranking applicants by analyzing data from within our own pool of residents. Similar studies across a broader scope of programs are warranted to confirm applicability of our findings. The continually emerging complexities of the field of orthopaedic surgery lend increasing importance to future work on the appropriate selection and training of orthopaedic residents.",
+        "Question: Following the death of an 18-year-old woman, the task force determines a fatal drug interaction as the cause. The medical error is attributed to the fatigue of the treating resident. The report includes information regarding the resident\u2019s work hours: The resident received the patient at the 27th hour of his continuous duty. Over the preceding month, he had been on duty a maximum of 76 hours per week and had provided continuity of care to patients up to a maximum of 30 hours on the same shift. He had only had 1 day per week free from patient care and educational obligations, and he had rested a minimum of 12 hours between duty periods. Regarding this particular case, which of the following is in violation of the most recent standards set by the Accreditation Council for Graduate Medical Education (ACGME)? Answer: The duty hour during which this resident received the patient",
+        "Question: Please answer with one of the option in the bracket Q:Following the death of an 18-year-old woman, the task force determines a fatal drug interaction as the cause. The medical error is attributed to the fatigue of the treating resident. The report includes information regarding the resident\u2019s work hours: The resident received the patient at the 27th hour of his continuous duty. Over the preceding month, he had been on duty a maximum of 76 hours per week and had provided continuity of care to patients up to a maximum of 30 hours on the same shift. He had only had 1 day per week free from patient care and educational obligations, and he had rested a minimum of 12 hours between duty periods. Regarding this particular case, which of the following is in violation of the most recent standards set by the Accreditation Council for Graduate Medical Education (ACGME)?? {'A': 'The duty hour during which this resident received the patient', 'B': 'The maximum number of hours per week this resident was on duty', 'C': 'The minimum rest hours this resident had between duty periods', 'D': 'The number of days per week this resident was free from patient care and educational obligations', 'E': 'The maximum number of hours allowed for continued patient care'}, Answer: A: The duty hour during which this resident received the patient",
+        "was worse. Overall, 44% of respondents believed that there was no difference in surgical education. Question: Has the 80-hour workweek improved surgical resident education in New England? Answer: Despite the positive effects the 80-hour workweek has had on resident quality of life and patient care, it does not seem that either significant improvements or detrimental effects have occurred on surgical education within residency programs in New England."
+      ],
+      "reference_contexts": [
+        "He may work longer shifts"
+      ],
+      "category": "clinical",
+      "source_dataset": "MedQA-USMLE-step2&3",
+      "num_retrieved_contexts": 5,
+      "non_llm_context_precision_with_reference": 0.0,
+      "non_llm_context_recall": 0.0,
+      "rouge_score(mode=fmeasure)": 0.0,
+      "exact_match": 0.0
+    },
+    {
+      "id": "pubmed_002",
+      "user_input": "Is horizontal semicircular canal ocular reflex influenced by otolith organs input?",
+      "response": "I don't have enough information in my knowledge base to answer this question accurately. Please consult a healthcare professional for specific medical advice.",
+      "reference": "Yes. Otolith organs input influences the axis of horizontal semicircular canal ocular reflex; therefore, the plane of compensatory eye movements induced by the horizontal canal stimulation is not always parallel to the canal.",
+      "retrieved_contexts": [
+        "of the eyeball rotation was affected by the shift of the direction of gravity exerted on the head. Question: Is horizontal semicircular canal ocular reflex influenced by otolith organs input? Answer: Otolith organs input influences the axis of horizontal semicircular canal ocular reflex; therefore, the plane of compensatory eye movements induced by the horizontal canal stimulation is not always parallel to the canal.",
+        "Context: To clarify whether horizontal canal ocular reflex is influenced by otolith organs input. The subjects were seven healthy humans. The right ear was stimulated using ice-water. Each subject was kept in a left-ear-down position for 20 s and then repositioned to a prone position, a right-ear-down position and a supine position with 20 s intervals. Nystagmus was analysed using three-dimensional video-oculography. Eye movements in the supine position and the prone position were not in a symmetric fashion. Nystagmus in the left-ear-down position and the right-ear-down position were not symmetric either. These phenomena indicate that the axis of the eyeball rotation was affected by the shift of the direction of gravity exerted on the head.",
+        "Both eyes will turn toward the contralateral ear, with horizontal nystagmus to the ipsilateral ear. If the water is cold, relative to body temperature (30degC or below), the endolymph falls within the semicircular canal, decreasing the rate of vestibular afferent firing. The eyes then turn toward the ipsilateral ear, with horizontal nystagmus (quick horizontal eye movements) to the contralateral ear. Absent reactive eye movement suggests vestibular weakness of the horizontal semicircular canal of the side being stimulated.",
+        "Question: Answer this question truthfully Can you explain what a semicircular canal is? Answer: The semicircular canals are three half-circular, interconnected tubes located inside each ear that are the equivalent of three gyroscopes located in three orthogonal planes. The vertical canals are positioned at an angle of about 100 degrees relative to one another, while the horizontal canal makes an angle of about 95 degrees with the posterior canal and an angle of about 110 degrees with the anterior canal. Deviations up to 10-15 degrees between individuals are normal. Because the angles between the canals are not perpendicular, movements of the head stimulate horizontal and vertical canals simultaneously. The three canals are: Superior semicircular canal Posterior semicircular canal Horizontal semicircular canal Each canal is filled with a fluid called endolymph and contains a motion sensor with little hairs (cilia) whose ends are embedded in a gelatinous structure called the cupula. The Semicircular canals are a component of the Labyrinth."
+      ],
+      "reference_contexts": [
+        "Yes. Otolith organs input influences the axis of horizontal semicircular canal ocular reflex; therefore, the plane of compensatory eye movements induced by the horizontal canal stimulation is not always parallel to the canal."
+      ],
+      "category": "research",
+      "source_dataset": "PubMedQA",
+      "num_retrieved_contexts": 4,
+      "non_llm_context_precision_with_reference": 0.9999999999,
+      "non_llm_context_recall": 1.0,
+      "rouge_score(mode=fmeasure)": 0.03508771929824561,
+      "exact_match": 0.0
+    },
+    {
+      "id": "medqa_027",
+      "user_input": "A researcher wants to perform an experiment to detect HIF-1a in RCC under normoxic conditions with blotting techniques. Which of the following statements are most likely to be true regarding her experiment?",
+      "response": "Based on retrieved evidence: During the experiment, a labeled oligonucleotide probe is used to identify the presence of a known transcription factor.",
+      "reference": "A Western blot will show increased HIF-1\u03b1 compared to a normoxic control.",
+      "retrieved_contexts": [
+        "Question: Please answer with one of the option in the bracket Q:An investigator is studying the effects of zinc deprivation on cancer cell proliferation. It is hypothesized that because zinc is known to be a component of transcription factor motifs, zinc deprivation will result in slower tumor growth. To test this hypothesis, tumor cells are cultured on media containing low and high concentrations of zinc. During the experiment, a labeled oligonucleotide probe is used to identify the presence of a known transcription factor. The investigator most likely used which of the following laboratory techniques?? {'A': 'Western blot', 'B': 'Northern blot', 'C': 'PCR', 'D': 'ELISA', 'E': 'Southwestern blot'}, Answer: E: Southwestern blot",
+        "(IFE) or Western blot analysis as a diagnostic tool for the presence of CSF or perilymph. This test is helpful in the differential diagnosis for CSF otorrhoea or CSF rhinorrhoea. The beta-2 transferrin band has not been detected in multiple fluids including serum, ear fluid, nasal secretions, saliva, tears or endolymph, indicating the specificity of the slower beta-2 transferrin isoform for CSF.",
+        "DNA fragments and in the diagnosis of cancers and inherited blood disorders (hemoglobulinopathies). The DNA fragments are analyzed for changes in the order of antibodies (immunoglobulins) or cell receptor genes, movement of chromosomes, increases in potentially cancer-causing genes (oncogenes), and changes (point mutations) in these genes. Nohern blot test is an immunologic technique for the detection of specific messenger RNAs using complementary DNA. (Called also Nohern transfer) Western blotting is a more specific test as it allows one to visualize antibodies directed against each viral protein.",
+        "Question: An investigator is studying the effects of zinc deprivation on cancer cell proliferation. It is hypothesized that because zinc is known to be a component of transcription factor motifs, zinc deprivation will result in slower tumor growth. To test this hypothesis, tumor cells are cultured on media containing low and high concentrations of zinc. During the experiment, a labeled oligonucleotide probe is used to identify the presence of a known transcription factor. The investigator most likely used which of the following laboratory techniques? Answer: Southwestern blot",
+        "Question: ELISA test when compraed to western blot technique is - Answer: Correct answer: Less sensitive, more specific Explanation: ELISA IS more specific and sensitivity than sothern blot REF:ANANTHANARAYANAN TEXT BOOK OF MICROBIOLOGY 9EDITION PGNO.579"
+      ],
+      "reference_contexts": [
+        "A Western blot will show increased HIF-1\u03b1 compared to a normoxic control."
+      ],
+      "category": "diagnosis",
+      "source_dataset": "MedQA-USMLE-step1",
+      "num_retrieved_contexts": 5,
+      "non_llm_context_precision_with_reference": 0.0,
+      "non_llm_context_recall": 0.0,
+      "rouge_score(mode=fmeasure)": 0.1714285714285714,
+      "exact_match": 0.0
+    },
+    {
+      "id": "medqa_002",
+      "user_input": "He has a bronze discoloration to his skin, but he denies being outside in the sun or any history of laying in tanning beds. What is the next best step in the management of this patient?",
+      "response": "Based on retrieved evidence: On examination, there is a 5 cm (1.9 in) patch of hypopigmented skin in the center of his back with a fine-scale overlying it. As he goes out and got exposure to sun or there is hummed then , he got resh skin and feel too much of eaching from inside of the skin .",
+      "reference": "Start him on both hydrocortisone and fludrocortisone therapy",
+      "retrieved_contexts": [
+        "Question: A 19-year-old man and recent immigrant from Brazil present to the clinic. He has no known past medical, past surgical, or family history. The patient admits to having several regular sexual partners. Today, he complains of a skin rash on his back. He is unclear when it started but became aware when one of his partners pointed it out. A review of systems is otherwise negative. Physical examination reveals numerous hypopigmented skin lesions over his upper back. When questioned, he states that they do not get darker after spending time in the sun. On examination, there is a 5 cm (1.9 in) patch of hypopigmented skin in the center of his back with a fine-scale overlying it. What is the most likely diagnosis? Answer: Tinea versicolor",
+        "Question: Please answer with one of the option in the bracket Q:A 19-year-old man and recent immigrant from Brazil present to the clinic. He has no known past medical, past surgical, or family history. The patient admits to having several regular sexual partners. Today, he complains of a skin rash on his back. He is unclear when it started but became aware when one of his partners pointed it out. A review of systems is otherwise negative. Physical examination reveals numerous hypopigmented skin lesions over his upper back. When questioned, he states that they do not get darker after spending time in the sun. On examination, there is a 5 cm (1.9 in) patch of hypopigmented skin in the center of his back with a fine-scale overlying it. What is the most likely diagnosis?? {'A': 'Tinea versicolor', 'B': 'Mycosis fungoides', 'C': 'Pityriasis rosea', 'D': 'Vitiligo', 'E': 'Secondary syphilis'}, Answer: A: Tinea versicolor",
+        "Question: Hi my father is 78 years old . As he goes out and got exposure to sun or there is hummed then , he got resh skin and feel too much of eaching from inside of the skin . He is on homeopatChatDoctoredicine and also applying coconut oil. He got some relife but as he is not getting any significant relife. He as also taken levocitrazen Tab . Pl advise what should he do Thanks in advance. Sanjeeva Gupta Answer: Hi, It seems that probably your father is having photosensitive dermatitis. Consult the dermatologist for the perfect diagnosis and proper treatment. Tell him to avoid sun exposure. Tell him to cover the body while going under the sun. Apply sunscreen lotion on exposed parts to protect the skin. Continue Levocetirizine if itching is there. Tab. HY Chat Doctor. Apply mild steroid cream on affected areas. Hope I have answered your query. Let me know if I can assist you further.",
+        "Question: Please answer with one of the option in the bracket Q:A 48-year-old man presents to his primary care physician with a 6-month history of increasing joint pain and stiffness. He says that the pain is primarily located in his knees and occurs in sharp bursts that are accompanied by redness and warmth. His past medical history is significant for diabetes though he is not currently taking any medications. He also suffers from occasional diarrhea with fatty stools. Physical exam reveals mild swelling and redness in his knees bilaterally. Furthermore, he is found to be very tan despite the fact that he says he stays out of the sun. He notes that he has always been significantly more tan than anyone else in his family. This patient is most likely predisposed to which of the following diseases?? {'A': 'Basal cell carcinoma', 'B': 'Hepatocellular carcinoma', 'C': 'Osteosarcoma', 'D': 'Pancreatic adenocarcinoma', 'E': 'Squamous cell skin carcinoma'}, Answer: B: Hepatocellular carcinoma"
+      ],
+      "reference_contexts": [
+        "Start him on both hydrocortisone and fludrocortisone therapy"
+      ],
+      "category": "treatment",
+      "source_dataset": "MedQA-USMLE-step2&3",
+      "num_retrieved_contexts": 4,
+      "non_llm_context_precision_with_reference": 0.0,
+      "non_llm_context_recall": 0.0,
+      "rouge_score(mode=fmeasure)": 0.05970149253731343,
+      "exact_match": 0.0
+    },
+    {
+      "id": "pubmed_037",
+      "user_input": "Did the call for boycott by the Catholic bishops affect the polio vaccination coverage in Kenya in 2015?",
+      "response": "I don't have enough information in my knowledge base to answer this question accurately. Please consult a healthcare professional for specific medical advice.",
+      "reference": "No. The call for boycott did not affect the campaign significantly. However, if the call for boycott is repeated in future it could have some significant negative implication to polio eradication. It is therefore important to ensure that any vaccine safety issues are addressed accordingly.",
+      "retrieved_contexts": [
+        "that belonged to Catholic Church was 31% compared to 7% of the children who were missed. Reasons for missed vaccination included house not being visited (44%), children not being at home at time of visit (38%), refusal by parents (12%), children being as leep (1%), and various other reasons (5%). Compared to the November 2014 campaign, the proportion of children who were not vaccinated due to parent's refusal significantly increased from 6% to 12% in August 2015. Question: Did the call for boycott by the Catholic bishops affect the polio vaccination coverage in Kenya in 2015? Answer: The call for boycott did not affect the campaign significantly. However, if the call for boycott is repeated in future it could have some significant negative implication to polio eradication. It is therefore important to ensure that any vaccine safety issues are addressed accordingly.",
+        "Context: Polio eradication is now feasible after removal of Nigeria from the list of endemic countries and global reduction of cases of wild polio virus in 2015 by more than 80%. However, all countries must remain focused to achieve eradication. In August 2015, the Catholic bishops in Kenya called for boycott of a polio vaccination campaign citing safety concerns with the polio vaccine. We conducted a survey to establish if the coverage was affected by the boycott. A cross sectional survey was conducted in all the 32 counties that participated in the campaign. A total of 90,157 children and 37,732 parents/guardians were sampled to determine the vaccination coverage and reasons for missed vaccination. The national vaccination coverage was 93% compared to 94% in the November 2014 campaign. The proportion of parents/guardians that belonged to Catholic Church was 31% compared to 7% of the children who were missed.",
+        "tuberculosis, measles and hepatitis B. o The goal is to vaccinate all under-fives by the year 2020. Under the programme, four special vaccination compaigns will be conducted between January and June 2015. Intensive planning and monitoring experience of pulse polio immunization programme will be used o The drive will be through a \"catch-up\" campaign mode. o The mission will be technically supported by WHO, UNICEF, Rotary International and other donor partners.",
+        "person transmission of the virus by vaccination is the critical step in global polio eradication. The injected Salk vaccine confers IgG-mediated immunity in the bloodstream, which prevents polio infection from progressing to viremia and protects the motor neurons, thus eliminating the risk of bulbar polio and post-polio syndrome."
+      ],
+      "reference_contexts": [
+        "No. The call for boycott did not affect the campaign significantly. However, if the call for boycott is repeated in future it could have some significant negative implication to polio eradication. It is therefore important to ensure that any vaccine safety issues are addressed accordingly."
+      ],
+      "category": "research",
+      "source_dataset": "PubMedQA",
+      "num_retrieved_contexts": 4,
+      "non_llm_context_precision_with_reference": 0.0,
+      "non_llm_context_recall": 0.0,
+      "rouge_score(mode=fmeasure)": 0.05797101449275363,
+      "exact_match": 0.0
+    }
+  ]
+}

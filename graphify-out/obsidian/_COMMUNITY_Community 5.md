@@ -1,0 +1,275 @@
+---
+type: community
+cohesion: 0.03
+members: 235
+---
+
+# Community 5
+
+**Cohesion:** 0.03 - loosely connected
+**Members:** 235 nodes
+
+## Members
+- [[.__init__()_45]] - code - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[.__init__()_46]] - code - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[.__init__()_44]] - code - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[.__init__()_40]] - code - /home/kbs/Documents/final_project/src/xai/confidence_scorer.py
+- [[.__init__()_43]] - code - /home/kbs/Documents/final_project/src/xai/rationale_generator.py
+- [[.__init__()_39]] - code - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[.__init__()_7]] - code - /home/kbs/Documents/final_project/tests/test_extractive_answer.py
+- [[._build_explanation()]] - code - /home/kbs/Documents/final_project/src/xai/confidence_scorer.py
+- [[._confidence_level()]] - code - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[._entity_coverage_score()]] - code - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[._extract_claims_nlp()]] - code - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[._extract_claims_regex()]] - code - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[._generation_confidence()]] - code - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[._get_confidence_level()]] - code - /home/kbs/Documents/final_project/src/xai/confidence_scorer.py
+- [[._is_factual_claim()]] - code - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[._platt_calibrate()]] - code - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[._retrieval_confidence()]] - code - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[._self_consistency_score()]] - code - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[._source_agreement_score()]] - code - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[.calculate_attribution_coverage()]] - code - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[.calculate_confidence()_1]] - code - /home/kbs/Documents/final_project/src/xai/confidence_scorer.py
+- [[.compute_confidence()]] - code - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[.explain_why_not()]] - code - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[.extract_claims()]] - code - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[.generate_alternatives()]] - code - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[.generate_rationale()]] - code - /home/kbs/Documents/final_project/src/xai/rationale_generator.py
+- [[.generate_template_rationale()]] - code - /home/kbs/Documents/final_project/src/xai/rationale_generator.py
+- [[.get_confidence_color()]] - code - /home/kbs/Documents/final_project/src/xai/confidence_scorer.py
+- [[.test_ablation_single_signal_only()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_ablation_weights_affect_score()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_ablation_zero_retrieval_weight()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_attribution_coverage()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_calibration()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_compute_confidence_empty_documents()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_compute_confidence_explanation_non_empty()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_compute_confidence_level_valid()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_compute_confidence_no_probabilities()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_compute_confidence_returns_breakdown()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_compute_confidence_scores_in_unit_interval()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_compute_confidence_signal_weights_recorded()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_compute_confidence_with_alternative_answers()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_confidence_breakdown_default_values()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_confidence_colors()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_confidence_level_boundary_high()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_confidence_level_boundary_medium()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_confidence_level_high()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_confidence_level_low()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_confidence_level_medium()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_confidence_levels()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_custom_calibration_params_stored()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_custom_weights_are_normalised()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_default_values()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_entity_coverage_no_entities_in_query()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_entity_coverage_with_entities()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_explanation_generated()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_extract_claims()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_extract_claims_filters_short()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_fallback_scores_marked_not_computed()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_find_evidence()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_generate_rationale_falls_back_without_llm()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_generation_confidence_empty_list()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_generation_confidence_high_probs()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_generation_confidence_low_probs()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_generation_confidence_none()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_high_confidence()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_low_confidence()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_platt_calibrate_midpoint()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_platt_calibrate_monotonic()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_platt_calibrate_output_range()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_retrieval_confidence_empty()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_retrieval_confidence_high_scores()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_retrieval_confidence_no_docs()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_retrieval_confidence_score_agnostic()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_self_consistency_divergent_answers()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_self_consistency_identical_answers()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_self_consistency_no_alternatives()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_source_agreement_high_overlap()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_source_agreement_no_documents()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_template_rationale_no_extras()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_template_rationale_with_confidence()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_text_overlap_similarity()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_token_importance_defaults()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_token_importance_not_computed()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[A single source attribution.]] - rationale - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[Ablation study support different weight profiles should produce         differe]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Adaptive grounding gate doc is relevant if             score = max(absolute_sc]] - rationale - /home/kbs/Documents/final_project/src/pipeline/qa_pipeline.py
+- [[All default weights must sum to exactly 1.0 after normalisation.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[All numeric fields on the breakdown must be in 0, 1.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[An explanation string must always be generated.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Analyze token importance for model predictions.      Uses gradient-based salienc]] - rationale - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[Answer closely matching document content should yield higher agreement.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Apply Platt scaling for calibrated probabilities.]] - rationale - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[Ask a medical question.]] - rationale - /home/kbs/Documents/final_project/api/demo_server.py
+- [[Attention and Token Importance Visualization for Explainable AI.  Provides visua]] - rationale - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[AttentionExtractor]] - code - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[Attribute generated claims to source documents.]] - rationale - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[Attribution_1]] - code - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[Build a human-readable confidence explanation.]] - rationale - /home/kbs/Documents/final_project/src/xai/confidence_scorer.py
+- [[Build a rationale from confidence signals and sources without LLM inference.]] - rationale - /home/kbs/Documents/final_project/src/xai/rationale_generator.py
+- [[Calculate and calibrate confidence scores for generated answers.      All intern]] - rationale - /home/kbs/Documents/final_project/src/xai/confidence_scorer.py
+- [[Calculate overall confidence score.          Returns a ConfidenceResult whose nu]] - rationale - /home/kbs/Documents/final_project/src/xai/confidence_scorer.py
+- [[Calculate what percentage of claims are attributed.]] - rationale - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[Calibrated output must always stay within 0, 1.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Check if text is likely a factual claim worth attributing.]] - rationale - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[Complete response from the QA pipeline.]] - rationale - /home/kbs/Documents/final_project/src/pipeline/qa_pipeline.py
+- [[Comprehensive tests for MultiSignalConfidenceScorer.      This is one of the nov]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Compute multi-signal confidence with full breakdown.          Parameters]] - rationale - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[Confidence level and score appear in template rationale.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Confidence normalizes by max so absolute scale (cosine vs RRF) doesn't change ra]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Confidence scoring and calibration for medical QA.  Fix (v2) All numpy operatio]] - rationale - /home/kbs/Documents/final_project/src/xai/confidence_scorer.py
+- [[Confidence scoring result.]] - rationale - /home/kbs/Documents/final_project/src/xai/confidence_scorer.py
+- [[ConfidenceBreakdown]] - code - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[ConfidenceBreakdown should initialise all numerics to 0.0.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[ConfidenceResult]] - code - /home/kbs/Documents/final_project/src/xai/confidence_scorer.py
+- [[ConfidenceScorer]] - code - /home/kbs/Documents/final_project/src/xai/confidence_scorer.py
+- [[CounterfactualExplainer]] - code - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[Custom weights provided at construction should be auto-normalised.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Default scorer with equal-ish weights.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Detailed breakdown of confidence signals for explainability.]] - rationale - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[Documents with high scores should yield high retrieval confidence.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Empty document list should produce a low confidence score.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Empty document list should yield zero retrieval confidence.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Empty document list → retrieval confidence of 0.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Empty probability list should return 0.5 (neutral default).]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Explain why the given answer was chosen over an alternative.          Args]] - rationale - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[Extract and visualize attention patterns from transformer models.]] - rationale - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[Extract claims using improved regex that handles medical abbreviations.]] - rationale - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[Extract claims using spacy NLP pipeline.]] - rationale - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[Extract factual claims from generated text using NLP sentence segmentation.]] - rationale - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[Feedback module for user feedback collection.]] - rationale - /home/kbs/Documents/final_project/src/feedback/__init__.py
+- [[Fewer than two alternatives → neutral score of 0.5.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Format token importance as HTML with color coding.      Returns HTML string with]] - rationale - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[Generate a chain-of-thought explanation for the answer.          Falls back to t]] - rationale - /home/kbs/Documents/final_project/src/xai/rationale_generator.py
+- [[Generate counterfactual explanations Why X instead of Y]] - rationale - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[Generate plausible alternative answers for comparison.          Args]] - rationale - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[Generates natural language explanations (rationales) for answers.]] - rationale - /home/kbs/Documents/final_project/src/xai/rationale_generator.py
+- [[Higher raw scores must produce higher (or equal) calibrated scores.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Identical alternatives should yield a consistency score of 1.0.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Initialize with a model and tokenizer.          Args             model Hugging]] - rationale - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[Initialize with an LLM for generating explanations.          Args             l]] - rationale - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[Initialize with an optional LLM instance.          Args             llm Medica]] - rationale - /home/kbs/Documents/final_project/src/xai/rationale_generator.py
+- [[Lazy load spacy model for sentence segmentation.]] - rationale - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[Lightweight mock documents with .content and .score attributes.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Load shared components (embedder, vector store, retriever) once.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Load the fine-tuned LLM.]] - rationale - /home/kbs/Documents/final_project/api/demo_server.py
+- [[Map a calibrated score to a human-readable level string.]] - rationale - /home/kbs/Documents/final_project/src/xai/confidence_scorer.py
+- [[Multi-signal confidence scoring for Explainable Healthcare QA.  Combines retriev]] - rationale - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[MultiSignalConfidenceScorer]] - code - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[No documents should return 0.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[None probabilities should return 0.5 (neutral default).]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Omitting generation_probabilities should still produce a valid result.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Platt scaling parameters passed at init should be stored correctly.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Produces calibrated confidence scores from five complementary signals.      Sign]] - rationale - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[Providing alternative_answers should influence consistency_score.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Query with recognised entities should produce a meaningful coverage score.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Rationale generator for explaining medical QA answers.  Provides two generation]] - rationale - /home/kbs/Documents/final_project/src/xai/rationale_generator.py
+- [[RationaleGenerator]] - code - /home/kbs/Documents/final_project/src/xai/rationale_generator.py
+- [[Return a CSS hex colour for the given confidence level.]] - rationale - /home/kbs/Documents/final_project/src/xai/confidence_scorer.py
+- [[Score based on agreement across multiple generation samples.]] - rationale - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[Score based on how many sources support the answer (term overlap).]] - rationale - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[Score based on medical entity overlap between query, answer, and sources.]] - rationale - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[Score based on retrieval quality metrics.          Normalizes scores to 0, 1 i]] - rationale - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[Score exactly at high threshold (0.75) should be 'high'.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Score exactly at medium threshold (0.45) should be 'medium'.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Score from token-level generation probabilities.]] - rationale - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[Source attribution for medical QA.]] - rationale - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[SourceAttributor]] - code - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[Template rationale works with just question and answer.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Test attribution coverage calculation.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Test claim extraction from text.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Test confidence color mapping.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Test confidence level determination.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Test finding evidence for a claim.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Test full answer attribution.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Test high confidence calculation.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Test low confidence calculation.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Test score calibration.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Test text overlap calculation.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Test that explanation is generated.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Test that short sentences are filtered.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Test with no probabilitiesscores.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[TestConfidenceScorer]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[TestMultiSignalConfidenceScorer]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[TestRationaleGenerator]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[TestSourceAttributor]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[TestTokenImportance]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Tests for ConfidenceScorer.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Tests for RationaleGenerator template and CoT paths.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Tests for SourceAttributor.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Tests for TokenImportance dataclass and attention visualizer fallback.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[The breakdown should record the weights that were applied.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Token with its importance score.]] - rationale - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[TokenImportance]] - code - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[TokenImportanceAnalyzer]] - code - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[Unit tests for XAI components.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Updated params (a=14.44, b=-11.25) sigmoid(14.44x + -11.25).]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Using only one non-zero signal should still produce a valid result.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Very different alternatives should yield a low consistency score.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Very high token probabilities should yield a confidence close to 1.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Very low token probabilities should yield low confidence.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[When gradient computation fails, all tokens must have is_computed=False.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[When the query contains no medical entities, score defaults to 0.5.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[Zeroing retrieval weight should not crash and still produce valid output.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[_Doc_1]] - code - /home/kbs/Documents/final_project/tests/test_extractive_answer.py
+- [[__getattr__()]] - code - /home/kbs/Documents/final_project/src/langchain/__init__.py
+- [[__init__.py_3]] - code - /home/kbs/Documents/final_project/src/conversation/__init__.py
+- [[__init__.py_12]] - code - /home/kbs/Documents/final_project/src/feedback/__init__.py
+- [[__init__.py_7]] - code - /home/kbs/Documents/final_project/src/langchain/__init__.py
+- [[__init__.py_2]] - code - /home/kbs/Documents/final_project/src/langgraph/__init__.py
+- [[__init__.py_10]] - code - /home/kbs/Documents/final_project/src/mcp_servers/__init__.py
+- [[__init__.py_9]] - code - /home/kbs/Documents/final_project/src/xai/__init__.py
+- [[_get_nlp()]] - code - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[_get_shared_components()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[ask_question()_2]] - code - /home/kbs/Documents/final_project/api/demo_server.py
+- [[attention_visualizer.py]] - code - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[attributor()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[compute_confidence should return a ConfidenceBreakdown dataclass.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[confidence_level must be one of the three valid strings.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[confidence_scorer.py]] - code - /home/kbs/Documents/final_project/src/xai/confidence_scorer.py
+- [[format()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[format_importance_html()]] - code - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[generate_rationale uses template when llm=None.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[get_attention_visualizer()]] - code - /home/kbs/Documents/final_project/src/xai/__init__.py
+- [[get_counterfactual_explainer()]] - code - /home/kbs/Documents/final_project/src/xai/__init__.py
+- [[get_llm()]] - code - /home/kbs/Documents/final_project/api/demo_server.py
+- [[is_computed can be set to False for placeholder scores.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[is_computed defaults to True.]] - rationale - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[main()_29]] - code - /home/kbs/Documents/final_project/scripts/test_pipeline.py
+- [[mock_docs()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[multi_signal_confidence.py]] - code - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[rationale_generator.py]] - code - /home/kbs/Documents/final_project/src/xai/rationale_generator.py
+- [[scorer()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[source_attribution.py]] - code - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[test_pipeline.py]] - code - /home/kbs/Documents/final_project/scripts/test_pipeline.py
+- [[test_xai.py]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+
+## Live Query (requires Dataview plugin)
+
+```dataview
+TABLE source_file, type FROM #community/Community_5
+SORT file.name ASC
+```
+
+## Connections to other communities
+- 204 edges to [[_COMMUNITY_Community 2]]
+- 60 edges to [[_COMMUNITY_Community 0]]
+- 13 edges to [[_COMMUNITY_Community 1]]
+- 3 edges to [[_COMMUNITY_Community 15]]
+- 3 edges to [[_COMMUNITY_Community 4]]
+- 2 edges to [[_COMMUNITY_Community 27]]
+- 1 edge to [[_COMMUNITY_Community 3]]
+- 1 edge to [[_COMMUNITY_Community 17]]
+- 1 edge to [[_COMMUNITY_Community 25]]
+- 1 edge to [[_COMMUNITY_Community 16]]
+- 1 edge to [[_COMMUNITY_Community 26]]
+- 1 edge to [[_COMMUNITY_Community 10]]
+
+## Top bridge nodes
+- [[format()]] - degree 8, connects to 4 communities
+- [[MultiSignalConfidenceScorer]] - degree 100, connects to 3 communities
+- [[._generation_confidence()]] - degree 10, connects to 3 communities
+- [[._entity_coverage_score()]] - degree 8, connects to 3 communities
+- [[Complete response from the QA pipeline.]] - degree 6, connects to 3 communities

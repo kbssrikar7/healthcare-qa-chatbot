@@ -1,0 +1,18 @@
+{
+  "created_at": "2026-04-13T18:28:24.545915+00:00",
+  "python": "3.14.3",
+  "platform": "Linux-6.17.0-20-generic-x86_64-with-glibc2.39",
+  "git_sha": "42adc7e3e01f4a6bedcf49fa592561f0e46fc2fc",
+  "kb_dir": "/home/kbs/Documents/final_project/data/knowledge_base_v2",
+  "embedding_metadata_sha256_prefix": "461ee56a8add741f",
+  "env_snapshot": {
+    "ENVIRONMENT": "development",
+    "CHROMA_COLLECTION": "",
+    "KB_PERSIST_DIR": ""
+  },
+  "extra": {
+    "benchmark": "retrieval",
+    "k": 10,
+    "n": 5
+  }
+}

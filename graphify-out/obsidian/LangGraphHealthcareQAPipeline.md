@@ -1,0 +1,87 @@
+---
+source_file: "/home/kbs/Documents/final_project/src/langgraph/langgraph_pipeline.py"
+type: "code"
+community: "Community 4"
+location: "L48"
+tags:
+  - graphify/code
+  - graphify/INFERRED
+  - community/Community_4
+---
+
+# LangGraphHealthcareQAPipeline
+
+## Connections
+- [[.__init__()_14]] - `method` [EXTRACTED]
+- [[._build_graph()]] - `method` [EXTRACTED]
+- [[.ainvoke()]] - `method` [EXTRACTED]
+- [[.answer()]] - `method` [EXTRACTED]
+- [[.get_graph_visualization()]] - `method` [EXTRACTED]
+- [[.invoke()]] - `method` [EXTRACTED]
+- [[.stream()]] - `method` [EXTRACTED]
+- [[.test_langgraph_pipeline_init()]] - `calls` [INFERRED]
+- [[.test_langgraph_pipeline_invoke()]] - `calls` [INFERRED]
+- [[.test_langgraph_to_qa_response()]] - `calls` [INFERRED]
+- [[.test_langgraph_unanswerable_route()]] - `calls` [INFERRED]
+- [[.test_pipeline_builds_graph()]] - `calls` [INFERRED]
+- [[.to_qa_response()]] - `method` [EXTRACTED]
+- [[HealthcareRAGNodes]] - `uses` [INFERRED]
+- [[HealthcareRAGState]] - `uses` [INFERRED]
+- [[Integration tests for LangChain and LangGraph pipelines.  Verifies that both pip]] - `uses` [INFERRED]
+- [[LangGraph-based Healthcare QA Pipeline.      Uses a self-correcting RAG graph th]] - `rationale_for` [EXTRACTED]
+- [[Mock document for testing.]] - `uses` [INFERRED]
+- [[MockDocument_1]] - `uses` [INFERRED]
+- [[QAResponse]] - `uses` [INFERRED]
+- [[Test QAResponse conversion for API compatibility.]] - `uses` [INFERRED]
+- [[Test basic invoke returns valid result.]] - `uses` [INFERRED]
+- [[Test basic invoke returns valid state dict.]] - `uses` [INFERRED]
+- [[Test document relevance grading node.]] - `uses` [INFERRED]
+- [[Test document retrieval node.]] - `uses` [INFERRED]
+- [[Test error handling node.]] - `uses` [INFERRED]
+- [[Test grounding gate passes with RRF-scale scores (~0.016).]] - `uses` [INFERRED]
+- [[Test grounding verification node.]] - `uses` [INFERRED]
+- [[Test initial state creation.]] - `uses` [INFERRED]
+- [[Test nodes class initializes correctly.]] - `uses` [INFERRED]
+- [[Test routing after verification when grounded.]] - `uses` [INFERRED]
+- [[Test routing to enrich_xai when retries exhausted.]] - `uses` [INFERRED]
+- [[Test routing to generate when docs are relevant.]] - `uses` [INFERRED]
+- [[Test routing to generate when enough relevant docs.]] - `uses` [INFERRED]
+- [[Test routing to refine when docs not relevant enough.]] - `uses` [INFERRED]
+- [[Test routing to refine when not enough docs but can retry.]] - `uses` [INFERRED]
+- [[Test routing to refine when not grounded and can retry.]] - `uses` [INFERRED]
+- [[Test routing to unanswerable after max retries.]] - `uses` [INFERRED]
+- [[Test routing to unanswerable when no docs and max retries.]] - `uses` [INFERRED]
+- [[Test routing when answer is grounded.]] - `uses` [INFERRED]
+- [[Test routing when answer is not grounded.]] - `uses` [INFERRED]
+- [[Test that LangChain pipeline initializes without errors.]] - `uses` [INFERRED]
+- [[Test that LangGraph pipeline initializes and compiles graph.]] - `uses` [INFERRED]
+- [[Test that adaptive threshold handles RRF-scale scores.]] - `uses` [INFERRED]
+- [[Test that empty retrieval routes to unanswerable.]] - `uses` [INFERRED]
+- [[Test that pipeline builds a valid graph.]] - `uses` [INFERRED]
+- [[Test that state schema has all required fields.]] - `uses` [INFERRED]
+- [[Test the answer() method returns a proper result dict.]] - `uses` [INFERRED]
+- [[Test unanswerable response node.]] - `uses` [INFERRED]
+- [[Test unanswerable response when no documents found.]] - `uses` [INFERRED]
+- [[TestHallucinationDetector]] - `uses` [INFERRED]
+- [[TestLangChainPipeline]] - `uses` [INFERRED]
+- [[TestLangGraphNodes]] - `uses` [INFERRED]
+- [[TestLangGraphPipeline]] - `uses` [INFERRED]
+- [[TestLangGraphPipeline_1]] - `uses` [INFERRED]
+- [[TestLangGraphRouting]] - `uses` [INFERRED]
+- [[TestLangGraphRouting_1]] - `uses` [INFERRED]
+- [[TestLangGraphState]] - `uses` [INFERRED]
+- [[TestTextCleaning]] - `uses` [INFERRED]
+- [[Tests for LangGraph Pipeline.  Unit tests for the LangGraph-based Healthcare RAG]] - `uses` [INFERRED]
+- [[Tests for LangGraph conditional routing.]] - `uses` [INFERRED]
+- [[Tests for LangGraph node implementations.]] - `uses` [INFERRED]
+- [[Tests for LangGraph routing functions.]] - `uses` [INFERRED]
+- [[Tests for LangGraph state management.]] - `uses` [INFERRED]
+- [[Tests for the LangChain LCEL pipeline.]] - `uses` [INFERRED]
+- [[Tests for the LangGraph StateGraph pipeline.]] - `uses` [INFERRED]
+- [[Tests for the complete LangGraph pipeline.]] - `uses` [INFERRED]
+- [[Tests for the completed HallucinationDetector.]] - `uses` [INFERRED]
+- [[Tests for the shared text cleaning utility.]] - `uses` [INFERRED]
+- [[create_langgraph_pipeline()]] - `calls` [EXTRACTED]
+- [[langgraph_pipeline.py]] - `contains` [EXTRACTED]
+
+#graphify/code #graphify/INFERRED #community/Community_4

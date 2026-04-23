@@ -1,0 +1,735 @@
+---
+type: community
+cohesion: 0.01
+members: 686
+---
+
+# Community 2
+
+**Cohesion:** 0.01 - loosely connected
+**Members:** 686 nodes
+
+## Members
+- [[.__init__()_51]] - code - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[.__init__()_52]] - code - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[.__init__()_48]] - code - /home/kbs/Documents/final_project/src/pipeline/context_compressor.py
+- [[.__init__()_22]] - code - /home/kbs/Documents/final_project/src/retrieval/corrective_rag.py
+- [[.__init__()_25]] - code - /home/kbs/Documents/final_project/src/embeddings/embedding_models.py
+- [[.__init__()_29]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[.__init__()_27]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[.__init__()_26]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[.__init__()_28]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[.__init__()_38]] - code - /home/kbs/Documents/final_project/src/xai/hallucination_detector.py
+- [[.__init__()_16]] - code - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[.__init__()_21]] - code - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[.__init__()_54]] - code - /home/kbs/Documents/final_project/src/generation/llm_wrapper.py
+- [[.__init__()_47]] - code - /home/kbs/Documents/final_project/src/xai/passage_highlighter.py
+- [[.__init__()_53]] - code - /home/kbs/Documents/final_project/src/generation/prompt_manager.py
+- [[.__init__()_49]] - code - /home/kbs/Documents/final_project/src/pipeline/qa_pipeline.py
+- [[.__init__()_23]] - code - /home/kbs/Documents/final_project/src/retrieval/query_enhancer.py
+- [[.__init__()_18]] - code - /home/kbs/Documents/final_project/src/retrieval/query_expander.py
+- [[.__init__()_19]] - code - /home/kbs/Documents/final_project/src/retrieval/reranker.py
+- [[.__init__()_12]] - code - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[.__init__()_13]] - code - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[.__init__()_8]] - code - /home/kbs/Documents/final_project/tests/test_extractive_answer.py
+- [[.__init__()_50]] - code - /home/kbs/Documents/final_project/src/feedback/trajectory_logger.py
+- [[.__init__()_24]] - code - /home/kbs/Documents/final_project/src/embeddings/vector_store.py
+- [[._bm25_cache_key()]] - code - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[._bm25_cache_path()]] - code - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[._build_extractive_answer()]] - code - /home/kbs/Documents/final_project/src/pipeline/qa_pipeline.py
+- [[._call()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_llm.py
+- [[._clean_answer()]] - code - /home/kbs/Documents/final_project/src/pipeline/qa_pipeline.py
+- [[._clean_response()]] - code - /home/kbs/Documents/final_project/src/generation/llm_wrapper.py
+- [[._detect_query_type()]] - code - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[._ensure_storage()_1]] - code - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[._ensure_storage()]] - code - /home/kbs/Documents/final_project/src/feedback/trajectory_logger.py
+- [[._find_best_match()]] - code - /home/kbs/Documents/final_project/src/xai/passage_highlighter.py
+- [[._generate_gguf()]] - code - /home/kbs/Documents/final_project/src/generation/llm_wrapper.py
+- [[._generate_transformers()]] - code - /home/kbs/Documents/final_project/src/generation/llm_wrapper.py
+- [[._get_llm()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_llm.py
+- [[._has_clear_subject()]] - code - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[._init_gguf_model()]] - code - /home/kbs/Documents/final_project/src/generation/llm_wrapper.py
+- [[._is_negated()_1]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[._llm_expand()]] - code - /home/kbs/Documents/final_project/src/retrieval/query_enhancer.py
+- [[._maybe_cleanup_old_sessions()]] - code - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[._merge_spans()]] - code - /home/kbs/Documents/final_project/src/xai/passage_highlighter.py
+- [[._mock_evaluate()]] - code - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[._normalize_text()]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[._parse_evaluation()]] - code - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[._resolve_model_path()]] - code - /home/kbs/Documents/final_project/src/generation/llm_wrapper.py
+- [[._save_bm25_cache()]] - code - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[._save_feedback()]] - code - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[._split_sentences()]] - code - /home/kbs/Documents/final_project/src/xai/passage_highlighter.py
+- [[._try_load_bm25_cache()]] - code - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[.add_disclaimer()]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[.add_template()]] - code - /home/kbs/Documents/final_project/src/generation/prompt_manager.py
+- [[.add_turn()]] - code - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[.add_turn()_1]] - code - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[.batch_answer()]] - code - /home/kbs/Documents/final_project/src/pipeline/qa_pipeline.py
+- [[.batch_evaluate()]] - code - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[.build_prompt()_3]] - code - /home/kbs/Documents/final_project/src/generation/prompt_manager.py
+- [[.build_prompt()_2]] - code - /home/kbs/Documents/final_project/tests/test_extractive_answer.py
+- [[.check_all()]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[.check_input()]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[.check_interaction_risk()]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[.check_output()]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[.check_pediatric_safety()]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[.cleanup()_1]] - code - /home/kbs/Documents/final_project/src/generation/llm_wrapper.py
+- [[.cleanup_old_sessions()]] - code - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[.count()]] - code - /home/kbs/Documents/final_project/src/embeddings/vector_store.py
+- [[.create_session()_1]] - code - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[.delete_collection()]] - code - /home/kbs/Documents/final_project/src/embeddings/vector_store.py
+- [[.detect()]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[.detect_followup()]] - code - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[.evaluate()_2]] - code - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[.evaluate_pipeline()]] - code - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[.evaluate_retrieval()]] - code - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[.expand()]] - code - /home/kbs/Documents/final_project/src/retrieval/query_expander.py
+- [[.export_for_training()]] - code - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[.generate()_3]] - code - /home/kbs/Documents/final_project/src/generation/llm_wrapper.py
+- [[.generate()_2]] - code - /home/kbs/Documents/final_project/tests/test_extractive_answer.py
+- [[.generate_hypothetical_answer()]] - code - /home/kbs/Documents/final_project/src/retrieval/query_enhancer.py
+- [[.generate_with_context()]] - code - /home/kbs/Documents/final_project/src/generation/llm_wrapper.py
+- [[.generate_with_metadata()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_llm.py
+- [[.get_action_decision()]] - code - /home/kbs/Documents/final_project/src/retrieval/corrective_rag.py
+- [[.get_context_for_query()]] - code - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[.get_context_window()]] - code - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[.get_emergency_response()]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[.get_expanded_terms()]] - code - /home/kbs/Documents/final_project/src/retrieval/query_expander.py
+- [[.get_inaccurate_samples()]] - code - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[.get_last_turn()]] - code - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[.get_low_rated_samples()]] - code - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[.get_medical_disclaimer()_3]] - code - /home/kbs/Documents/final_project/src/generation/prompt_manager.py
+- [[.get_medical_disclaimer()_2]] - code - /home/kbs/Documents/final_project/tests/test_extractive_answer.py
+- [[.get_or_create_session()]] - code - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[.get_pediatric_warning()]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[.get_session()_1]] - code - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[.get_statistics()_1]] - code - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[.get_stats()]] - code - /home/kbs/Documents/final_project/src/embeddings/vector_store.py
+- [[.get_unsafe_samples()]] - code - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[.highlight()]] - code - /home/kbs/Documents/final_project/src/xai/passage_highlighter.py
+- [[.is_blocked()]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[.load_all_feedback()]] - code - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[.load_test_set()]] - code - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[.print_summary()]] - code - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[.record_embedding_model()]] - code - /home/kbs/Documents/final_project/src/embeddings/vector_store.py
+- [[.retrieve_with_context()_2]] - code - /home/kbs/Documents/final_project/tests/test_extractive_answer.py
+- [[.sanitize_output()]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[.save_sessions()]] - code - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[.score_pair()]] - code - /home/kbs/Documents/final_project/src/retrieval/reranker.py
+- [[.setup_method()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.submit_feedback()_1]] - code - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[.summarize_if_needed()]] - code - /home/kbs/Documents/final_project/src/pipeline/context_compressor.py
+- [[.test_abbreviation_expansion()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_add_custom_template()]] - code - /home/kbs/Documents/final_project/tests/test_generation.py
+- [[.test_add_disclaimer()]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[.test_add_turn()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_all_weights_sum_to_one()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_available_models_registry()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_build_context_from_documents()]] - code - /home/kbs/Documents/final_project/tests/test_generation.py
+- [[.test_build_prompt_default()]] - code - /home/kbs/Documents/final_project/tests/test_generation.py
+- [[.test_build_prompt_with_template()]] - code - /home/kbs/Documents/final_project/tests/test_generation.py
+- [[.test_cardiac_emergency()]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[.test_comparison_query_detected()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_compute_retrieval_metrics_with_mock()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_config_from_env_development()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_config_from_env_production()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_content_filter_blocks_dangerous()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_context_respects_max_length()]] - code - /home/kbs/Documents/final_project/tests/test_generation.py
+- [[.test_context_window()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_create_session()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_dangerous_dosage_blocked()]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[.test_default_query_detected()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_definition_query_detected()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_definition_weights_are_dense_heavy()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_drug_creation_blocked()]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[.test_drug_interaction_checker()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_drug_query_detected()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_drug_weights_are_bm25_heavy()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_emergency_detection()_1]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_emergency_detection()]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[.test_emergency_detector_categories()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_emergency_response()]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[.test_expired_session_is_cleaned_on_access()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_followup_detection()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_generation_result_dataclass()]] - code - /home/kbs/Documents/final_project/tests/test_generation.py
+- [[.test_get_medical_disclaimer()]] - code - /home/kbs/Documents/final_project/tests/test_generation.py
+- [[.test_highlight_matching_passage()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_llm_config_default_model()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_llm_imports()]] - code - /home/kbs/Documents/final_project/tests/test_generation.py
+- [[.test_max_expansions_limit()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_mental_emergency()]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[.test_model_choice_enum()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_mrr_first_hit()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_mrr_no_hit()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_mrr_second_hit()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_ndcg_no_hit()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_ndcg_perfect()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_no_emergency()]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[.test_no_expansion_for_unknown()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_no_false_positive_on_common_phrases()]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[.test_no_false_positive_you_have_some()]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[.test_no_highlights_for_unrelated()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_normal_content_allowed()]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[.test_precision_at_k()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_question_request_defaults()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_question_request_with_model()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_recall_at_k()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_retrieved_document_dataclass()]] - code - /home/kbs/Documents/final_project/tests/test_retrieval.py
+- [[.test_retriever_initialization()]] - code - /home/kbs/Documents/final_project/tests/test_retrieval.py
+- [[.test_safe_input()]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[.test_safe_input_passes()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_safe_output()]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[.test_safety_info_defaults()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_sanitize_output()]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[.test_save_sessions_creates_parent_directory()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_self_harm_blocked()]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[.test_sensitive_topic_caution()]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[.test_sentence_splitting()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_stroke_emergency()]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[.test_suicide_emergency()]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[.test_supported_models_exist()]] - code - /home/kbs/Documents/final_project/tests/test_generation.py
+- [[.test_symptom_query_detected()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_synonym_expansion()]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[.test_unicode_bypass_input()]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[.test_unicode_bypass_output()]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[.test_very_long_input()]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[.thumbs_down()]] - code - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[.thumbs_up()]] - code - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[.to_dict()_6]] - code - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[.to_dict()_2]] - code - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[.to_dict()_1]] - code - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[.to_dict()_5]] - code - /home/kbs/Documents/final_project/src/xai/passage_highlighter.py
+- [[.verify_embedding_compatibility()]] - code - /home/kbs/Documents/final_project/src/embeddings/vector_store.py
+- [[.warm_up()_1]] - code - /home/kbs/Documents/final_project/src/xai/hallucination_detector.py
+- [[.warm_up()]] - code - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[A conversation session with history.      Tracks all Q&A turns, enables context]] - rationale - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[A highlighted span within a passage.]] - rationale - /home/kbs/Documents/final_project/src/xai/passage_highlighter.py
+- [[A passage with highlighted supporting spans.]] - rationale - /home/kbs/Documents/final_project/src/xai/passage_highlighter.py
+- [[A prompt template with formatting.]] - rationale - /home/kbs/Documents/final_project/src/generation/prompt_manager.py
+- [[A single turn in a conversation.]] - rationale - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[APIConfig]] - code - /home/kbs/Documents/final_project/config/settings.py
+- [[Add a custom prompt template.]] - rationale - /home/kbs/Documents/final_project/src/generation/prompt_manager.py
+- [[Add a new turn to the conversation.]] - rationale - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[Add a turn to an existing session.          Automatically detects if it's a foll]] - rationale - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[Add appropriate disclaimer based on safety level.]] - rationale - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Adversarial  indirect phrasing for emergency detection (plan C2).]] - rationale - /home/kbs/Documents/final_project/tests/test_safety_adversarial.py
+- [[Aggregate feedback statistics.]] - rationale - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[Answer a medical question with explanations.          Full pipeline enhance → r]] - rationale - /home/kbs/Documents/final_project/src/pipeline/qa_pipeline.py
+- [[Answer multiple questions.]] - rationale - /home/kbs/Documents/final_project/src/pipeline/qa_pipeline.py
+- [[AnswerResponse]] - code - /home/kbs/Documents/final_project/api/demo_server.py
+- [[AnswerResponse_1]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[Append feedback to storage.]] - rationale - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[Application lifespan startup warmup and shutdown cleanup.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Args             min_match_ratio Minimum ratio to consider a span a match]] - rationale - /home/kbs/Documents/final_project/src/xai/passage_highlighter.py
+- [[Ask a medical question and get an explainable answer.      - Set model_choice to]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Attach a unique request_id to every request for traceability.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[AttributionInfo]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[Available LLM model choices.]] - rationale - /home/kbs/Documents/final_project/config/settings.py
+- [[Backward-compatible wrapper around QueryEnhancer.]] - rationale - /home/kbs/Documents/final_project/src/retrieval/query_expander.py
+- [[BaseModel]] - code
+- [[Build a complete prompt.]] - rationale - /home/kbs/Documents/final_project/src/generation/prompt_manager.py
+- [[Build a lightweight extractive answer from retrieved snippets.          Useful f]] - rationale - /home/kbs/Documents/final_project/src/pipeline/qa_pipeline.py
+- [[Build simple retrieval score statistics.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Calculate aggregate statistics.]] - rationale - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[Calibration should still derive labels when trajectory rows omit answer text.]] - rationale - /home/kbs/Documents/final_project/tests/test_local_rollout.py
+- [[Calibration should use matched test cases and real answer text when present.]] - rationale - /home/kbs/Documents/final_project/tests/test_local_rollout.py
+- [[Catch unhandled exceptions and return structured JSON.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Central configuration management for Healthcare QA Chatbot.]] - rationale - /home/kbs/Documents/final_project/config/settings.py
+- [[Check for pediatric-sensitive content.          Args             text Text to]] - rationale - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Check for pediatric-specific safety concerns.      Identifies when text discusse]] - rationale - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Check for potential drug interaction mentions.      Identifies when text mention]] - rationale - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Check generated output for dangerous content.]] - rationale - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Check if a drug mention is negated by preceding words.]] - rationale - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Check if content should be blocked.]] - rationale - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Check if generated answer is factually supported by retrieved context.      Uses]] - rationale - /home/kbs/Documents/final_project/src/xai/factual_consistency.py
+- [[Check if question has a clear subject (not implied).]] - rationale - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[Check if text mentions potentially dangerous drug combinations.          Negatio]] - rationale - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Check that the query model matches the indexed embedding model.]] - rationale - /home/kbs/Documents/final_project/src/embeddings/vector_store.py
+- [[Check user input for safety concerns.]] - rationale - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Classify query into a retrieval-strategy category.]] - rationale - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[Clean the LLM response by removing leaked training data.          Delegates to t]] - rationale - /home/kbs/Documents/final_project/src/generation/llm_wrapper.py
+- [[Clear cached Q&A responses so fresh answers are generated.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Collect and store user feedback for model improvement.      Features     - Pers]] - rationale - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[Combine dense and sparse retrieval for better results.      Features     - Dens]] - rationale - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[Combined safety checker running all safety modules.]] - rationale - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Compatibility shim; prefer ``QueryEnhancer`` directly.]] - rationale - /home/kbs/Documents/final_project/src/retrieval/query_expander.py
+- [[ComprehensiveSafetyChecker]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Compress and reorder retrieved context for better LLM performance.      Addresse]] - rationale - /home/kbs/Documents/final_project/src/pipeline/context_compressor.py
+- [[Compute MRR@k, Precision@k, Recall@k, and NDCG@k over a test set.      Args]] - rationale - /home/kbs/Documents/final_project/evaluation/retrieval_metrics.py
+- [[Compute a normalized reward signal (0-1) from feedback.      Weighted for RL exp]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Compute retrieval metrics split by query type (drug  definition      symptom]] - rationale - /home/kbs/Documents/final_project/evaluation/retrieval_metrics.py
+- [[ConfidenceInfo]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[Config]] - code - /home/kbs/Documents/final_project/config/settings.py
+- [[ContentFilter]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[ContextCompressor]] - code - /home/kbs/Documents/final_project/src/pipeline/context_compressor.py
+- [[Conversation]] - code - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[Conversation History Manager for Multi-turn QA.  Enables multi-turn conversation]] - rationale - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[ConversationManager]] - code - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[ConversationTurn]] - code - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[Convert a single drug entry into multiple Q&A-style documents     for better ret]] - rationale - /home/kbs/Documents/final_project/scripts/ingest_drug_data.py
+- [[Corrective RAG implementation for improved retrieval quality.      Features]] - rationale - /home/kbs/Documents/final_project/src/retrieval/corrective_rag.py
+- [[CorrectiveRAG]] - code - /home/kbs/Documents/final_project/src/retrieval/corrective_rag.py
+- [[Create a new conversation session.]] - rationale - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[Create a new conversation session._1]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Create a retriever with mocked dependencies.]] - rationale - /home/kbs/Documents/final_project/tests/test_retrieval_parametrized.py
+- [[CrossEncoderReranker]] - code - /home/kbs/Documents/final_project/src/retrieval/reranker.py
+- [[Cyrillic lookalikes should be normalized and still caught if dangerous.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[Delete the collection.]] - rationale - /home/kbs/Documents/final_project/src/embeddings/vector_store.py
+- [[Detailed component health status for diagnostics.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Detect if a question is a follow-up to previous context.      Uses linguistic cu]] - rationale - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[Detect if question is likely a follow-up.          Args             question C]] - rationale - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[Detect if text indicates a medical emergency.          Returns (False, None) for]] - rationale - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Detect medical emergencies requiring immediate attention.      Uses negation-awa]] - rationale - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Determine action based on document relevance.          Returns             pro]] - rationale - /home/kbs/Documents/final_project/src/retrieval/corrective_rag.py
+- [[Drug interaction checker respects negation context.]] - rationale - /home/kbs/Documents/final_project/tests/test_retrieval_parametrized.py
+- [[DrugInteractionChecker]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Edge case tests for safety guardrails per improvements plan.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[Embedding model configuration (defaults match KB build + API query encoder).]] - rationale - /home/kbs/Documents/final_project/config/settings.py
+- [[EmbeddingConfig]] - code - /home/kbs/Documents/final_project/config/settings.py
+- [[EmergencyDetector]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Enhance queries for better retrieval recall.      Implements patterns from ai-ra]] - rationale - /home/kbs/Documents/final_project/src/retrieval/query_enhancer.py
+- [[Enhanced health check with system metrics.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Ensure parent directory exists.]] - rationale - /home/kbs/Documents/final_project/src/feedback/trajectory_logger.py
+- [[Ensure storage directory exists.]] - rationale - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[Enum]] - code
+- [[ErrorResponse]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[Evaluate XAI components.]] - rationale - /home/kbs/Documents/final_project/evaluation/benchmarks/evaluate_pipeline.py
+- [[Evaluate an answer using LLM-as-judge.          Args             question The]] - rationale - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[Evaluate end-to-end pipeline on test cases.          Args             test_case]] - rationale - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[Evaluate generation quality.]] - rationale - /home/kbs/Documents/final_project/evaluation/benchmarks/evaluate_pipeline.py
+- [[Evaluate multiple answers and return aggregated stats.          Args]] - rationale - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[Evaluate retrieval performance.]] - rationale - /home/kbs/Documents/final_project/evaluation/benchmarks/evaluate_pipeline.py
+- [[Evaluate retrieval quality on test cases.          Args             test_cases]] - rationale - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[EvaluationResult]] - code - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[Execute an arbitrary LangSmith MCP tool.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Expired sessions should be removed during normal manager use.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Export high-quality samples for fine-tuning.          Args             output_p]] - rationale - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[Extract numeric source scores from QA response sources.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[FactualConsistencyChecker]] - code - /home/kbs/Documents/final_project/src/xai/factual_consistency.py
+- [[FastAPI application for Healthcare QA Chatbot.  Enhanced with - Single model T]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[FeedbackCollector]] - code - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[FeedbackRequest]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[FeedbackResponse]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[FeedbackStats]] - code - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[Fetch recent runs and summarize primary qualitylatency failure patterns.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Filter inappropriate or harmful content.]] - rationale - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Find the best matching span in haystack for the needle text.]] - rationale - /home/kbs/Documents/final_project/src/xai/passage_highlighter.py
+- [[Focused regression tests for the local-safe rollout changes.]] - rationale - /home/kbs/Documents/final_project/tests/test_local_rollout.py
+- [[FollowUpDetector]] - code - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[Format warnings as a single message._1]] - rationale - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Fraction of gold document IDs that appear in the top-k retrieval list.      Retu]] - rationale - /home/kbs/Documents/final_project/evaluation/run_retrieval_benchmark.py
+- [[Free memory for all backends.]] - rationale - /home/kbs/Documents/final_project/src/generation/llm_wrapper.py
+- [[Generate a hypothetical answer for HyDE retrieval.          HyDE Use hypothetic]] - rationale - /home/kbs/Documents/final_project/src/retrieval/query_enhancer.py
+- [[Generate response from the LLM (routes to correct backend).          temperature]] - rationale - /home/kbs/Documents/final_project/src/generation/llm_wrapper.py
+- [[Generate response with context (for RAG).          Uses model-native prompt form]] - rationale - /home/kbs/Documents/final_project/src/generation/llm_wrapper.py
+- [[Generate text from the prompt.          Args             prompt Input prompt]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_llm.py
+- [[Generate using HuggingFace transformers backend.]] - rationale - /home/kbs/Documents/final_project/src/generation/llm_wrapper.py
+- [[Generate using llama-cpp-python (GGUF backend).          BioMistral Q4_K_M perfo]] - rationale - /home/kbs/Documents/final_project/src/generation/llm_wrapper.py
+- [[Generate with full metadata including token counts and probabilities.          R]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_llm.py
+- [[GenerationMetrics]] - code - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[GenerationResult]] - code - /home/kbs/Documents/final_project/src/generation/llm_wrapper.py
+- [[Get an existing conversation by ID.]] - rationale - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[Get appropriate emergency response message.]] - rationale - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Get conversation context to append to query.          Returns formatted context]] - rationale - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[Get conversation history for a session.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Get existing session or create new one.]] - rationale - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[Get or create a pipeline for the given model choice.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Get recent conversation context for follow-up questions.          Args]] - rationale - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[Get samples marked as inaccurate.]] - rationale - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[Get samples marked as unsafe.]] - rationale - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[Get samples rated poorly for reviewretraining.          Args             thres]] - rationale - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[Get statistics about the collection.]] - rationale - /home/kbs/Documents/final_project/src/embeddings/vector_store.py
+- [[Get the most recent turn.]] - rationale - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[Get the standard medical disclaimer.]] - rationale - /home/kbs/Documents/final_project/src/generation/prompt_manager.py
+- [[Hallucination detection for medical QA.  Detects potential hallucinations using]] - rationale - /home/kbs/Documents/final_project/src/xai/hallucination_detector.py
+- [[HallucinationDetector]] - code - /home/kbs/Documents/final_project/src/xai/hallucination_detector.py
+- [[HallucinationType]] - code - /home/kbs/Documents/final_project/src/xai/hallucination_detector.py
+- [[HealthResponse]] - code - /home/kbs/Documents/final_project/api/demo_server.py
+- [[HealthResponse_1]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[HealthcareQAPipeline]] - code - /home/kbs/Documents/final_project/src/pipeline/qa_pipeline.py
+- [[Heuristic detection for causation-style queries.]] - rationale - /home/kbs/Documents/final_project/src/pipeline/qa_pipeline.py
+- [[Heuristic evaluation when no judge LLM is available.          Scores based on]] - rationale - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[HighlightSpan]] - code - /home/kbs/Documents/final_project/src/xai/passage_highlighter.py
+- [[HighlightedPassage]] - code - /home/kbs/Documents/final_project/src/xai/passage_highlighter.py
+- [[HybridRetriever]] - code - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[Identify supporting spans in passages for the given answer.          Args]] - rationale - /home/kbs/Documents/final_project/src/xai/passage_highlighter.py
+- [[Identify which parts of retrieved passages directly support the answer.      Use]] - rationale - /home/kbs/Documents/final_project/src/xai/passage_highlighter.py
+- [[Initialize Corrective RAG.          Args             retriever Base retriever]] - rationale - /home/kbs/Documents/final_project/src/retrieval/corrective_rag.py
+- [[Initialize LLM-as-judge evaluator.          Args             judge_llm LLM to]] - rationale - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[Initialize LangChain Medical LLM wrapper.          Args             model_name]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_llm.py
+- [[Initialize context compressor.          Args             max_tokens Maximum co]] - rationale - /home/kbs/Documents/final_project/src/pipeline/context_compressor.py
+- [[Initialize conversation manager.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Initialize conversation manager.          Args             storage_path Option]] - rationale - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[Initialize evaluation runner.          Args             retriever Retrieval co]] - rationale - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[Initialize feedback collector and trajectory logger.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Initialize feedback collector.          Args             storage_path Path to]] - rationale - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[Initialize hybrid retriever.          Args             embedder Embedding mode]] - rationale - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[Initialize llama-cpp-python backend for GGUF models.]] - rationale - /home/kbs/Documents/final_project/src/generation/llm_wrapper.py
+- [[Initialize query enhancer.          Args             llm Optional LLM wrapper]] - rationale - /home/kbs/Documents/final_project/src/retrieval/query_enhancer.py
+- [[Initialize reranker.          Args             model_name Name of cross-encode]] - rationale - /home/kbs/Documents/final_project/src/retrieval/reranker.py
+- [[Initialize safety guardrails.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Insert context and question without ``str.format`` (userbrace-safe).     Expect]] - rationale - /home/kbs/Documents/final_project/src/generation/prompt_manager.py
+- [[Integration tests for Healthcare QA Chatbot improvements.  Tests cover - TinyLl]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[LLMAsJudge]] - code - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[LLMConfig]] - code - /home/kbs/Documents/final_project/config/settings.py
+- [[LangChain wrapper that uses an existing MedicalLLM instance.      Use this when]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_llm.py
+- [[LangChain-compatible LLM wrapper for MedicalLLM.  Wraps the existing MedicalLLM]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_llm.py
+- [[LangChain-compatible wrapper for MedicalLLM.      This wrapper allows using the]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_llm.py
+- [[LangSmithImprovementReportRequest]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[LangSmithMCPSettings]] - code - /home/kbs/Documents/final_project/src/mcp_client/langsmith_bridge.py
+- [[LangSmithToolRequest]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[Lazily initialize the underlying MedicalLLM.]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_llm.py
+- [[Lazy load LangChain pipeline with specified model.      Args         model_choi]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Lazy load LangGraph pipeline with specified model.      Args         model_choi]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Legacy alias expected by older testscallers.]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_retriever.py
+- [[Load all feedback from storage.]] - rationale - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[Load drug data from JSON file.]] - rationale - /home/kbs/Documents/final_project/scripts/ingest_drug_data.py
+- [[Load test cases from JSON file.]] - rationale - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[Main QA pipeline orchestrating all components.  Enhanced with - Adaptive ground]] - rationale - /home/kbs/Documents/final_project/src/pipeline/qa_pipeline.py
+- [[Main configuration class.]] - rationale - /home/kbs/Documents/final_project/config/settings.py
+- [[Main pipeline orchestrating retrieval, generation, and XAI.      Stages (each sk]] - rationale - /home/kbs/Documents/final_project/src/pipeline/qa_pipeline.py
+- [[Manage multiple conversation sessions.      Handles session creation, retrieval,]] - rationale - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[Manage prompts for medical QA.]] - rationale - /home/kbs/Documents/final_project/src/generation/prompt_manager.py
+- [[Medical domain LLM wrapper.     Supports TinyLlama (transformers) and BioMistral]] - rationale - /home/kbs/Documents/final_project/src/generation/llm_wrapper.py
+- [[Medical domain embedding model wrapper.     Supports MedCPT, PubMedBERT, BioBER]] - rationale - /home/kbs/Documents/final_project/src/embeddings/embedding_models.py
+- [[Medical embedding models for semantic search.]] - rationale - /home/kbs/Documents/final_project/src/embeddings/embedding_models.py
+- [[MedicalEmbedder]] - code - /home/kbs/Documents/final_project/src/embeddings/embedding_models.py
+- [[MedicalGuardrails]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[MedicalLLM]] - code - /home/kbs/Documents/final_project/src/generation/llm_wrapper.py
+- [[MedicalPromptManager]] - code - /home/kbs/Documents/final_project/src/generation/prompt_manager.py
+- [[MedicalQueryExpander]] - code - /home/kbs/Documents/final_project/src/retrieval/query_expander.py
+- [[Merge overlapping highlight spans.]] - rationale - /home/kbs/Documents/final_project/src/xai/passage_highlighter.py
+- [[Metrics for evaluating generated answers using LLM-as-judge.]] - rationale - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[Model runtime configuration.]] - rationale - /home/kbs/Documents/final_project/config/settings.py
+- [[ModelChoice]] - code - /home/kbs/Documents/final_project/config/settings.py
+- [[ModelConfig]] - code - /home/kbs/Documents/final_project/config/settings.py
+- [[Multi-method hallucination detection for medical answers.      Usage     -----]] - rationale - /home/kbs/Documents/final_project/src/xai/hallucination_detector.py
+- [[Normalised Discounted Cumulative Gain @ k (binary relevance).]] - rationale - /home/kbs/Documents/final_project/evaluation/retrieval_metrics.py
+- [[Normalize text to prevent bypass attacks using Unicode lookalikes or spacing tri]] - rationale - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Parameters         ----------         use_nli  Load a DeBERTa NLI model for ent]] - rationale - /home/kbs/Documents/final_project/src/xai/hallucination_detector.py
+- [[Parametrized retrieval quality tests.  Tests that the hybrid retriever returns m]] - rationale - /home/kbs/Documents/final_project/tests/test_retrieval_parametrized.py
+- [[Parse API_KEYS env var into a {key scope} mapping.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Parse the judge's response into metrics.]] - rationale - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[Passage Highlighting for XAI.  Identifies which spans in retrieved passages dire]] - rationale - /home/kbs/Documents/final_project/src/xai/passage_highlighter.py
+- [[PassageHighlighter]] - code - /home/kbs/Documents/final_project/src/xai/passage_highlighter.py
+- [[PediatricSafetyChecker]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Persist BM25 index and corpus to pickle cache for fast subsequent loads.]] - rationale - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[Persist RL-ready response trajectories.      Each line is one JSON object keyed]] - rationale - /home/kbs/Documents/final_project/src/feedback/trajectory_logger.py
+- [[Persist a response trajectory for RL data collection.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Pipeline-level answer cleaning to strip training data artifacts.         Delegat]] - rationale - /home/kbs/Documents/final_project/src/pipeline/qa_pipeline.py
+- [[PipelineConfig]] - code - /home/kbs/Documents/final_project/config/settings.py
+- [[Place strongest evidence first and second-strongest last (Liu et al., 2023).]] - rationale - /home/kbs/Documents/final_project/src/pipeline/qa_pipeline.py
+- [[Pre-initialize BM25 index from vector store.          Call this during API start]] - rationale - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[Pre-load NLI model to avoid first-query latency spike.]] - rationale - /home/kbs/Documents/final_project/src/xai/hallucination_detector.py
+- [[Print formatted summary of evaluation results.]] - rationale - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[Prompt management for medical question answering.  Uses TinyLlama chat template]] - rationale - /home/kbs/Documents/final_project/src/generation/prompt_manager.py
+- [[PromptTemplate]] - code - /home/kbs/Documents/final_project/src/generation/prompt_manager.py
+- [[Provide mock pipeline for testing.]] - rationale - /home/kbs/Documents/final_project/tests/conftest.py
+- [[QA Pipeline configuration.]] - rationale - /home/kbs/Documents/final_project/config/settings.py
+- [[Qdrant Cloud-based vector store for medical knowledge.     Seamlessly replaces C]] - rationale - /home/kbs/Documents/final_project/src/embeddings/vector_store.py
+- [[Query-type detection drives per-type RRF weight selection.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[QueryEnhancer]] - code - /home/kbs/Documents/final_project/src/retrieval/query_enhancer.py
+- [[QuestionRequest]] - code - /home/kbs/Documents/final_project/api/demo_server.py
+- [[QuestionRequest_1]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[RAGEvaluationRunner]] - code - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[RRF deduplicates by document ID, not content.]] - rationale - /home/kbs/Documents/final_project/tests/test_retrieval_parametrized.py
+- [[RRF fusion produces valid scores for different k parameters.]] - rationale - /home/kbs/Documents/final_project/tests/test_retrieval_parametrized.py
+- [[RRF handles empty result lists gracefully.]] - rationale - /home/kbs/Documents/final_project/tests/test_retrieval_parametrized.py
+- [[RRF handles varying numbers of result lists.]] - rationale - /home/kbs/Documents/final_project/tests/test_retrieval_parametrized.py
+- [[RRF respects weight ratios between result lists.]] - rationale - /home/kbs/Documents/final_project/tests/test_retrieval_parametrized.py
+- [[RRF-fuse rankings from multiple query strings (QueryEnhancer variants).]] - rationale - /home/kbs/Documents/final_project/src/pipeline/qa_pipeline.py
+- [[Read LangSmith MCP settings from environment.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Record negative feedback.]] - rationale - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[Record positive feedback.]] - rationale - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[Remove sessions older than max_age_hours.]] - rationale - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[Repeated queries should hit the per-instance embedding cache.]] - rationale - /home/kbs/Documents/final_project/tests/test_local_rollout.py
+- [[Represents a retrieved document.]] - rationale - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[Rerank documents using cross-encoder model.      Cross-encoders jointly encode q]] - rationale - /home/kbs/Documents/final_project/src/retrieval/reranker.py
+- [[Resolve a shorthand model key to a full model path.]] - rationale - /home/kbs/Documents/final_project/src/generation/llm_wrapper.py
+- [[Resolve adapter path with a sensible local default when present.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Result from LLM generation.]] - rationale - /home/kbs/Documents/final_project/src/generation/llm_wrapper.py
+- [[Result of a safety check.]] - rationale - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Result of evaluating a single test case.]] - rationale - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[Retrieval quality metrics MRR@k, Recall@k, Precision@k, NDCG@k.  These measure]] - rationale - /home/kbs/Documents/final_project/evaluation/retrieval_metrics.py
+- [[Retrieval system configuration.]] - rationale - /home/kbs/Documents/final_project/config/settings.py
+- [[RetrievalConfig]] - code - /home/kbs/Documents/final_project/config/settings.py
+- [[Retrieved documents are sorted by descending score.]] - rationale - /home/kbs/Documents/final_project/tests/test_retrieval_parametrized.py
+- [[RetrievedDocument]] - code - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[Retriever respects the k parameter for result count.]] - rationale - /home/kbs/Documents/final_project/tests/test_retrieval_parametrized.py
+- [[Retriever returns documents for diverse medical query types.]] - rationale - /home/kbs/Documents/final_project/tests/test_retrieval_parametrized.py
+- [[Retriever should publish the named timing keys used by the pipeline.]] - rationale - /home/kbs/Documents/final_project/tests/test_local_rollout.py
+- [[Return 1rank of the first relevant doc, or 0 if none found.]] - rationale - /home/kbs/Documents/final_project/evaluation/retrieval_metrics.py
+- [[Return LangSmith MCP connectivity and available tool names.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Return a short non-reversible key identifier for audit logs.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Return aggregate user feedback statistics.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Return an initialised pipeline for variant ∈ {standard, langchain, langgraph}.]] - rationale - /home/kbs/Documents/final_project/evaluation/run_paper_eval.py
+- [[Return available models and their descriptions.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Return identifier for this LLM type._1]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_llm.py
+- [[Return identifier for this LLM type.]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_llm.py
+- [[Return low-latency knobs (env-overridable; monkeypatch-friendly for tests).]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Return parameters that identify this LLM.]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_llm.py
+- [[Return path to the BM25 pickle cache, or None if vector store has no persist dir]] - rationale - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[Return structured JSON for HTTP exceptions.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Run RAG evaluation on a test set.      Supports both retrieval-only and end-to-e]] - rationale - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[Run all safety checks on text.          Args             text Text to check]] - rationale - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Run periodic cleanup so stale sessions do not accumulate forever.]] - rationale - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[Safety and guardrails configuration.]] - rationale - /home/kbs/Documents/final_project/config/settings.py
+- [[Safety classification levels.]] - rationale - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Safety guardrails for medical QA chatbot.]] - rationale - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Safety guardrails for medical QA to prevent harmful outputs.]] - rationale - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[SafetyCheckResult]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[SafetyConfig]] - code - /home/kbs/Documents/final_project/config/settings.py
+- [[SafetyInfo]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[SafetyLevel]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Sanitize output and add appropriate disclaimers.]] - rationale - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Save all sessions to storage.]] - rationale - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[Saving sessions should create parent directories for persistence.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Score a single query-document pair.]] - rationale - /home/kbs/Documents/final_project/src/retrieval/reranker.py
+- [[Shared orchestration logic for standard and streaming requests.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[SimpleFeedback]] - code - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[Simplified API server for Healthcare QA Chatbot - Demo Mode.  ⚠️ SAFETY WARNING]] - rationale - /home/kbs/Documents/final_project/api/demo_server.py
+- [[Simplified thumbs updown feedback.]] - rationale - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[SourceInfo]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[Split text into sentences, handling medical abbreviations.]] - rationale - /home/kbs/Documents/final_project/src/xai/passage_highlighter.py
+- [[Stable cache key = doc_count + SHA-256 of embedding_metadata.json content.]] - rationale - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[Store user feedback.          Args             question_id ID of the question]] - rationale - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[Stream a medical answer token by token (NDJSON).      Event types emitted]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Structured error response returned by all error handlers.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Submit user feedback tied to a prior response_id.      Stores ratinglabels in F]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Summarize context if it's very long.          Only works if LLM is available.]] - rationale - /home/kbs/Documents/final_project/src/pipeline/context_compressor.py
+- [[Test AVAILABLE_MODELS has expected entries.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test EmergencyDetector categorization.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test GenerationResult dataclass.]] - rationale - /home/kbs/Documents/final_project/tests/test_generation.py
+- [[Test LLM wrapper can be imported.]] - rationale - /home/kbs/Documents/final_project/tests/test_generation.py
+- [[Test ModelChoice enum values.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test Pydantic requestresponse models.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test QuestionRequest default values.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test QuestionRequest with model choice.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test RetrievedDocument dataclass.]] - rationale - /home/kbs/Documents/final_project/tests/test_retrieval.py
+- [[Test SafetyInfo defaults.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test XAI passage highlighting.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test adding a turn to conversation.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test adding custom template.]] - rationale - /home/kbs/Documents/final_project/tests/test_generation.py
+- [[Test building context from documents.]] - rationale - /home/kbs/Documents/final_project/tests/test_generation.py
+- [[Test building prompt with default template.]] - rationale - /home/kbs/Documents/final_project/tests/test_generation.py
+- [[Test building prompt with specific template.]] - rationale - /home/kbs/Documents/final_project/tests/test_generation.py
+- [[Test cardiac emergency detection.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[Test content filter blocks harmful content.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test conversation context window generation.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test conversation management and follow-up detection.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test development config uses tinyllama.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test disclaimer addition.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[Test drug interaction detection.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test emergency keyword detection.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[Test emergency response messages.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[Test expansion limit is respected.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test follow-up question detection.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test medical abbreviation expansion.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test medical disclaimer is returned.]] - rationale - /home/kbs/Documents/final_project/tests/test_generation.py
+- [[Test medical query expansion with synonyms.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test mental health emergency detection.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[Test no spans for unrelated passages.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test non-emergency detection.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[Test output sanitization.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[Test production config uses TinyLlama.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test retriever can be initialized.]] - rationale - /home/kbs/Documents/final_project/tests/test_retrieval.py
+- [[Test safety guardrails detect and handle dangerous inputs.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test sensitive topic flagging.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[Test sentence splitting with medical abbreviations.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test session creation.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test stroke emergency detection.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[Test suicide-related emergency detection.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[Test that LLMConfig has a default_model field.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test that context respects max length.]] - rationale - /home/kbs/Documents/final_project/tests/test_generation.py
+- [[Test that dosage recommendations are flagged.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[Test that drug creation requests are blocked.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[Test that emergency keywords trigger emergency response.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test that matching spans are found.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test that medical synonyms are generated.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test that model selection configuration works correctly.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test that normal content is allowed.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[Test that normal input passes.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[Test that normal output passes.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[Test that safe medical questions pass guardrails.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Test that self-harm content is blocked.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[Test that supported models are defined.]] - rationale - /home/kbs/Documents/final_project/tests/test_generation.py
+- [[Test that unknown terms return only original.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[TestAPIModels]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[TestAdaptiveRetrievalWeights]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[TestContentFilter]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[TestConversationHistory]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[TestDrugInteractionNegation]] - code - /home/kbs/Documents/final_project/tests/test_retrieval_parametrized.py
+- [[TestEmergencyDetector]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[TestGuardrailsEdgeCases]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[TestGuardrailsIntegration]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[TestHybridRetriever]] - code - /home/kbs/Documents/final_project/tests/test_retrieval.py
+- [[TestLLMWrapper]] - code - /home/kbs/Documents/final_project/tests/test_generation.py
+- [[TestMedicalGuardrails]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[TestMedicalPromptManager]] - code - /home/kbs/Documents/final_project/tests/test_generation.py
+- [[TestMultiModelSelection]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[TestPassageHighlighting]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[TestQueryExpansion]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[TestRetrievalMetrics]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Tests for ContentFilter.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[Tests for EmergencyDetector.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[Tests for HybridRetriever (mock-based).]] - rationale - /home/kbs/Documents/final_project/tests/test_retrieval.py
+- [[Tests for LLM wrapper (import tests only, no model loading).]] - rationale - /home/kbs/Documents/final_project/tests/test_generation.py
+- [[Tests for MedicalGuardrails.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[Tests for MedicalPromptManager.]] - rationale - /home/kbs/Documents/final_project/tests/test_generation.py
+- [[Tests for negation-aware drug interaction checking (Section 5.4).]] - rationale - /home/kbs/Documents/final_project/tests/test_retrieval_parametrized.py
+- [[Trajectory logging utilities for RL policy optimization.  Stores response trajec]] - rationale - /home/kbs/Documents/final_project/src/feedback/trajectory_logger.py
+- [[TrajectoryLogger]] - code - /home/kbs/Documents/final_project/src/feedback/trajectory_logger.py
+- [[True when no keys are configured at all (open dev mode).]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Try to load BM25 from pickle cache. Returns True on success.]] - rationale - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[Unicode variants in output should be normalized before checking.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[Unit tests for MRR, Precision, Recall, NDCG functions.]] - rationale - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[Unit tests for generation components.]] - rationale - /home/kbs/Documents/final_project/tests/test_generation.py
+- [[Unit tests for safety guardrails.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[Use LLM to generate query expansions.]] - rationale - /home/kbs/Documents/final_project/src/retrieval/query_enhancer.py
+- [[Use an LLM to evaluate answer quality.      Based on the G-Eval approach uses a]] - rationale - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[Use tighter token budgets for low-latency and high-precision query types.]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[User Feedback Collection for Continuous Improvement.  Collects and stores user f]] - rationale - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[User feedback on a QA response.]] - rationale - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[UserFeedback]] - code - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[Vector store should verify metadata from both sidecar and legacy sentinel.]] - rationale - /home/kbs/Documents/final_project/tests/test_local_rollout.py
+- [[VectorStore]] - code - /home/kbs/Documents/final_project/src/embeddings/vector_store.py
+- [[Verify that the request carries a valid admin-scoped key.      Only keys with sc]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Verify that the request carries a valid read-or-admin key.      Accepts any key]] - rationale - /home/kbs/Documents/final_project/api/main.py
+- [[Very long input should be handled gracefully without crashing.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[XAI (Explainability) configuration.]] - rationale - /home/kbs/Documents/final_project/config/settings.py
+- [[XAIConfig]] - code - /home/kbs/Documents/final_project/config/settings.py
+- [[You have options' should not trigger diagnosis warning.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[You have some choices' should not trigger diagnosis warning.]] - rationale - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[_DummyLLM_1]] - code - /home/kbs/Documents/final_project/tests/test_extractive_answer.py
+- [[_DummyPromptManager_1]] - code - /home/kbs/Documents/final_project/tests/test_extractive_answer.py
+- [[_DummyRetriever_1]] - code - /home/kbs/Documents/final_project/tests/test_extractive_answer.py
+- [[_Gen_1]] - code - /home/kbs/Documents/final_project/tests/test_extractive_answer.py
+- [[_adaptive_generation_max_tokens()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[_auth_disabled()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[_build_key_registry()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[_build_score_stats()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[_compute_feedback_reward()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[_extract_source_scores()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[_get_langchain_pipeline()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[_get_langgraph_pipeline()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[_get_langsmith_mcp_settings()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[_get_low_latency_settings()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[_init_conversation_manager()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[_init_feedback_system()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[_init_guardrails()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[_inject_context_question()]] - code - /home/kbs/Documents/final_project/src/generation/prompt_manager.py
+- [[_is_causation_question()]] - code - /home/kbs/Documents/final_project/src/pipeline/qa_pipeline.py
+- [[_key_id()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[_log_response_trajectory()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[_make_rules()]] - code - /home/kbs/Documents/final_project/src/xai/hallucination_detector.py
+- [[_mk_pipeline()_1]] - code - /home/kbs/Documents/final_project/tests/test_extractive_answer.py
+- [[_ndcg_at_k()_1]] - code - /home/kbs/Documents/final_project/evaluation/retrieval_metrics.py
+- [[_precision_at_k()_1]] - code - /home/kbs/Documents/final_project/evaluation/retrieval_metrics.py
+- [[_prepare_and_execute_pipeline()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[_recall_at_k()_1]] - code - /home/kbs/Documents/final_project/evaluation/retrieval_metrics.py
+- [[_reciprocal_rank()]] - code - /home/kbs/Documents/final_project/evaluation/retrieval_metrics.py
+- [[_resolve_adapter_path()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[ask_question()_3]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[ask_stream()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[clear_cache()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[collector.py]] - code - /home/kbs/Documents/final_project/src/feedback/collector.py
+- [[compute_metrics_by_query_type()]] - code - /home/kbs/Documents/final_project/evaluation/retrieval_metrics.py
+- [[compute_retrieval_metrics()]] - code - /home/kbs/Documents/final_project/evaluation/retrieval_metrics.py
+- [[create_session()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[demo_server.py]] - code - /home/kbs/Documents/final_project/api/demo_server.py
+- [[detector()]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[embedding_dimension()]] - code - /home/kbs/Documents/final_project/src/embeddings/embedding_models.py
+- [[embedding_models.py]] - code - /home/kbs/Documents/final_project/src/embeddings/embedding_models.py
+- [[feedback_stats()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[from_env()]] - code - /home/kbs/Documents/final_project/config/settings.py
+- [[g()]] - code - /home/kbs/Documents/final_project/tests/test_safety_adversarial.py
+- [[get_pipeline()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[get_session()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[global_exception_handler()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[guardrails()]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[guardrails.py]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[hallucination_detector.py]] - code - /home/kbs/Documents/final_project/src/xai/hallucination_detector.py
+- [[health_check()]] - code - /home/kbs/Documents/final_project/api/demo_server.py
+- [[health_check()_1]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[history.py]] - code - /home/kbs/Documents/final_project/src/conversation/history.py
+- [[http_exception_handler()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[info()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[langsmith_improvement_report()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[langsmith_status()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[langsmith_tool()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[lifespan()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[list_models()_1]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[load_pipeline()]] - code - /home/kbs/Documents/final_project/evaluation/run_paper_eval.py
+- [[main()_15]] - code - /home/kbs/Documents/final_project/evaluation/benchmarks/evaluate_pipeline.py
+- [[main()_11]] - code - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[main.py]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[mock_pipeline()]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[mock_retriever()_4]] - code - /home/kbs/Documents/final_project/tests/test_retrieval_parametrized.py
+- [[passage_highlighter.py]] - code - /home/kbs/Documents/final_project/src/xai/passage_highlighter.py
+- [[prompt_manager()]] - code - /home/kbs/Documents/final_project/tests/test_generation.py
+- [[prompt_manager.py]] - code - /home/kbs/Documents/final_project/src/generation/prompt_manager.py
+- [[query_expander.py]] - code - /home/kbs/Documents/final_project/src/retrieval/query_expander.py
+- [[rate_limit_handler()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[retrieval_metrics.py]] - code - /home/kbs/Documents/final_project/evaluation/retrieval_metrics.py
+- [[root()_1]] - code - /home/kbs/Documents/final_project/api/demo_server.py
+- [[root()_2]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[run_evaluation.py]] - code - /home/kbs/Documents/final_project/evaluation/run_evaluation.py
+- [[settings.py]] - code - /home/kbs/Documents/final_project/config/settings.py
+- [[submit_feedback()_3]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[test_calibration_pairs_fall_back_to_matched_proxy_without_answer_text()]] - code - /home/kbs/Documents/final_project/tests/test_local_rollout.py
+- [[test_calibration_pairs_use_answer_text_when_available()]] - code - /home/kbs/Documents/final_project/tests/test_local_rollout.py
+- [[test_causation_extractive_prioritizes_cause_sentences()]] - code - /home/kbs/Documents/final_project/tests/test_extractive_answer.py
+- [[test_chest_pain_emergency()]] - code - /home/kbs/Documents/final_project/tests/test_safety_adversarial.py
+- [[test_educational_diabetes_not_emergency()]] - code - /home/kbs/Documents/final_project/tests/test_safety_adversarial.py
+- [[test_explicit_self_harm_emergency()]] - code - /home/kbs/Documents/final_project/tests/test_safety_adversarial.py
+- [[test_extractive_answer.py]] - code - /home/kbs/Documents/final_project/tests/test_extractive_answer.py
+- [[test_generation.py]] - code - /home/kbs/Documents/final_project/tests/test_generation.py
+- [[test_integration.py]] - code - /home/kbs/Documents/final_project/tests/test_integration.py
+- [[test_is_causation_question_detection()]] - code - /home/kbs/Documents/final_project/tests/test_extractive_answer.py
+- [[test_local_rollout.py]] - code - /home/kbs/Documents/final_project/tests/test_local_rollout.py
+- [[test_query_embedding_cache_is_reused()]] - code - /home/kbs/Documents/final_project/tests/test_local_rollout.py
+- [[test_safety.py]] - code - /home/kbs/Documents/final_project/tests/test_safety.py
+- [[test_safety_adversarial.py]] - code - /home/kbs/Documents/final_project/tests/test_safety_adversarial.py
+- [[test_vector_store_embedding_metadata_sidecar_and_legacy_fallback()]] - code - /home/kbs/Documents/final_project/tests/test_local_rollout.py
+- [[time()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[trajectory_logger.py]] - code - /home/kbs/Documents/final_project/src/feedback/trajectory_logger.py
+- [[verify_admin_api_key()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[verify_api_key()]] - code - /home/kbs/Documents/final_project/api/main.py
+
+## Live Query (requires Dataview plugin)
+
+```dataview
+TABLE source_file, type FROM #community/Community_2
+SORT file.name ASC
+```
+
+## Connections to other communities
+- 264 edges to [[_COMMUNITY_Community 0]]
+- 204 edges to [[_COMMUNITY_Community 5]]
+- 91 edges to [[_COMMUNITY_Community 4]]
+- 57 edges to [[_COMMUNITY_Community 16]]
+- 36 edges to [[_COMMUNITY_Community 1]]
+- 15 edges to [[_COMMUNITY_Community 10]]
+- 15 edges to [[_COMMUNITY_Community 27]]
+- 9 edges to [[_COMMUNITY_Community 33]]
+- 7 edges to [[_COMMUNITY_Community 26]]
+- 6 edges to [[_COMMUNITY_Community 6]]
+- 4 edges to [[_COMMUNITY_Community 18]]
+- 3 edges to [[_COMMUNITY_Community 20]]
+- 3 edges to [[_COMMUNITY_Community 17]]
+- 3 edges to [[_COMMUNITY_Community 15]]
+- 2 edges to [[_COMMUNITY_Community 9]]
+- 2 edges to [[_COMMUNITY_Community 3]]
+- 2 edges to [[_COMMUNITY_Community 31]]
+- 2 edges to [[_COMMUNITY_Community 25]]
+- 1 edge to [[_COMMUNITY_Community 11]]
+- 1 edge to [[_COMMUNITY_Community 7]]
+- 1 edge to [[_COMMUNITY_Community 13]]
+
+## Top bridge nodes
+- [[info()]] - degree 45, connects to 9 communities
+- [[time()]] - degree 17, connects to 8 communities
+- [[HealthcareQAPipeline]] - degree 139, connects to 5 communities
+- [[HybridRetriever]] - degree 192, connects to 4 communities
+- [[MedicalLLM]] - degree 130, connects to 4 communities

@@ -1,0 +1,47 @@
+\chapter{\MakeUppercase{Conclusion and Further Enhancements}}
+
+The deliverable is a locally run, privacy-preserving healthcare \ac{qa} system. It hits the objectives set at the start: answers are grounded, uncertainty is surfaced, and inference stays offline.
+
+On the test CPU, retrieval over 500{,}000-plus documents averages about 43 seconds and generation adds another 70 seconds. On the 36-question gold set the retriever found relevant material 97\% of the time; QLoRA fine-tuning raised keyword coverage on the 97-question suite by a clear margin over the base TinyLlama run.
+
+The largest quality jump came from data preparation, not from swapping models. Moving to the `RecursiveSentenceChunker`, which keeps sentence boundaries intact, improved keyword coverage more than any single algorithm change. That matches what others report for RAG: chunking and corpus hygiene often matter as much as the generator.
+
+The confidence module is deliberately conservative. Penalising answers when sources disagree trades higher keyword scores for behaviour I would rather show in a clinical-adjacent demo. Mean warm-path latency near 106 seconds rules out consumer chat, but it is acceptable for an asynchronous, privacy-first prototype; GPU hardware would shrink generation to a few seconds per answer.
+
+Ninety-seven held-out questions are enough to see large swings (for example the 0.292 KB v1--v2 gap) but not to separate small tweaks. A few hundred items and clinician ratings would be needed before claiming fine-grained ordering between configurations. The safety guardrails are regex- and list-driven, not clinically reasoned: they catch many risky prompts, yet they are not a substitute for triage by a human. Accuracy tracks the sources; the model does not ``understand'' pathophysiology the way a physician does.
+
+We also have a technical bottleneck with the BM25 index. If the cache is missing, rebuilding the index for 500k documents can use a lot of RAM. On low-memory machines, this can sometimes cause the system to crash if the embedding models are already running. For now, keeping the index pre-built and cached is the best way to avoid this.
+
+\section{Further enhancements}
+
+\subsection{Latency reduction}
+
+We project that moving to a machine with a T4 or equivalent GPU would cut generation latency from about 70 seconds and speed up the dense-embedding part of retrieval. No code changes are required; both the Transformers and llama-cpp-python backends are designed to use GPU automatically when CUDA is available.
+
+\subsection{Continuous knowledge base updates}
+
+The knowledge base is currently static. A production deployment would benefit from an ingestion pipeline that periodically pulls new PubMed abstracts and clinical guidelines, chunks them with the RecursiveSentenceChunker, and upserts them into ChromaDB. ChromaDB supports incremental upserts; the main cost is regenerating the BM25 index, which would need to run offline during low-traffic periods.
+
+\subsection{Extended multi-turn support}
+
+Multi-turn conversation with follow-up resolution is implemented across two components. The \texttt{ConversationManager} class maintains session history across queries within a session. Follow-up detection is handled by the \texttt{FollowUpDetector} class in \texttt{src/\allowbreak conversation/history.py}, which applies four checks in sequence: (1) a phrase match against the \texttt{FOLLOWUP\_PHRASES} list (``what about'', ``tell me more'', ``also'', ``why is that'', and others); (2) a leading-pronoun check against \texttt{REFERENCE\_\allowbreak PRONOUNS} (it, its, this, that, these, those, they, them, their, he, she, his, her); (3) a short-question heuristic that flags queries of six words or fewer; and (4) a \texttt{\_has\_clear\_subject()} test that returns false when a question opens with a reference pronoun but no independent subject starter follows. If any check fires, the question is classified as a follow-up.
+
+When a follow-up is detected, the pipeline augments the retrieval query by prepending the prior conversation context:
+
+\begin{lstlisting}[language=Python]
+retrieval_query = f"{conversation_context}\n\nCurrent question: {question}"
+\end{lstlisting}
+
+The hybrid retriever therefore searches the knowledge base against the full exchange rather than the new question in isolation. Extending support to longer context windows across many turns, and replacing the \texttt{\_has\_clear\_subject()} heuristic with a lightweight dependency parser, are natural next steps.
+
+\subsection{Clinical validation}
+
+Deploying in any patient-facing context would require evaluation by licensed medical professionals against established clinical guidelines. The current automated metrics measure textual similarity to reference answers; they do not measure clinical accuracy or safety.
+
+\subsection{Calibration improvement}
+
+The ECE of 0.144 with systematic under-confidence suggests the Platt scaling parameters were not fitted on a sufficiently large or representative set. A calibration set of at least 300 questions, balanced across the four query categories, would likely produce better-calibrated scores. Temperature scaling~\cite{guo2017calibration} is a simpler alternative to Platt scaling that is easier to tune and performs comparably on many classification tasks.
+
+\subsection{Larger evaluation set}
+
+The 97-question set is sufficient to observe large differences (the 0.292 KB v1-vs-v2 gap is clearly above the noise floor) but not small ones. Extending the gold set to 500 or more questions with human quality ratings would allow more reliable conclusions about differences between model and configuration variants.

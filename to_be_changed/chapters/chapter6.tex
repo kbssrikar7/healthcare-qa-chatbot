@@ -1,0 +1,106 @@
+\chapter{\MakeUppercase{Project Implementation}}
+
+\section{Repository structure}
+
+The repository is organized into ten main sections: 
+\texttt{src/} contains the core logic, while \texttt{api/} handles the FastAPI server. The \texttt{frontend-react/} and \texttt{frontend/} folders house our two different UIs. Evaluation and testing live in \texttt{evaluation/}, \texttt{tests/}, and \texttt{scripts/}. Configuration is centralized in \texttt{config/}, and data files stay in \texttt{data/}. Finally, \texttt{models/} stores the large weights needed for offline generation.
+
+\section{Knowledge base construction}
+
+I built two versions of the knowledge base to test the impact of chunking. Version 1 was a simple baseline using character-based splitting. Version 2, which I built using a Colab \ac{tpu} instance, used the `RecursiveSentenceChunker` to better respect medical context. This switch turned out to be the single biggest win for the project: keyword coverage jumped by nearly 30\% just by making the chunks more aware of sentence boundaries.
+
+The build follows five steps:
+
+\begin{enumerate}
+    \item Download and preprocess the three source datasets. ChatDoctor-HealthCareMagic conversations are formatted as ``Question: ... Answer: ...'' pairs. PubMedQA questions are formatted with the abstract context. MedMCQA items are formatted as question-answer pairs with the correct answer appended.
+    \item Apply text cleaning: remove Unicode artifacts, normalize whitespace, strip HTML tags from web-scraped content.
+    \item Run RecursiveSentenceChunker to produce 512-token chunks with 64-token overlap.
+    \item Embed chunks using \texttt{all-MiniLM-L6-v2} and upsert into ChromaDB with source metadata.
+    \item Build and pickle the BM25 index from the same documents.
+\end{enumerate}
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.95\linewidth,height=0.85\textheight,keepaspectratio]{images/data_ingestion_final.png}
+    \caption{Ingestion: clean, chunk at sentence boundaries, embed into ChromaDB, build BM25 pickle.}
+    \label{fig:data_ingestion}
+\end{figure}
+
+The v2 build produced 505,584 documents in approximately 80 minutes on the Colab \ac{tpu} v5e. The \ac{tpu} accelerated the Colab environment generally; \texttt{all-MiniLM-L6-v2} is a SentenceTransformer model and ran on CPU within Colab regardless of TPU availability.
+
+\section{Pipeline implementation}
+
+\subsection{Retrieval module}
+
+\texttt{src/retrieval/hybrid\_retriever.py} loads the BM25 index from the pickle cache at startup. If no cache exists, it fetches all documents from ChromaDB, builds the index in memory, then saves it. The BM25 tokeniser uses whitespace splitting with lowercasing; no stemming is applied. An \texttt{OrderedDict}-based \ac{lru} cache in the embedding layer (\texttt{src/embeddings/embedding\_models.py}) avoids re-encoding identical query strings, which matters when the query expander generates several variants of the same question.
+
+Per-stage timing is recorded in milliseconds via \texttt{time.perf\_counter()} and returned in the \texttt{stage\_latencies} field of every response. On the test hardware, the retrieval stage (BM25 + dense + RRF) takes a mean of 42.6 seconds, the corrective RAG check adds 1.2 seconds, and generation accounts for 69.9 seconds.
+
+\subsection{Generation module}
+
+The \texttt{MedicalLLM} class in \texttt{src/generation/\allowbreak llm\_wrapper.py} selects between two backends based on the \texttt{model\_name} configuration parameter. The \texttt{tinyllama} backend uses HuggingFace Transformers with bfloat16 precision and HuggingFace's \texttt{TextIterator\-Streamer} for token-level streaming. The \texttt{biomistral} backend uses \path{llama-cpp-python} with the \ac{gguf} model file. Both expose streaming via the \texttt{generate\_stream()} generator method.
+
+The prompt template in \texttt{src/generation/prompt\_manager.py} follows the TinyLlama chat format:
+
+\begin{lstlisting}[language=Python, caption=Prompt construction for TinyLlama]
+system_prompt = (
+    "You are a medical assistant. Answer the question based ONLY "
+    "on the provided context. If the context does not contain "
+    "enough information, say so. Do not invent information."
+)
+prompt = f"<|system|>\n{system_prompt}</s>\n"
+       + f"<|user|>\n{context}\n\nQuestion: {question}</s>\n"
+       + "<|assistant|>\n"
+\end{lstlisting}
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.95\linewidth,height=0.85\textheight,keepaspectratio]{images/fig2_metric_comparison.png}
+    \caption{Generation backends compared (TinyLlama base, QLoRA TinyLlama, BioMistral-7B). QLoRA wins keyword coverage; BioMistral leads ROUGE-L and BERTScore.}
+    \label{fig:metric_comparison}
+\end{figure}
+
+\subsection{XAI module}
+
+\texttt{src/xai/multi\_signal\_confidence.py} computes the five confidence signals described in Chapter 4. The hallucination detector in \path{src/xai/hallucination_detector.py} uses the \texttt{cross-encoder/nli-deberta-v3-small} model via the HuggingFace Transformers pipeline. Input pairs are formatted as \texttt{\{"text": premise, "text\_pair\allowbreak{}": hypothesis\}} using the standard pair encoding; inserting \texttt{[SEP]} manually was tested during development and confirmed to have no effect, as DeBERTa's tokeniser handles pair separation internally.
+
+Source attribution (\texttt{src/xai/source\_attribution.py}) scores each retrieved document by token overlap with the generated answer and returns the top-3 passages with their source metadata.
+
+\subsection{Frontend implementation}
+
+The React frontend in \texttt{frontend-react/} uses the assistant-ui library for the chat thread component. It calls the \texttt{/ask/stream} endpoint and renders tokens progressively as they arrive. Source cards below the answer display each attributed passage with its relevance score. A diagnostics panel, toggled from the UI, shows the per-stage latency breakdown, confidence signal values, and any hallucination flags.
+
+The Streamlit frontend in \texttt{frontend/streamlit\_app.py} is the main diagnostic and evaluation \ac{ui}; the React application (\texttt{frontend-react}) is what end users see. The Streamlit dashboard renders the full response alongside a source attribution panel, a per-stage latency breakdown, confidence signal values, and any raised hallucination flags --- all in a layout that reviewers can read without extra tooling. The chat history persists within the session, and the sidebar exposes model selection and retrieval-mode controls so the system behaviour can be adjusted without restarting the server.
+
+\section{LangGraph implementation}
+
+\texttt{src/langgraph/langgraph\_pipeline.py} wraps the pipeline stages as LangGraph nodes: a start node for safety checking and query enhancement, a retrieval node, a grounding decision node that branches on context sufficiency, a generation node, and a post-processing node for hallucination detection and confidence scoring. The LangGraph path handles multi-hop queries, where a second retrieval round is triggered if the first round returns insufficient context.
+
+\section{Deployment}
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.95\linewidth,height=0.85\textheight,keepaspectratio]{images/deployment_architecture_final.png}
+    \caption{CI on push to \texttt{main}; Compose runs API + Streamlit with KB and BM25 on a shared volume.}
+    \label{fig:deployment_arch}
+\end{figure}
+
+I designed the deployment to be as plug-and-play as possible. By using Docker to package both the logic and the vector database, you can get the system running on any machine with one command. This avoids the "it works on my machine" headache that often happens with complex RAG setups.
+\subsection{Docker Compose deployment}
+
+Compose declares two services in \texttt{docker-compose.yml}: \texttt{api} (FastAPI) and \texttt{frontend} (Streamlit). Images build from the repository \texttt{Dockerfile}. ChromaDB runs in-process inside \texttt{api}. The collection name is \texttt{medical\_knowledge\_v2}; vectors and metadata persist under \texttt{data/knowledge\_\allowbreak base\_v2} on a named Docker volume.
+
+The BM25 pickle lives beside that data at \texttt{data/knowledge\_\allowbreak base\_v2/bm25\_\allowbreak index.pkl}. Setting \texttt{SKIP\_BM25=true} in the Compose environment skips the BM25 index build during the startup warmup pass, which reduces the time before the first request is accepted on hardware where the index is already cached. The complete deployment sequence is:
+
+\begin{lstlisting}[language=bash, caption=Docker Compose deployment]
+docker-compose up --build
+\end{lstlisting}
+
+Health checks on the \texttt{api} service poll \texttt{/health} every 30 seconds. The \texttt{frontend} service declares a \texttt{depends\_on} condition on the \texttt{api} health check, so Streamlit does not start until the FastAPI backend has loaded the model and passed its first health probe.
+
+\subsection{Continuous integration}
+
+The GitHub Actions workflow in \texttt{.github/workflows/ci.yml} runs on every push to \texttt{main} and on pull requests. It installs CPU-only PyTorch to avoid downloading the 2 GB GPU build on the CI runner, runs flake8 linting, and executes the pytest suite with the \texttt{-k "not langsmith"} filter to skip tests that require a LangSmith \ac{api} key. Docker layer caching keeps the CI build under 10 minutes.
+
+This CI setup blocks merges that break the suite. Every commit has to pass the same checks, which limits regressions as the codebase grows. Docker layer caching on the GitHub runner keeps the job under ten minutes despite heavy dependencies such as \texttt{llama-cpp-python}. A later step would be to publish images from green builds, but that is outside the scope of this thesis.
+

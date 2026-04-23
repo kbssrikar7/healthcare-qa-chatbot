@@ -1,0 +1,830 @@
+---
+type: community
+cohesion: 0.01
+members: 773
+---
+
+# Community 0
+
+**Cohesion:** 0.01 - loosely connected
+**Members:** 773 nodes
+
+## Members
+- [[(connect_seconds, read_seconds) for long-running ask.]] - rationale - /home/kbs/Documents/final_project/frontend/streamlit_app.py
+- [[.__init__()_62]] - code - /home/kbs/Documents/final_project/scripts/build_knowledge_base_colab.py
+- [[.__init__()_63]] - code - /home/kbs/Documents/final_project/scripts/build_knowledge_base_colab.py
+- [[.__init__()_64]] - code - /home/kbs/Documents/final_project/scripts/build_knowledge_base_colab.py
+- [[.__init__()_57]] - code - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[.__init__()_41]] - code - /home/kbs/Documents/final_project/src/xai/factual_consistency.py
+- [[.__init__()_9]] - code - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[.__init__()_10]] - code - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[.__init__()_11]] - code - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[.__init__()_42]] - code - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[.__init__()_20]] - code - /home/kbs/Documents/final_project/src/retrieval/reranker.py
+- [[.__init__()_6]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[.__init__()_5]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[._add_overlap()_1]] - code - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[._ask()]] - code - /home/kbs/Documents/final_project/tests/locustfile.py
+- [[._build_embedding_cache()]] - code - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[._calculate_claim_support()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[._calculate_term_overlap()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[._check_answerability()_1]] - code - /home/kbs/Documents/final_project/src/pipeline/qa_pipeline.py
+- [[._check_fabricated_citations()]] - code - /home/kbs/Documents/final_project/src/xai/hallucination_detector.py
+- [[._check_medical_sanity()]] - code - /home/kbs/Documents/final_project/src/xai/hallucination_detector.py
+- [[._check_self_contradiction()]] - code - /home/kbs/Documents/final_project/src/xai/hallucination_detector.py
+- [[._check_single_claim()]] - code - /home/kbs/Documents/final_project/src/xai/factual_consistency.py
+- [[._check_source_grounding()]] - code - /home/kbs/Documents/final_project/src/xai/hallucination_detector.py
+- [[._dense_retrieve()]] - code - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[._embedding_similarity()]] - code - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[._enrich_with_xai()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[._expand_abbreviations()]] - code - /home/kbs/Documents/final_project/src/retrieval/query_enhancer.py
+- [[._expand_context_windows()]] - code - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[._expand_with_synonyms()]] - code - /home/kbs/Documents/final_project/src/retrieval/query_enhancer.py
+- [[._extract_claims()_1]] - code - /home/kbs/Documents/final_project/src/xai/factual_consistency.py
+- [[._extract_claims()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[._extract_key_sentences()]] - code - /home/kbs/Documents/final_project/src/pipeline/context_compressor.py
+- [[._extract_key_terms()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[._extract_relevant_snippet()]] - code - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[._fallback_check()]] - code - /home/kbs/Documents/final_project/src/xai/factual_consistency.py
+- [[._find_evidence()]] - code - /home/kbs/Documents/final_project/src/xai/factual_consistency.py
+- [[._format_dense_results()]] - code - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[._generate_explanation()]] - code - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[._get_chunk_size_for_source()]] - code - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[._get_risk_level()]] - code - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[._grade_documents()]] - code - /home/kbs/Documents/final_project/src/retrieval/corrective_rag.py
+- [[._init_bm25()]] - code - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[._is_educational()]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[._key_terms()]] - code - /home/kbs/Documents/final_project/src/xai/hallucination_detector.py
+- [[._lazy_init_bm25_from_store()]] - code - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[._log()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[._merge()]] - code - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[._mmr_rerank_candidates()]] - code - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[._read_json()_1]] - code - /home/kbs/Documents/final_project/scripts/run_mcp_e2e.py
+- [[._read_json()]] - code - /home/kbs/Documents/final_project/tests/e2e/test_streamlit_selenium.py
+- [[._refine_query()]] - code - /home/kbs/Documents/final_project/src/retrieval/corrective_rag.py
+- [[._reorder_for_attention()]] - code - /home/kbs/Documents/final_project/src/pipeline/context_compressor.py
+- [[._retrieve_multi_query_fused()]] - code - /home/kbs/Documents/final_project/src/pipeline/qa_pipeline.py
+- [[._safety_filter_documents()]] - code - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[._send_json()_1]] - code - /home/kbs/Documents/final_project/scripts/run_mcp_e2e.py
+- [[._send_json()]] - code - /home/kbs/Documents/final_project/tests/e2e/test_streamlit_selenium.py
+- [[._simple_reformulations()]] - code - /home/kbs/Documents/final_project/src/retrieval/query_enhancer.py
+- [[._size_for_source()]] - code - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[._sparse_retrieve()]] - code - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[._split()]] - code - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[._split_sentences()_1]] - code - /home/kbs/Documents/final_project/src/pipeline/context_compressor.py
+- [[._text_overlap()]] - code - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[._truncate_to_tokens()]] - code - /home/kbs/Documents/final_project/src/pipeline/context_compressor.py
+- [[.add_documents()_1]] - code - /home/kbs/Documents/final_project/scripts/build_knowledge_base_colab.py
+- [[.add_documents()]] - code - /home/kbs/Documents/final_project/src/embeddings/vector_store.py
+- [[.answer()_2]] - code - /home/kbs/Documents/final_project/src/pipeline/qa_pipeline.py
+- [[.attribute_answer()_1]] - code - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[.build_context_from_documents()]] - code - /home/kbs/Documents/final_project/src/generation/prompt_manager.py
+- [[.cache_stats()]] - code - /home/kbs/Documents/final_project/src/embeddings/embedding_models.py
+- [[.check_consistency()]] - code - /home/kbs/Documents/final_project/src/xai/factual_consistency.py
+- [[.check_medical_claims()]] - code - /home/kbs/Documents/final_project/src/xai/factual_consistency.py
+- [[.chunk_document()]] - code - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[.chunk_document()_1]] - code - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[.chunk_documents()]] - code - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[.chunk_documents()_1]] - code - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[.chunk_text()]] - code - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[.compress()]] - code - /home/kbs/Documents/final_project/src/pipeline/context_compressor.py
+- [[.compute_aggregate_score()]] - code - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[.compute_token_importance()]] - code - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[.count()_1]] - code - /home/kbs/Documents/final_project/scripts/build_knowledge_base_colab.py
+- [[.create_session()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[.decompose_query()]] - code - /home/kbs/Documents/final_project/src/retrieval/query_enhancer.py
+- [[.detect()_1]] - code - /home/kbs/Documents/final_project/src/xai/hallucination_detector.py
+- [[.do_GET()_1]] - code - /home/kbs/Documents/final_project/scripts/run_mcp_e2e.py
+- [[.do_GET()]] - code - /home/kbs/Documents/final_project/tests/e2e/test_streamlit_selenium.py
+- [[.do_OPTIONS()_1]] - code - /home/kbs/Documents/final_project/scripts/run_mcp_e2e.py
+- [[.do_OPTIONS()]] - code - /home/kbs/Documents/final_project/tests/e2e/test_streamlit_selenium.py
+- [[.do_POST()_1]] - code - /home/kbs/Documents/final_project/scripts/run_mcp_e2e.py
+- [[.do_POST()]] - code - /home/kbs/Documents/final_project/tests/e2e/test_streamlit_selenium.py
+- [[.embed()]] - code - /home/kbs/Documents/final_project/src/embeddings/embedding_models.py
+- [[.embed_documents()_2]] - code - /home/kbs/Documents/final_project/scripts/build_knowledge_base_colab.py
+- [[.embed_documents()_1]] - code - /home/kbs/Documents/final_project/src/embeddings/embedding_models.py
+- [[.embed_query()_1]] - code - /home/kbs/Documents/final_project/src/embeddings/embedding_models.py
+- [[.enhance()]] - code - /home/kbs/Documents/final_project/src/retrieval/query_enhancer.py
+- [[.enrich_xai()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[.evaluate()]] - code - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[.evaluate()_1]] - code - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[.evaluate_batch()]] - code - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[.extract_attention()]] - code - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[.extract_entities()]] - code - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[.find_evidence()]] - code - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[.fit_calibration()]] - code - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[.get()_1]] - code - /home/kbs/Documents/final_project/src/feedback/trajectory_logger.py
+- [[.get()]] - code - /home/kbs/Documents/final_project/src/embeddings/vector_store.py
+- [[.get_interaction_warning()]] - code - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[.get_session()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[.get_statistics()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[.get_stats()_2]] - code - /home/kbs/Documents/final_project/src/data_pipeline/loaders/dataset_loader.py
+- [[.get_summary()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[.get_top_important_tokens()]] - code - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[.load_fine_tuned()]] - code - /home/kbs/Documents/final_project/src/fine_tuning/trainer.py
+- [[.log()]] - code - /home/kbs/Documents/final_project/src/feedback/trajectory_logger.py
+- [[.log_message()_1]] - code - /home/kbs/Documents/final_project/scripts/run_mcp_e2e.py
+- [[.log_message()]] - code - /home/kbs/Documents/final_project/tests/e2e/test_streamlit_selenium.py
+- [[.mmr_search()]] - code - /home/kbs/Documents/final_project/src/embeddings/vector_store.py
+- [[.on_chain_end()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[.on_chain_error()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[.on_chain_start()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[.on_llm_end()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[.on_llm_error()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[.on_llm_start()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[.on_retriever_end()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[.on_retriever_start()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[.on_start()]] - code - /home/kbs/Documents/final_project/tests/locustfile.py
+- [[.on_start()_1]] - code - /home/kbs/Documents/final_project/tests/locustfile.py
+- [[.rerank()_1]] - code - /home/kbs/Documents/final_project/src/retrieval/reranker.py
+- [[.rerank()]] - code - /home/kbs/Documents/final_project/src/retrieval/reranker.py
+- [[.retrieve()_1]] - code - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[.retrieve_with_context()_3]] - code - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[.retrieve_with_correction()]] - code - /home/kbs/Documents/final_project/src/retrieval/corrective_rag.py
+- [[.score()]] - code - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[.search()]] - code - /home/kbs/Documents/final_project/src/embeddings/vector_store.py
+- [[.similarity()]] - code - /home/kbs/Documents/final_project/src/embeddings/embedding_models.py
+- [[.stream()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_pipeline.py
+- [[.submit_feedback()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[.test_attribute_answer()]] - code - /home/kbs/Documents/final_project/tests/test_xai.py
+- [[.test_detect_empty_answer()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[.test_detect_fabricated_citation()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[.test_detect_grounded_answer()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[.test_detect_medical_sanity_violation()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[.test_hyphenated_compound_preserved()]] - code - /home/kbs/Documents/final_project/tests/test_retrieval.py
+- [[.test_punctuation_removed()]] - code - /home/kbs/Documents/final_project/tests/test_retrieval.py
+- [[.test_rrf_single_source_empty()]] - code - /home/kbs/Documents/final_project/tests/test_retrieval.py
+- [[.test_short_tokens_filtered()]] - code - /home/kbs/Documents/final_project/tests/test_retrieval.py
+- [[.to_dict()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[.verify_grounding()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[Add a content slide with bullet points or table]] - rationale - /home/kbs/Documents/final_project/create_healthcare_ppt.py
+- [[Add a slide with an image]] - rationale - /home/kbs/Documents/final_project/create_healthcare_ppt.py
+- [[Aggregate multiple feedback events for one response.]] - rationale - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[Alias kept for backward compatibility with the LangChain pipeline.      Previous]] - rationale - /home/kbs/Documents/final_project/src/utils/context_builder.py
+- [[Alias kept for backward compatibility with the LangGraph node helpers.      Prev]] - rationale - /home/kbs/Documents/final_project/src/utils/context_builder.py
+- [[All XAI  explainability sections as clean markdown.]] - rationale - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[Answer + safety notices + meta line + confidence bar.]] - rationale - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[Append a trajectory record to JSONL storage.          Args             trajecto]] - rationale - /home/kbs/Documents/final_project/src/feedback/trajectory_logger.py
+- [[Assign trainval split deterministically by key hash.]] - rationale - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[AttentionVisualization]] - code - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[Attribute an entire answer to sources.]] - rationale - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[Bar chart comparing models on ROUGE-L, BERTScore, keyword coverage.]] - rationale - /home/kbs/Documents/final_project/evaluation/generate_paper_figures.py
+- [[BaseHTTPRequestHandler]] - code
+- [[Build context string from retrieved documents.]] - rationale - /home/kbs/Documents/final_project/src/generation/prompt_manager.py
+- [[Build one training row per feedback event.]] - rationale - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[Build summary stats for dataset generation.]] - rationale - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[Calculate cosine similarity between a query and a list of documents.]] - rationale - /home/kbs/Documents/final_project/src/embeddings/embedding_models.py
+- [[Calculate cosine similarity between embeddings.]] - rationale - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[Calculate word overlap similarity (stopwords excluded).]] - rationale - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[Called once per simulated user — ping health to confirm API is up.]] - rationale - /home/kbs/Documents/final_project/tests/locustfile.py
+- [[Called when LLM ends.]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[Called when LLM errors.]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[Called when LLM starts.]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[Called when chain ends.]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[Called when chain errors.]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[Called when chain starts.]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[Called when retriever ends.]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[Called when retriever starts.]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[Chainlit frontend for MediQuery healthcare QA chatbot. Mirrors the StreamlitRea]] - rationale - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[Check for FDA drug recalls.]] - rationale - /home/kbs/Documents/final_project/src/mcp_servers/fda_server.py
+- [[Check if a single claim is supported by context.]] - rationale - /home/kbs/Documents/final_project/src/xai/factual_consistency.py
+- [[Check if a word is medically meaningful (not a stop word, = 3 chars).]] - rationale - /home/kbs/Documents/final_project/evaluation/eval_utils.py
+- [[Check if answer claims are supported by context.          Args             answ]] - rationale - /home/kbs/Documents/final_project/src/xai/factual_consistency.py
+- [[Check if the query is educationalinformational, not an emergency report.]] - rationale - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[Chunk]] - code - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[Chunk a document with metadata.          Uses domain-adaptive chunk sizing dete]] - rationale - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[Chunk a single document dict, returning a list of Chunk objects.]] - rationale - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[Chunk multiple documents.]] - rationale - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[Chunk multiple documents._1]] - rationale - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[Chunks for a given domain source should not exceed the domain size (+overlap).]] - rationale - /home/kbs/Documents/final_project/tests/test_recursive_chunker.py
+- [[ClaimResult]] - code - /home/kbs/Documents/final_project/src/xai/factual_consistency.py
+- [[Clamp numeric value to low, high.]] - rationale - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[CohereReranker]] - code - /home/kbs/Documents/final_project/src/retrieval/reranker.py
+- [[Collapsible diagnostics panel latency breakdown, source counts, confidence sign]] - rationale - /home/kbs/Documents/final_project/frontend/streamlit_app.py
+- [[Combine multiple ranked lists using Reciprocal Rank Fusion.      RRF score for d]] - rationale - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[Compare medical entities between generated and reference text.          Args]] - rationale - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[Complete evaluation of a generated answer.          Args             generated]] - rationale - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[Complete evaluation result.]] - rationale - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[Complete evaluator for medical QA systems.      Combines entity accuracy, harm s]] - rationale - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[Compress and reorder documents for optimal LLM attention.          Args]] - rationale - /home/kbs/Documents/final_project/src/pipeline/context_compressor.py
+- [[CompressedContext]] - code - /home/kbs/Documents/final_project/src/pipeline/context_compressor.py
+- [[Compute Cohen's kappa for two lists of ordinal ratings.]] - rationale - /home/kbs/Documents/final_project/evaluation/compute_human_eval.py
+- [[Compute ECE from API responses using keyword coverage as correctness proxy.]] - rationale - /home/kbs/Documents/final_project/evaluation/run_api_eval.py
+- [[Compute bootstrap confidence interval for a list of scores.      Args         s]] - rationale - /home/kbs/Documents/final_project/evaluation/eval_utils.py
+- [[Compute fraction of expected keywords present in the answer.      Args]] - rationale - /home/kbs/Documents/final_project/evaluation/eval_utils.py
+- [[Compute importance scores for each token in the input.          Uses input gradi]] - rationale - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[Compute mean score per dimension.]] - rationale - /home/kbs/Documents/final_project/evaluation/compute_human_eval.py
+- [[Compute normalized reward from feedback fields.      Priority     1) feedback.m]] - rationale - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[Compute pairwise Cohen's kappa across annotators.]] - rationale - /home/kbs/Documents/final_project/evaluation/compute_human_eval.py
+- [[Compute weighted aggregate score across entity types.]] - rationale - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[ConsistencyResult]] - code - /home/kbs/Documents/final_project/src/xai/factual_consistency.py
+- [[Container for attention visualization data.]] - rationale - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[Container for enhanced query results.]] - rationale - /home/kbs/Documents/final_project/src/retrieval/query_enhancer.py
+- [[Context compression for improved LLM attention.  Based on rag-architecture skill]] - rationale - /home/kbs/Documents/final_project/src/pipeline/context_compressor.py
+- [[Convert LangChain Documents back to RetrievedDocument format.      Useful for co]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_retriever.py
+- [[Convert a list of documents into a context string that is safe to pass     direc]] - rationale - /home/kbs/Documents/final_project/src/utils/context_builder.py
+- [[Convert raw vector-store results into dense retrieval tuples.]] - rationale - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[Convert score to risk level.]] - rationale - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[Convert value to bool using sensible defaults.]] - rationale - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[Convert value to float with fallback.]] - rationale - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[Corrective RAG (CRAG) - Validates and improves retrieval quality.  Based on rag-]] - rationale - /home/kbs/Documents/final_project/src/retrieval/corrective_rag.py
+- [[Correlate automated confidence with mean human factual correctness.]] - rationale - /home/kbs/Documents/final_project/evaluation/compute_human_eval.py
+- [[Cross-encoder reranking for improved retrieval precision.  Based on RAG skill pa]] - rationale - /home/kbs/Documents/final_project/src/retrieval/reranker.py
+- [[Decompose complex query into simpler sub-queries.          Based on rag-agent-bu]] - rationale - /home/kbs/Documents/final_project/src/retrieval/query_enhancer.py
+- [[Determine optimal chunk size based on document source.]] - rationale - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[Document chunking for medical texts with context preservation.  Classes -------]] - rationale - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[Document relevance assessment.]] - rationale - /home/kbs/Documents/final_project/src/retrieval/corrective_rag.py
+- [[Embed a single query with LRU caching.          Cached results are stored as imm]] - rationale - /home/kbs/Documents/final_project/src/embeddings/embedding_models.py
+- [[Embed multiple documents (no caching — batch encoding is already efficient).]] - rationale - /home/kbs/Documents/final_project/src/embeddings/embedding_models.py
+- [[Enhance a query with multiple formulations.          Args             query Or]] - rationale - /home/kbs/Documents/final_project/src/retrieval/query_enhancer.py
+- [[EnhancedQuery]] - code - /home/kbs/Documents/final_project/src/retrieval/query_enhancer.py
+- [[Enrich response with XAI components.]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[EntityMetrics]] - code - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[Evaluate a batch of examples.          Args             examples List of dicts]] - rationale - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[Evaluate accuracy of medical entities in generated answers.      Checks for corr]] - rationale - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[Evaluate potential harm in generated medical advice.      Detects patterns that]] - rationale - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[Every chunk must end at a sentence boundary (period, !, ) or be the last chunk.]] - rationale - /home/kbs/Documents/final_project/tests/test_recursive_chunker.py
+- [[Expand common medical abbreviations.]] - rationale - /home/kbs/Documents/final_project/src/retrieval/query_enhancer.py
+- [[Expand each retrieved chunk by appending sentences from the BM25 corpus]] - rationale - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[Extended fact checker with medical-specific logic.      Adds checks for     - D]] - rationale - /home/kbs/Documents/final_project/src/xai/factual_consistency.py
+- [[Extended medical-specific fact checking.]] - rationale - /home/kbs/Documents/final_project/src/xai/factual_consistency.py
+- [[Extract (content, source) from any supported document type.      Parameters]] - rationale - /home/kbs/Documents/final_project/src/utils/context_builder.py
+- [[Extract attention weights for visualization.          Args             text In]] - rationale - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[Extract factual claims from text.          Focuses on declarative sentences that]] - rationale - /home/kbs/Documents/final_project/src/xai/factual_consistency.py
+- [[Extract medical entities from text.]] - rationale - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[Extract most relevant sentences from text.]] - rationale - /home/kbs/Documents/final_project/src/pipeline/context_compressor.py
+- [[Extract the most relevant snippet from content.]] - rationale - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[FDA OpenFDA MCP Server — exposes FDA drug database as MCP tools.  Provides real-]] - rationale - /home/kbs/Documents/final_project/src/mcp_servers/fda_server.py
+- [[Factual Consistency Checker using NLI for Hallucination Detection.  Uses Natural]] - rationale - /home/kbs/Documents/final_project/src/xai/factual_consistency.py
+- [[Fallback checking using keyword overlap.]] - rationale - /home/kbs/Documents/final_project/src/xai/factual_consistency.py
+- [[FastAPI contract tests that avoid loading real modelRAG components.]] - rationale - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[Fetch full abstract for a specific PMID.]] - rationale - /home/kbs/Documents/final_project/src/mcp_servers/pubmed_server.py
+- [[Find best matching evidence for a claim.]] - rationale - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[Find the most relevant snippet from context supporting the claim.]] - rationale - /home/kbs/Documents/final_project/src/xai/factual_consistency.py
+- [[Fit Platt calibration on keyword coverage as proxy label,     compute ECE, and s]] - rationale - /home/kbs/Documents/final_project/evaluation/run_paper_eval.py
+- [[Fit Platt scaling (a, b) via NLL minimization.]] - rationale - /home/kbs/Documents/final_project/evaluation/compute_calibration.py
+- [[Fit Platt scaling parameters on validation data.          Parameters         ---]] - rationale - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[Flatten trajectory fields for tabular training output.]] - rationale - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[For each signal weight set, run n questions and record mean confidence.     Comp]] - rationale - /home/kbs/Documents/final_project/evaluation/run_paper_eval.py
+- [[Format LangChain documents as a context string for prompts.      Args         d]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_retriever.py
+- [[Format documents into a context string for prompts.      Args         documents]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_prompts.py
+- [[Format warnings as a single message.]] - rationale - /home/kbs/Documents/final_project/src/safety/guardrails.py
+- [[GET()]] - code - /home/kbs/Documents/final_project/frontend-react/app/api/sessions/route.ts
+- [[Generate a deterministic document ID.     Returns Deterministic hex ID string (]] - rationale - /home/kbs/Documents/final_project/src/embeddings/vector_store.py
+- [[Generate a paper-quality architecture diagram using matplotlib.]] - rationale - /home/kbs/Documents/final_project/evaluation/generate_architecture_diagram.py
+- [[Generate a stable document ID from content + source for deduplication.]] - rationale - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[Generate a stable document ID from source + chunk_id + content hash.]] - rationale - /home/kbs/Documents/final_project/scripts/build_knowledge_base_colab.py
+- [[Generate embeddings for a string or list of strings.]] - rationale - /home/kbs/Documents/final_project/src/embeddings/embedding_models.py
+- [[Generate simple query reformulations.]] - rationale - /home/kbs/Documents/final_project/src/retrieval/query_enhancer.py
+- [[Generate variants by replacing matched medical phrases with synonyms.]] - rationale - /home/kbs/Documents/final_project/src/retrieval/query_enhancer.py
+- [[Get a prompt template by name.      Args         template_name Name of the tem]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_prompts.py
+- [[Get a trajectory by response_id.          Checks in-memory index first, then fal]] - rationale - /home/kbs/Documents/final_project/src/feedback/trajectory_logger.py
+- [[Get statistics about available datasets.]] - rationale - /home/kbs/Documents/final_project/src/data_pipeline/loaders/dataset_loader.py
+- [[Get summary metrics for the last N hours.]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[Get top-k most important tokens.]] - rationale - /home/kbs/Documents/final_project/src/xai/attention_visualizer.py
+- [[Grade documents for relevance to query.          Uses retrieval score + content]] - rationale - /home/kbs/Documents/final_project/src/retrieval/corrective_rag.py
+- [[Greedily merge adjacent pieces to fill chunks up to chunk_size.]] - rationale - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[Grouped bar chart showing ablation of each confidence signal.]] - rationale - /home/kbs/Documents/final_project/evaluation/generate_paper_figures.py
+- [[HallucinationResult]] - code - /home/kbs/Documents/final_project/src/xai/hallucination_detector.py
+- [[Histogram of confidence scores from trajectory data.]] - rationale - /home/kbs/Documents/final_project/evaluation/generate_paper_figures.py
+- [[HttpUser]] - code
+- [[Hybrid retrieval combining dense and sparse search with RRF fusion.  Enhanced wi]] - rationale - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[Initialize BM25 index from a corpus list.]] - rationale - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[Initialize Cohere reranker.          Args             api_key Cohere API key (]] - rationale - /home/kbs/Documents/final_project/src/retrieval/reranker.py
+- [[Initialize the factual consistency checker.          Args             model_nam]] - rationale - /home/kbs/Documents/final_project/src/xai/factual_consistency.py
+- [[KEYscope format read key passes ask, is rejected on clear-cache.]] - rationale - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[LangChain prompt templates for Medical QA.  Provides ChatPromptTemplate versions]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_prompts.py
+- [[LangChain-compatible retriever wrapper for HybridRetriever.  Wraps the existing]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_retriever.py
+- [[Lazy-load BM25 corpus from vector store in batches.          On first call load]] - rationale - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[LightweightUser]] - code - /home/kbs/Documents/final_project/tests/locustfile.py
+- [[Load JSONL file into a list of dictionaries.]] - rationale - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[Load a fine-tuned model.]] - rationale - /home/kbs/Documents/final_project/src/fine_tuning/trainer.py
+- [[Load all QA pairs from parquet files.]] - rationale - /home/kbs/Documents/final_project/scripts/build_knowledge_base_colab.py
+- [[Load all annotator CSV files.]] - rationale - /home/kbs/Documents/final_project/evaluation/compute_human_eval.py
+- [[Load test for Healthcare QA Chatbot API.  Tests realistic traffic patterns acros]] - rationale - /home/kbs/Documents/final_project/tests/locustfile.py
+- [[Map raw scores to 0, 1 and set ``score_type='normalized'``.      Args]] - rationale - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[Maximal Marginal Relevance search using Qdrant returned vectors.]] - rationale - /home/kbs/Documents/final_project/src/embeddings/vector_store.py
+- [[Medical-Specific Evaluation Metrics.  Provides evaluation metrics tailored for m]] - rationale - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[MedicalChatbotUser]] - code - /home/kbs/Documents/final_project/tests/locustfile.py
+- [[MedicalEntityAccuracy]] - code - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[MedicalEvalResult]] - code - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[MedicalFactChecker]] - code - /home/kbs/Documents/final_project/src/xai/factual_consistency.py
+- [[MedicalHarmScore]] - code - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[MedicalQAEvaluator]] - code - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[Metrics for a specific entity type.]] - rationale - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[MockApiHandler_1]] - code - /home/kbs/Documents/final_project/scripts/run_mcp_e2e.py
+- [[MockApiHandler]] - code - /home/kbs/Documents/final_project/tests/e2e/test_streamlit_selenium.py
+- [[Node Enrich response with XAI components (confidence, attribution, rationale).]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[Node Verify answer is grounded in the retrieved context.          Uses term-ove]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[Normalize a question for exactfuzzy matching.]] - rationale - /home/kbs/Documents/final_project/evaluation/compute_calibration.py
+- [[Normalize rating into inclusive 1..5 range.]] - rationale - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[Overall consistency check result.]] - rationale - /home/kbs/Documents/final_project/src/xai/factual_consistency.py
+- [[Overlap must not produce a chunk longer than original chunk + overlap size.]] - rationale - /home/kbs/Documents/final_project/tests/test_recursive_chunker.py
+- [[POST()]] - code - /home/kbs/Documents/final_project/frontend-react/app/api/sessions/route.ts
+- [[Parameters         ----------         signal_weights       Override default wei]] - rationale - /home/kbs/Documents/final_project/src/xai/multi_signal_confidence.py
+- [[Parse ISO timestamp with safe fallback.]] - rationale - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[Perform dense vector retrieval.         Returns list of (content, score, metadat]] - rationale - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[Perform sparse BM25 retrieval.         Returns list of (content, score, metadata]] - rationale - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[Pre-compute embeddings once per request.          Returns             claim_to_]] - rationale - /home/kbs/Documents/final_project/src/xai/source_attribution.py
+- [[Prepend the last `_chunk_overlap` chars of chunki-1 to chunki.]] - rationale - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[PubMed MCP Server — exposes NCBI E-utilities as MCP tools.  Provides live access]] - rationale - /home/kbs/Documents/final_project/src/mcp_servers/pubmed_server.py
+- [[Pull the most informative nounsmedical terms from answer text.]] - rationale - /home/kbs/Documents/final_project/evaluation/build_test_set.py
+- [[Query enhancement for improved retrieval recall.  Based on RAG skill patterns fo]] - rationale - /home/kbs/Documents/final_project/src/retrieval/query_enhancer.py
+- [[Re-order fused candidates using vector-store MMR for diversity.]] - rationale - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[Recursive text splitter that respects sentence boundaries.      Algorithm     --]] - rationale - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[RecursiveSentenceChunker]] - code - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[Recursively split text using the separator hierarchy.]] - rationale - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[Refine query based on feedback from document grades.]] - rationale - /home/kbs/Documents/final_project/src/retrieval/corrective_rag.py
+- [[RelevanceScore]] - code - /home/kbs/Documents/final_project/src/retrieval/corrective_rag.py
+- [[Remove common MedQuAD  MedMCQA artefacts from the beginning of a     document c]] - rationale - /home/kbs/Documents/final_project/src/utils/context_builder.py
+- [[Render a full API result inside a st.chat_message('assistant') block.]] - rationale - /home/kbs/Documents/final_project/frontend/streamlit_app.py
+- [[Reorder documents to put most relevant at beginning AND end.          LLMs pay m]] - rationale - /home/kbs/Documents/final_project/src/pipeline/context_compressor.py
+- [[Represents a document chunk.]] - rationale - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[Reproducibility manifest for evaluation and benchmark runs (plan B4  F1).]] - rationale - /home/kbs/Documents/final_project/evaluation/manifest.py
+- [[Rerank documents by relevance to query.          Args             query Search]] - rationale - /home/kbs/Documents/final_project/src/retrieval/reranker.py
+- [[Rerank using Cohere API.]] - rationale - /home/kbs/Documents/final_project/src/retrieval/reranker.py
+- [[RerankResult]] - code - /home/kbs/Documents/final_project/src/retrieval/reranker.py
+- [[Reranker using Cohere API (optional, requires API key).]] - rationale - /home/kbs/Documents/final_project/src/retrieval/reranker.py
+- [[Resolve response_id from feedback payload.]] - rationale - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[Result from reranking.]] - rationale - /home/kbs/Documents/final_project/src/retrieval/reranker.py
+- [[Result of checking a single claim.]] - rationale - /home/kbs/Documents/final_project/src/xai/factual_consistency.py
+- [[Result of context compression.]] - rationale - /home/kbs/Documents/final_project/src/pipeline/context_compressor.py
+- [[Result of hallucination detection analysis.]] - rationale - /home/kbs/Documents/final_project/src/xai/hallucination_detector.py
+- [[Retrieve documents and build context string.          Args             query S]] - rationale - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[Retrieve documents with automatic correction.          Args             query]] - rationale - /home/kbs/Documents/final_project/src/retrieval/corrective_rag.py
+- [[Retrieve relevant documents.          Args             query Search query]] - rationale - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[Return (confidences, labels, sources) lists.      Label = 1 if the response is]] - rationale - /home/kbs/Documents/final_project/evaluation/compute_calibration.py
+- [[Return (ece, bin_confs, bin_accs, bin_counts).]] - rationale - /home/kbs/Documents/final_project/evaluation/compute_calibration.py
+- [[Return True if the text looks like TinyLlama ALL-CAPS acronym hallucination.]] - rationale - /home/kbs/Documents/final_project/src/utils/text_cleaning.py
+- [[Return cache usage statistics.]] - rationale - /home/kbs/Documents/final_project/src/embeddings/embedding_models.py
+- [[Return dict {variant_key metrics_dict}.]] - rationale - /home/kbs/Documents/final_project/evaluation/generate_baseline_table.py
+- [[Return fraction of answer key-terms found in context (0..1).]] - rationale - /home/kbs/Documents/final_project/src/xai/hallucination_detector.py
+- [[Run all hallucination checks on a generated answer.          Parameters]] - rationale - /home/kbs/Documents/final_project/src/xai/hallucination_detector.py
+- [[Run n questions and aggregate per-stage latencies.]] - rationale - /home/kbs/Documents/final_project/evaluation/run_paper_eval.py
+- [[Save figure as PNG and PDF.]] - rationale - /home/kbs/Documents/final_project/evaluation/generate_paper_figures.py
+- [[Score potential harm in text.          Args             text Text to analyze]] - rationale - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[Search FDA adverse event reports (FAERS).]] - rationale - /home/kbs/Documents/final_project/src/mcp_servers/fda_server.py
+- [[Search FDA drug label database.]] - rationale - /home/kbs/Documents/final_project/src/mcp_servers/fda_server.py
+- [[Search PubMed using E-utilities esearch + efetch.]] - rationale - /home/kbs/Documents/final_project/src/mcp_servers/pubmed_server.py
+- [[Search for similar documents returning ChromaDB-style dict.]] - rationale - /home/kbs/Documents/final_project/src/embeddings/vector_store.py
+- [[Shared context builder utility for safe prompt construction.  Eliminates duplica]] - rationale - /home/kbs/Documents/final_project/src/utils/context_builder.py
+- [[Shared evaluation utilities for Healthcare QA Chatbot.  Provides   - Unified co]] - rationale - /home/kbs/Documents/final_project/evaluation/eval_utils.py
+- [[Side-by-side reliability diagrams (raw vs calibrated).]] - rationale - /home/kbs/Documents/final_project/evaluation/generate_paper_figures.py
+- [[Simple sentence-transformers embedder.]] - rationale - /home/kbs/Documents/final_project/scripts/build_knowledge_base_colab.py
+- [[SimpleEmbedder]] - code - /home/kbs/Documents/final_project/scripts/build_knowledge_base_colab.py
+- [[SimpleVectorStore]] - code - /home/kbs/Documents/final_project/scripts/build_knowledge_base_colab.py
+- [[Simplified ChromaDB vector store.]] - rationale - /home/kbs/Documents/final_project/scripts/build_knowledge_base_colab.py
+- [[Simulates a realistic user session     - Health check on startup     - Mix of q]] - rationale - /home/kbs/Documents/final_project/tests/locustfile.py
+- [[Split text into chunks.]] - rationale - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[Split text into sentences.]] - rationale - /home/kbs/Documents/final_project/src/pipeline/context_compressor.py
+- [[Stacked bar chart of per-stage latency.]] - rationale - /home/kbs/Documents/final_project/evaluation/generate_paper_figures.py
+- [[Streamlit frontend for Healthcare QA Chatbot. Clean chat UI using native st.chat]] - rationale - /home/kbs/Documents/final_project/frontend/streamlit_app.py
+- [[Stress-tests the fast, non-LLM endpoints     health, models, feedback, comp]] - rationale - /home/kbs/Documents/final_project/tests/locustfile.py
+- [[Submit question, show loading state, append result to session state, rerun.]] - rationale - /home/kbs/Documents/final_project/frontend/streamlit_app.py
+- [[Tag retrieved chunks that contain potentially harmful content.          Does NOT]] - rationale - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[TestHallucinationDetector]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[Tests for RL trajectory logging utilities.]] - rationale - /home/kbs/Documents/final_project/tests/test_feedback_trajectory.py
+- [[Tests for offline RL dataset builder script.]] - rationale - /home/kbs/Documents/final_project/tests/test_build_rl_dataset.py
+- [[Tests for the completed HallucinationDetector.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[TextChunk]] - code - /home/kbs/Documents/final_project/scripts/build_knowledge_base_colab.py
+- [[Truncate text to max tokens (approximating 4 chars = 1 token).]] - rationale - /home/kbs/Documents/final_project/src/pipeline/context_compressor.py
+- [[Unified correctness definition for all evaluation modes.      Args         keyw]] - rationale - /home/kbs/Documents/final_project/evaluation/eval_utils.py
+- [[Unit tests for RecursiveSentenceChunker.  Validates - No chunk ends mid-sentenc]] - rationale - /home/kbs/Documents/final_project/tests/test_recursive_chunker.py
+- [[Unknown key is rejected with 401 on both read and admin endpoints.]] - rationale - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[Vector store management for document retrieval using Qdrant Cloud.]] - rationale - /home/kbs/Documents/final_project/src/embeddings/vector_store.py
+- [[When _SCOPED_KEYS is empty, all endpoints are open (dev mode).]] - rationale - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[Woe()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[Write dataset in chosen format.]] - rationale - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[_FakeConversationManager]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[_FakeConversationSession]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[_FakeFeedback]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[_FakeFeedbackCollector]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[_aggregate_feedback_rows()]] - code - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[_answer_question()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[_api_headers()_1]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[_api_headers()]] - code - /home/kbs/Documents/final_project/frontend/streamlit_app.py
+- [[_as_bool()]] - code - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[_as_float()]] - code - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[_ask_timeout()_1]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[_ask_timeout()]] - code - /home/kbs/Documents/final_project/frontend/streamlit_app.py
+- [[_attribution_md()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[_audio_extension_for_mime()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[_binary_relevance_vector()]] - code - /home/kbs/Documents/final_project/evaluation/run_retrieval_benchmark.py
+- [[_bootstrap_ci()]] - code - /home/kbs/Documents/final_project/evaluation/run_retrieval_benchmark.py
+- [[_build_meta_line()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[_build_summary()]] - code - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[_ci_str()]] - code - /home/kbs/Documents/final_project/evaluation/generate_baseline_table.py
+- [[_clamp()]] - code - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[_classify()]] - code - /home/kbs/Documents/final_project/evaluation/build_test_set.py
+- [[_compute_reward_from_feedback()]] - code - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[_confidence_md()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[_decode_audio_data()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[_deterministic_split()]] - code - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[_disclaimer_md()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[_doc_matches_gold()]] - code - /home/kbs/Documents/final_project/evaluation/run_retrieval_benchmark.py
+- [[_evaluate_rows()]] - code - /home/kbs/Documents/final_project/evaluation/run_retrieval_benchmark.py
+- [[_extract_content_and_source()]] - code - /home/kbs/Documents/final_project/src/utils/context_builder.py
+- [[_extract_keywords()]] - code - /home/kbs/Documents/final_project/evaluation/build_test_set.py
+- [[_fake_pipeline()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[_fda_adverse_events()]] - code - /home/kbs/Documents/final_project/src/mcp_servers/fda_server.py
+- [[_fda_drug_recalls()]] - code - /home/kbs/Documents/final_project/src/mcp_servers/fda_server.py
+- [[_fda_drug_search()]] - code - /home/kbs/Documents/final_project/src/mcp_servers/fda_server.py
+- [[_file_sha256()]] - code - /home/kbs/Documents/final_project/evaluation/manifest.py
+- [[_flatten_trajectory()]] - code - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[_fmt()]] - code - /home/kbs/Documents/final_project/evaluation/generate_baseline_table.py
+- [[_get_whisper_model()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[_git_sha()]] - code - /home/kbs/Documents/final_project/evaluation/manifest.py
+- [[_hallucination_md()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[_import_nlp_metrics()]] - code - /home/kbs/Documents/final_project/evaluation/run_paper_eval.py
+- [[_is_sample_demo_request()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[_key_terms_md()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[_load_all()]] - code - /home/kbs/Documents/final_project/evaluation/generate_baseline_table.py
+- [[_load_gold()_1]] - code - /home/kbs/Documents/final_project/evaluation/run_e2e_benchmark.py
+- [[_load_gold()]] - code - /home/kbs/Documents/final_project/evaluation/run_retrieval_benchmark.py
+- [[_load_json()]] - code - /home/kbs/Documents/final_project/scripts/build_gold_retrieval.py
+- [[_load_jsonl()_1]] - code - /home/kbs/Documents/final_project/scripts/build_gold_retrieval.py
+- [[_load_jsonl()]] - code - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[_logDrawCallStart()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_medical_tokenize()]] - code - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[_mrr()]] - code - /home/kbs/Documents/final_project/evaluation/run_retrieval_benchmark.py
+- [[_ndcg_at_k()]] - code - /home/kbs/Documents/final_project/evaluation/run_retrieval_benchmark.py
+- [[_normalize_rating()]] - code - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[_parse_datetime()]] - code - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[_parse_history_index()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[_patch_lightweight_api()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[_per_feedback_rows()]] - code - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[_precision_at_k()]] - code - /home/kbs/Documents/final_project/evaluation/run_retrieval_benchmark.py
+- [[_print_table()]] - code - /home/kbs/Documents/final_project/evaluation/run_api_eval.py
+- [[_print_table()_1]] - code - /home/kbs/Documents/final_project/evaluation/run_paper_eval.py
+- [[_pubmed_get_abstract()]] - code - /home/kbs/Documents/final_project/src/mcp_servers/pubmed_server.py
+- [[_pubmed_search()]] - code - /home/kbs/Documents/final_project/src/mcp_servers/pubmed_server.py
+- [[_rationale_md()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[_recall_at_k()]] - code - /home/kbs/Documents/final_project/evaluation/run_retrieval_benchmark.py
+- [[_reorder_lost_in_middle()]] - code - /home/kbs/Documents/final_project/src/pipeline/qa_pipeline.py
+- [[_resolve_response_id()]] - code - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[_retriever()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_retriever.py
+- [[_risk_from_category()]] - code - /home/kbs/Documents/final_project/scripts/build_gold_retrieval.py
+- [[_run_full_sample_demo()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[_safe_float()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[_safety_md()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[_sanitize_query()]] - code - /home/kbs/Documents/final_project/src/retrieval/query_enhancer.py
+- [[_save()]] - code - /home/kbs/Documents/final_project/evaluation/generate_paper_figures.py
+- [[_sentence_split()]] - code - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[_sources_md()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[_stable_doc_id()]] - code - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[_strip_leading_artefacts()]] - code - /home/kbs/Documents/final_project/src/utils/context_builder.py
+- [[_transcribe_audio_file()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[_user_question_text()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[_write_jsonl()]] - code - /home/kbs/Documents/final_project/scripts/build_gold_retrieval.py
+- [[_write_output()]] - code - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[_xai_breakdown_md()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[add_content_slide()]] - code - /home/kbs/Documents/final_project/create_healthcare_ppt.py
+- [[add_correlation_id()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[add_image_slide()]] - code - /home/kbs/Documents/final_project/create_healthcare_ppt.py
+- [[add_title_slide()]] - code - /home/kbs/Documents/final_project/create_healthcare_ppt.py
+- [[add_to_history()_1]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[add_to_history()]] - code - /home/kbs/Documents/final_project/frontend/streamlit_app.py
+- [[aggregate_scores()]] - code - /home/kbs/Documents/final_project/evaluation/run_ragas_eval.py
+- [[align_eval_ids.py]] - code - /home/kbs/Documents/final_project/evaluation/align_eval_ids.py
+- [[apply_platt()]] - code - /home/kbs/Documents/final_project/evaluation/compute_calibration.py
+- [[ask()_1]] - code - /home/kbs/Documents/final_project/scripts/profile_pipeline.py
+- [[ask()]] - code - /home/kbs/Documents/final_project/evaluation/run_api_eval.py
+- [[ask_comparison()]] - code - /home/kbs/Documents/final_project/tests/locustfile.py
+- [[ask_default()]] - code - /home/kbs/Documents/final_project/tests/locustfile.py
+- [[ask_definition()]] - code - /home/kbs/Documents/final_project/tests/locustfile.py
+- [[ask_drug()]] - code - /home/kbs/Documents/final_project/tests/locustfile.py
+- [[ask_question()_1]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[ask_question()]] - code - /home/kbs/Documents/final_project/frontend/streamlit_app.py
+- [[ask_symptom()]] - code - /home/kbs/Documents/final_project/tests/locustfile.py
+- [[ask_with_followup()]] - code - /home/kbs/Documents/final_project/tests/locustfile.py
+- [[bootstrap_ci()]] - code - /home/kbs/Documents/final_project/evaluation/eval_utils.py
+- [[build_calibration_pairs()]] - code - /home/kbs/Documents/final_project/evaluation/compute_calibration.py
+- [[build_details_message()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[build_gold_retrieval.py]] - code - /home/kbs/Documents/final_project/scripts/build_gold_retrieval.py
+- [[build_knowledge_base.py]] - code - /home/kbs/Documents/final_project/scripts/build_knowledge_base.py
+- [[build_knowledge_base_colab.py]] - code - /home/kbs/Documents/final_project/scripts/build_knowledge_base_colab.py
+- [[build_latex()]] - code - /home/kbs/Documents/final_project/evaluation/generate_baseline_table.py
+- [[build_main_message()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[build_manifest()]] - code - /home/kbs/Documents/final_project/evaluation/manifest.py
+- [[build_markdown()]] - code - /home/kbs/Documents/final_project/evaluation/generate_baseline_table.py
+- [[build_rl_dataset.py]] - code - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[build_safe_context()]] - code - /home/kbs/Documents/final_project/src/utils/context_builder.py
+- [[build_safe_context_lc()]] - code - /home/kbs/Documents/final_project/src/utils/context_builder.py
+- [[build_safe_context_lg()]] - code - /home/kbs/Documents/final_project/src/utils/context_builder.py
+- [[build_samples()]] - code - /home/kbs/Documents/final_project/evaluation/run_ragas_eval.py
+- [[build_test_set()]] - code - /home/kbs/Documents/final_project/evaluation/build_test_set.py
+- [[build_test_set.py]] - code - /home/kbs/Documents/final_project/evaluation/build_test_set.py
+- [[bx()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[call_tool()]] - code - /home/kbs/Documents/final_project/src/mcp_servers/fda_server.py
+- [[call_tool()_1]] - code - /home/kbs/Documents/final_project/src/mcp_servers/pubmed_server.py
+- [[chainlit_app.py]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[check_api()]] - code - /home/kbs/Documents/final_project/evaluation/run_api_eval.py
+- [[checker()]] - code - /home/kbs/Documents/final_project/tests/test_retrieval_parametrized.py
+- [[chunker()_1]] - code - /home/kbs/Documents/final_project/tests/test_recursive_chunker.py
+- [[chunker.py]] - code - /home/kbs/Documents/final_project/src/data_pipeline/preprocessors/chunker.py
+- [[clearCache()]] - code - /home/kbs/Documents/final_project/frontend-react/components/mediquery/sidebar.tsx
+- [[clear_backend_cache()_1]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[clear_backend_cache()]] - code - /home/kbs/Documents/final_project/frontend/streamlit_app.py
+- [[clear_question_history()_1]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[clear_question_history()]] - code - /home/kbs/Documents/final_project/frontend/streamlit_app.py
+- [[cohens_kappa()]] - code - /home/kbs/Documents/final_project/evaluation/compute_human_eval.py
+- [[comp.c]] - code - /home/kbs/Documents/final_project/scratch/tools/sherlock/original/comp.c
+- [[compare()_1]] - code - /home/kbs/Documents/final_project/scratch/tools/sherlock/original/comp.c
+- [[component_health()]] - code - /home/kbs/Documents/final_project/api/main.py
+- [[compute_calibration.py]] - code - /home/kbs/Documents/final_project/evaluation/compute_calibration.py
+- [[compute_confidence_correlation()]] - code - /home/kbs/Documents/final_project/evaluation/compute_human_eval.py
+- [[compute_ece()_1]] - code - /home/kbs/Documents/final_project/evaluation/compute_calibration.py
+- [[compute_ece()]] - code - /home/kbs/Documents/final_project/evaluation/run_ablation.py
+- [[compute_human_eval.py]] - code - /home/kbs/Documents/final_project/evaluation/compute_human_eval.py
+- [[compute_inter_annotator()]] - code - /home/kbs/Documents/final_project/evaluation/compute_human_eval.py
+- [[compute_mean_scores()]] - code - /home/kbs/Documents/final_project/evaluation/compute_human_eval.py
+- [[context_builder.py]] - code - /home/kbs/Documents/final_project/src/utils/context_builder.py
+- [[context_compressor.py]] - code - /home/kbs/Documents/final_project/src/pipeline/context_compressor.py
+- [[corrective_rag.py]] - code - /home/kbs/Documents/final_project/src/retrieval/corrective_rag.py
+- [[cosineSim()]] - code - /home/kbs/Documents/final_project/scratch/tools/Plagiarism-Checker/scripts/cosineSim.py
+- [[cosineSim.py]] - code - /home/kbs/Documents/final_project/scratch/tools/Plagiarism-Checker/scripts/cosineSim.py
+- [[create_healthcare_ppt.py]] - code - /home/kbs/Documents/final_project/create_healthcare_ppt.py
+- [[create_ref_slide_compact()]] - code - /home/kbs/Documents/final_project/generate_html_slides.py
+- [[create_slide()]] - code - /home/kbs/Documents/final_project/generate_html_reference_style.py
+- [[create_slide()_1]] - code - /home/kbs/Documents/final_project/generate_html_slides.py
+- [[debug_retrieval()]] - code - /home/kbs/Documents/final_project/scripts/debug_retrieval_relevance.py
+- [[debug_retrieval_relevance.py]] - code - /home/kbs/Documents/final_project/scripts/debug_retrieval_relevance.py
+- [[display_attributions()]] - code - /home/kbs/Documents/final_project/frontend/streamlit_app.py
+- [[display_confidence()]] - code - /home/kbs/Documents/final_project/frontend/streamlit_app.py
+- [[display_diagnostics()]] - code - /home/kbs/Documents/final_project/frontend/streamlit_app.py
+- [[display_sources()]] - code - /home/kbs/Documents/final_project/frontend/streamlit_app.py
+- [[docs()]] - code - /home/kbs/Documents/final_project/tests/locustfile.py
+- [[docs_to_retrieved_documents()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_retriever.py
+- [[docxExtract()]] - code - /home/kbs/Documents/final_project/scratch/tools/Plagiarism-Checker/scripts/extractdocx.py
+- [[drug_to_documents()]] - code - /home/kbs/Documents/final_project/scripts/ingest_drug_data.py
+- [[eval_utils.py]] - code - /home/kbs/Documents/final_project/evaluation/eval_utils.py
+- [[evaluate_generation()]] - code - /home/kbs/Documents/final_project/evaluation/benchmarks/evaluate_pipeline.py
+- [[evaluate_pipeline.py]] - code - /home/kbs/Documents/final_project/evaluation/benchmarks/evaluate_pipeline.py
+- [[evaluate_retrieval()]] - code - /home/kbs/Documents/final_project/evaluation/benchmarks/evaluate_pipeline.py
+- [[evaluate_xai()]] - code - /home/kbs/Documents/final_project/evaluation/benchmarks/evaluate_pipeline.py
+- [[extract_source_texts()]] - code - /home/kbs/Documents/final_project/evaluation/run_ragas_eval.py
+- [[extractdocx.py]] - code - /home/kbs/Documents/final_project/scratch/tools/Plagiarism-Checker/scripts/extractdocx.py
+- [[factual_consistency.py]] - code - /home/kbs/Documents/final_project/src/xai/factual_consistency.py
+- [[fda_server.py]] - code - /home/kbs/Documents/final_project/src/mcp_servers/fda_server.py
+- [[feedback()]] - code - /home/kbs/Documents/final_project/tests/locustfile.py
+- [[fetchModels()]] - code - /home/kbs/Documents/final_project/frontend-react/components/mediquery/sidebar.tsx
+- [[fetch_available_models()]] - code - /home/kbs/Documents/final_project/frontend/streamlit_app.py
+- [[fetch_models()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[fig_ablation()]] - code - /home/kbs/Documents/final_project/evaluation/generate_paper_figures.py
+- [[fig_confidence_distribution()]] - code - /home/kbs/Documents/final_project/evaluation/generate_paper_figures.py
+- [[fig_latency()]] - code - /home/kbs/Documents/final_project/evaluation/generate_paper_figures.py
+- [[fig_metric_comparison()]] - code - /home/kbs/Documents/final_project/evaluation/generate_paper_figures.py
+- [[fig_reliability_diagram()]] - code - /home/kbs/Documents/final_project/evaluation/generate_paper_figures.py
+- [[fit_platt()]] - code - /home/kbs/Documents/final_project/evaluation/compute_calibration.py
+- [[format_context_for_prompt()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_prompts.py
+- [[format_docs_as_context()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_retriever.py
+- [[generate_architecture_diagram.py]] - code - /home/kbs/Documents/final_project/evaluation/generate_architecture_diagram.py
+- [[generate_baseline_table.py]] - code - /home/kbs/Documents/final_project/evaluation/generate_baseline_table.py
+- [[generate_deterministic_id()_1]] - code - /home/kbs/Documents/final_project/scripts/build_knowledge_base_colab.py
+- [[generate_deterministic_id()]] - code - /home/kbs/Documents/final_project/src/embeddings/vector_store.py
+- [[generate_html_reference_style.py]] - code - /home/kbs/Documents/final_project/generate_html_reference_style.py
+- [[generate_html_slides.py]] - code - /home/kbs/Documents/final_project/generate_html_slides.py
+- [[generate_matplotlib_figure()]] - code - /home/kbs/Documents/final_project/evaluation/generate_architecture_diagram.py
+- [[generate_paper_figures.py]] - code - /home/kbs/Documents/final_project/evaluation/generate_paper_figures.py
+- [[getQueries()]] - code - /home/kbs/Documents/final_project/scratch/tools/Plagiarism-Checker/scripts/getq.py
+- [[getQueries()_1]] - code - /home/kbs/Documents/final_project/scratch/tools/Plagiarism-Checker/scripts/main.py
+- [[get_cosine()]] - code - /home/kbs/Documents/final_project/scratch/tools/Plagiarism-Checker/scripts/cosineSim.py
+- [[get_prompt_template()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_prompts.py
+- [[getq.py]] - code - /home/kbs/Documents/final_project/scratch/tools/Plagiarism-Checker/scripts/getq.py
+- [[goe()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[group()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[groupCollapsed()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[handleClearCache()]] - code - /home/kbs/Documents/final_project/frontend-react/components/mediquery/sidebar.tsx
+- [[headers()]] - code - /home/kbs/Documents/final_project/frontend-react/app/api/sessions/route.ts
+- [[health()]] - code - /home/kbs/Documents/final_project/tests/locustfile.py
+- [[hoe()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[hybrid_retriever.py]] - code - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[ingest_drug_data.py]] - code - /home/kbs/Documents/final_project/scripts/ingest_drug_data.py
+- [[is_correct()]] - code - /home/kbs/Documents/final_project/evaluation/eval_utils.py
+- [[is_hallucinated_caps_spam()]] - code - /home/kbs/Documents/final_project/src/utils/text_cleaning.py
+- [[is_medical_keyword()]] - code - /home/kbs/Documents/final_project/evaluation/eval_utils.py
+- [[joe()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[json()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[jt()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[keyword_coverage()]] - code - /home/kbs/Documents/final_project/evaluation/eval_utils.py
+- [[langchain_prompts.py]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_prompts.py
+- [[langchain_retriever.py]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_retriever.py
+- [[len()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[list_models()]] - code - /home/kbs/Documents/final_project/tests/locustfile.py
+- [[list_tools()]] - code - /home/kbs/Documents/final_project/src/mcp_servers/fda_server.py
+- [[load()]] - code - /home/kbs/Documents/final_project/scratch/tools/sherlock/original/comp.c
+- [[load_all_qa_pairs()]] - code - /home/kbs/Documents/final_project/scripts/build_knowledge_base_colab.py
+- [[load_annotations()]] - code - /home/kbs/Documents/final_project/evaluation/compute_human_eval.py
+- [[load_chatdoctor()]] - code - /home/kbs/Documents/final_project/evaluation/build_test_set.py
+- [[load_drug_data()]] - code - /home/kbs/Documents/final_project/scripts/ingest_drug_data.py
+- [[load_medqa()]] - code - /home/kbs/Documents/final_project/evaluation/build_test_set.py
+- [[load_pubmedqa()]] - code - /home/kbs/Documents/final_project/evaluation/build_test_set.py
+- [[load_question_history()_1]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[load_question_history()]] - code - /home/kbs/Documents/final_project/frontend/streamlit_app.py
+- [[load_test_set()]] - code - /home/kbs/Documents/final_project/evaluation/run_api_eval.py
+- [[load_test_set()_1]] - code - /home/kbs/Documents/final_project/evaluation/run_paper_eval.py
+- [[load_trajectories()]] - code - /home/kbs/Documents/final_project/evaluation/compute_calibration.py
+- [[locustfile.py]] - code - /home/kbs/Documents/final_project/tests/locustfile.py
+- [[main()_2]] - code - /home/kbs/Documents/final_project/evaluation/align_eval_ids.py
+- [[main()_31]] - code - /home/kbs/Documents/final_project/scripts/build_gold_retrieval.py
+- [[main()_24]] - code - /home/kbs/Documents/final_project/scripts/build_knowledge_base_colab.py
+- [[main()_27]] - code - /home/kbs/Documents/final_project/scripts/build_knowledge_base.py
+- [[main()_21]] - code - /home/kbs/Documents/final_project/scripts/build_rl_dataset.py
+- [[main()_10]] - code - /home/kbs/Documents/final_project/evaluation/build_test_set.py
+- [[main()_34]] - code - /home/kbs/Documents/final_project/scratch/tools/sherlock/original/comp.c
+- [[main()_14]] - code - /home/kbs/Documents/final_project/evaluation/compute_calibration.py
+- [[main()_8]] - code - /home/kbs/Documents/final_project/evaluation/compute_human_eval.py
+- [[main()_17]] - code - /home/kbs/Documents/final_project/src/mcp_servers/fda_server.py
+- [[main()_7]] - code - /home/kbs/Documents/final_project/evaluation/generate_baseline_table.py
+- [[main()_1]] - code - /home/kbs/Documents/final_project/evaluation/generate_paper_figures.py
+- [[main()_25]] - code - /home/kbs/Documents/final_project/scripts/ingest_drug_data.py
+- [[main()_32]] - code - /home/kbs/Documents/final_project/scratch/tools/Plagiarism-Checker/scripts/main.py
+- [[main()_9]] - code - /home/kbs/Documents/final_project/evaluation/phase3_colab_eval.py
+- [[main()_22]] - code - /home/kbs/Documents/final_project/scripts/profile_ask_latency.py
+- [[main()_23]] - code - /home/kbs/Documents/final_project/scripts/profile_pipeline.py
+- [[main()_5]] - code - /home/kbs/Documents/final_project/evaluation/run_ablation.py
+- [[main()_4]] - code - /home/kbs/Documents/final_project/evaluation/run_api_eval.py
+- [[main()_6]] - code - /home/kbs/Documents/final_project/evaluation/run_e2e_benchmark.py
+- [[main()_12]] - code - /home/kbs/Documents/final_project/evaluation/run_paper_eval.py
+- [[main()_13]] - code - /home/kbs/Documents/final_project/evaluation/run_ragas_eval.py
+- [[main()_3]] - code - /home/kbs/Documents/final_project/evaluation/run_retrieval_benchmark.py
+- [[main()_16]] - code - /home/kbs/Documents/final_project/frontend/streamlit_app.py
+- [[main.py_1]] - code - /home/kbs/Documents/final_project/scratch/tools/Plagiarism-Checker/scripts/main.py
+- [[manifest.py]] - code - /home/kbs/Documents/final_project/evaluation/manifest.py
+- [[medical_metrics.py]] - code - /home/kbs/Documents/final_project/evaluation/medical_metrics.py
+- [[migrate()]] - code - /home/kbs/Documents/final_project/scripts/migrate_to_qdrant.py
+- [[migrate_to_qdrant.py]] - code - /home/kbs/Documents/final_project/scripts/migrate_to_qdrant.py
+- [[models()]] - code - /home/kbs/Documents/final_project/tests/locustfile.py
+- [[next()_1]] - code - /home/kbs/Documents/final_project/scratch/tools/Plagiarism-Checker/assets/js/bootstrap.js
+- [[normalize_question()]] - code - /home/kbs/Documents/final_project/evaluation/compute_calibration.py
+- [[normalize_retrieval_scores()]] - code - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[normalize_settings()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[om()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[on_audio_chunk()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[on_audio_end()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[on_audio_start()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[on_chat_start()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[on_clear_cache()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[on_feedback_no()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[on_feedback_yes()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[on_message()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[on_quitting()]] - code - /home/kbs/Documents/final_project/tests/locustfile.py
+- [[on_run_sample()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[on_settings_update()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[phase3_colab_eval.py]] - code - /home/kbs/Documents/final_project/evaluation/phase3_colab_eval.py
+- [[pipeline()]] - code - /home/kbs/Documents/final_project/src/xai/factual_consistency.py
+- [[processing_chain()]] - code - /home/kbs/Documents/final_project/frontend/streamlit_app.py
+- [[profile_ask_latency.py]] - code - /home/kbs/Documents/final_project/scripts/profile_ask_latency.py
+- [[profile_pipeline.py]] - code - /home/kbs/Documents/final_project/scripts/profile_pipeline.py
+- [[pubmed_server.py]] - code - /home/kbs/Documents/final_project/src/mcp_servers/pubmed_server.py
+- [[query_enhancer.py]] - code - /home/kbs/Documents/final_project/src/retrieval/query_enhancer.py
+- [[reciprocal_rank_fusion()]] - code - /home/kbs/Documents/final_project/src/retrieval/hybrid_retriever.py
+- [[recompute_conf()]] - code - /home/kbs/Documents/final_project/evaluation/run_ablation.py
+- [[render_answer()]] - code - /home/kbs/Documents/final_project/frontend/streamlit_app.py
+- [[reranker.py]] - code - /home/kbs/Documents/final_project/src/retrieval/reranker.py
+- [[rouge_l()]] - code - /home/kbs/Documents/final_project/evaluation/run_api_eval.py
+- [[route.ts_3]] - code - /home/kbs/Documents/final_project/frontend-react/app/api/chat/route.ts
+- [[route.ts_4]] - code - /home/kbs/Documents/final_project/frontend-react/app/api/clear-cache/route.ts
+- [[route.ts_2]] - code - /home/kbs/Documents/final_project/frontend-react/app/api/feedback/route.ts
+- [[route.ts_1]] - code - /home/kbs/Documents/final_project/frontend-react/app/api/mediquery/route.ts
+- [[route.ts]] - code - /home/kbs/Documents/final_project/frontend-react/app/api/models/route.ts
+- [[route.ts_5]] - code - /home/kbs/Documents/final_project/frontend-react/app/api/sessions/route.ts
+- [[run_ablation()]] - code - /home/kbs/Documents/final_project/evaluation/run_paper_eval.py
+- [[run_ablation.py]] - code - /home/kbs/Documents/final_project/evaluation/run_ablation.py
+- [[run_api_eval.py]] - code - /home/kbs/Documents/final_project/evaluation/run_api_eval.py
+- [[run_calibration()]] - code - /home/kbs/Documents/final_project/evaluation/run_api_eval.py
+- [[run_calibration()_1]] - code - /home/kbs/Documents/final_project/evaluation/run_paper_eval.py
+- [[run_e2e_benchmark.py]] - code - /home/kbs/Documents/final_project/evaluation/run_e2e_benchmark.py
+- [[run_latency()]] - code - /home/kbs/Documents/final_project/evaluation/run_api_eval.py
+- [[run_latency()_1]] - code - /home/kbs/Documents/final_project/evaluation/run_paper_eval.py
+- [[run_metrics()]] - code - /home/kbs/Documents/final_project/evaluation/run_api_eval.py
+- [[run_metrics()_1]] - code - /home/kbs/Documents/final_project/evaluation/run_paper_eval.py
+- [[run_paper_eval.py]] - code - /home/kbs/Documents/final_project/evaluation/run_paper_eval.py
+- [[run_ragas_eval.py]] - code - /home/kbs/Documents/final_project/evaluation/run_ragas_eval.py
+- [[run_retrieval_benchmark.py]] - code - /home/kbs/Documents/final_project/evaluation/run_retrieval_benchmark.py
+- [[sanitize_html()_1]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[sanitize_html()]] - code - /home/kbs/Documents/final_project/frontend/streamlit_app.py
+- [[save_mermaid()]] - code - /home/kbs/Documents/final_project/evaluation/generate_architecture_diagram.py
+- [[save_question_history()_1]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[save_question_history()]] - code - /home/kbs/Documents/final_project/frontend/streamlit_app.py
+- [[save_reliability_diagram()]] - code - /home/kbs/Documents/final_project/evaluation/compute_calibration.py
+- [[searchWeb()]] - code - /home/kbs/Documents/final_project/scratch/tools/Plagiarism-Checker/scripts/main.py
+- [[send_settings_panel()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[sidebar.tsx]] - code - /home/kbs/Documents/final_project/frontend-react/components/mediquery/sidebar.tsx
+- [[starters()]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[str]] - code
+- [[streamlit_app.py]] - code - /home/kbs/Documents/final_project/frontend/streamlit_app.py
+- [[submit_feedback()_2]] - code - /home/kbs/Documents/final_project/frontend/chainlit_app.py
+- [[submit_feedback()]] - code - /home/kbs/Documents/final_project/tests/locustfile.py
+- [[submit_feedback()_1]] - code - /home/kbs/Documents/final_project/frontend/streamlit_app.py
+- [[test_api_contract.py]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_ask_adaptive_token_budget_for_high_precision_query()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_ask_emergency_redirect_does_not_load_pipeline()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_ask_langchain_and_langgraph_flags_route_to_selected_pipeline()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_ask_low_latency_profile_reduces_work()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_ask_requires_api_key_when_configured()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_ask_standard_pipeline_contract()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_ask_stream_ndjson_order_meta_before_tokens_then_done()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_ask_stream_returns_error_event_when_pipeline_is_unavailable()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_ask_stream_returns_meta_tokens_and_done()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_ask_validation_rejects_bad_source_count()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_auth_disabled_when_no_keys_configured()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_build_rl_dataset.py]] - code - /home/kbs/Documents/final_project/tests/test_build_rl_dataset.py
+- [[test_chunk_ids_sequential()]] - code - /home/kbs/Documents/final_project/tests/test_recursive_chunker.py
+- [[test_chunk_metadata_set()]] - code - /home/kbs/Documents/final_project/tests/test_recursive_chunker.py
+- [[test_chunks_contain_no_empty_strings()]] - code - /home/kbs/Documents/final_project/tests/test_recursive_chunker.py
+- [[test_clear_cache_invalidates_pipeline_cache()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_clear_cache_rejects_read_only_key_when_admin_key_configured()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_component_health_reports_loaded_shared_components()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_compute_reward_formula_without_metadata()]] - code - /home/kbs/Documents/final_project/tests/test_build_rl_dataset.py
+- [[test_compute_reward_uses_metadata_when_present()]] - code - /home/kbs/Documents/final_project/tests/test_build_rl_dataset.py
+- [[test_create_and_get_session_contract()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_dedup_by_doc_id()]] - code - /home/kbs/Documents/final_project/tests/test_retrieval_parametrized.py
+- [[test_deterministic_split_is_stable()]] - code - /home/kbs/Documents/final_project/tests/test_build_rl_dataset.py
+- [[test_domain_adaptive_chunk_size()]] - code - /home/kbs/Documents/final_project/tests/test_recursive_chunker.py
+- [[test_empty_content_returns_no_chunks()]] - code - /home/kbs/Documents/final_project/tests/test_recursive_chunker.py
+- [[test_feedback_derives_reward_from_boolean_signals()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_feedback_requires_rating_or_boolean_signal()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_feedback_stats_contract()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_feedback_trajectory.py]] - code - /home/kbs/Documents/final_project/tests/test_feedback_trajectory.py
+- [[test_get_missing_trajectory_returns_none()]] - code - /home/kbs/Documents/final_project/tests/test_feedback_trajectory.py
+- [[test_health_endpoint_reports_loaded_pipeline()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_langsmith_improvement_report_aggregates_failures()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_langsmith_status_reports_disabled_when_flag_off()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_langsmith_status_reports_tools_when_enabled()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_langsmith_tool_executes_when_enabled()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_log_and_get_trajectory()]] - code - /home/kbs/Documents/final_project/tests/test_feedback_trajectory.py
+- [[test_log_requires_response_id()]] - code - /home/kbs/Documents/final_project/tests/test_feedback_trajectory.py
+- [[test_models_endpoint_marks_loaded_models()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_negation_aware_interactions()]] - code - /home/kbs/Documents/final_project/tests/test_retrieval_parametrized.py
+- [[test_no_chunk_ends_mid_sentence()]] - code - /home/kbs/Documents/final_project/tests/test_recursive_chunker.py
+- [[test_overlap_not_longer_than_chunk()]] - code - /home/kbs/Documents/final_project/tests/test_recursive_chunker.py
+- [[test_recursive_chunker.py]] - code - /home/kbs/Documents/final_project/tests/test_recursive_chunker.py
+- [[test_resolve_response_id_falls_back_to_question_id()]] - code - /home/kbs/Documents/final_project/tests/test_build_rl_dataset.py
+- [[test_resolve_response_id_prefers_metadata()]] - code - /home/kbs/Documents/final_project/tests/test_build_rl_dataset.py
+- [[test_retrieval_parametrized.py]] - code - /home/kbs/Documents/final_project/tests/test_retrieval_parametrized.py
+- [[test_retrieve_respects_k()]] - code - /home/kbs/Documents/final_project/tests/test_retrieval_parametrized.py
+- [[test_retrieve_returns_documents()]] - code - /home/kbs/Documents/final_project/tests/test_retrieval_parametrized.py
+- [[test_retrieve_score_ordering()]] - code - /home/kbs/Documents/final_project/tests/test_retrieval_parametrized.py
+- [[test_retriever_exposes_deterministic_stage_timings()]] - code - /home/kbs/Documents/final_project/tests/test_local_rollout.py
+- [[test_rrf_empty_list()]] - code - /home/kbs/Documents/final_project/tests/test_retrieval_parametrized.py
+- [[test_rrf_k_parameter()]] - code - /home/kbs/Documents/final_project/tests/test_retrieval_parametrized.py
+- [[test_rrf_multiple_lists()]] - code - /home/kbs/Documents/final_project/tests/test_retrieval_parametrized.py
+- [[test_rrf_weight_influence()]] - code - /home/kbs/Documents/final_project/tests/test_retrieval_parametrized.py
+- [[test_scoped_keys_read_can_ask_but_not_admin()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_scoped_keys_unknown_key_rejected()]] - code - /home/kbs/Documents/final_project/tests/test_api_contract.py
+- [[test_short_content_single_chunk()]] - code - /home/kbs/Documents/final_project/tests/test_recursive_chunker.py
+- [[text_to_vector()]] - code - /home/kbs/Documents/final_project/scratch/tools/Plagiarism-Checker/scripts/cosineSim.py
+- [[timeStamp()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[transformByMatrix3()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[ulcmp()_1]] - code - /home/kbs/Documents/final_project/scratch/tools/sherlock/original/comp.c
+- [[usage()_1]] - code - /home/kbs/Documents/final_project/scratch/tools/sherlock/original/comp.c
+- [[use()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[vector_store.py]] - code - /home/kbs/Documents/final_project/src/embeddings/vector_store.py
+- [[write()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[write_manifest()]] - code - /home/kbs/Documents/final_project/evaluation/manifest.py
+
+## Live Query (requires Dataview plugin)
+
+```dataview
+TABLE source_file, type FROM #community/Community_0
+SORT file.name ASC
+```
+
+## Connections to other communities
+- 264 edges to [[_COMMUNITY_Community 2]]
+- 121 edges to [[_COMMUNITY_Community 1]]
+- 82 edges to [[_COMMUNITY_Community 4]]
+- 60 edges to [[_COMMUNITY_Community 5]]
+- 32 edges to [[_COMMUNITY_Community 16]]
+- 19 edges to [[_COMMUNITY_Community 10]]
+- 19 edges to [[_COMMUNITY_Community 3]]
+- 17 edges to [[_COMMUNITY_Community 7]]
+- 17 edges to [[_COMMUNITY_Community 25]]
+- 15 edges to [[_COMMUNITY_Community 11]]
+- 14 edges to [[_COMMUNITY_Community 26]]
+- 13 edges to [[_COMMUNITY_Community 13]]
+- 11 edges to [[_COMMUNITY_Community 27]]
+- 10 edges to [[_COMMUNITY_Community 17]]
+- 9 edges to [[_COMMUNITY_Community 9]]
+- 8 edges to [[_COMMUNITY_Community 15]]
+- 7 edges to [[_COMMUNITY_Community 6]]
+- 5 edges to [[_COMMUNITY_Community 33]]
+- 3 edges to [[_COMMUNITY_Community 8]]
+- 3 edges to [[_COMMUNITY_Community 31]]
+- 3 edges to [[_COMMUNITY_Community 40]]
+- 3 edges to [[_COMMUNITY_Community 22]]
+- 3 edges to [[_COMMUNITY_Community 18]]
+- 3 edges to [[_COMMUNITY_Community 12]]
+- 1 edge to [[_COMMUNITY_Community 32]]
+- 1 edge to [[_COMMUNITY_Community 14]]
+- 1 edge to [[_COMMUNITY_Community 30]]
+- 1 edge to [[_COMMUNITY_Community 20]]
+- 1 edge to [[_COMMUNITY_Community 36]]
+
+## Top bridge nodes
+- [[len()]] - degree 289, connects to 17 communities
+- [[str]] - degree 118, connects to 11 communities
+- [[write()]] - degree 24, connects to 10 communities
+- [[.answer()_2]] - degree 45, connects to 8 communities
+- [[.search()]] - degree 29, connects to 8 communities

@@ -1,0 +1,22 @@
+\acswitchoff 
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {1.1}{\ignorespaces Retrieval pulls passages from the knowledge base; the language model then generates an answer using that text as context.}}{2}{}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Eight pipeline stages from query to final response (architecture overview).}}{18}{}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Hybrid retrieval: BM25 and dense paths, RRF fusion, diversity filter, dynamic~$k$.}}{20}{}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Five confidence signals combined, then Platt-scaled for display.}}{21}{}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {5.1}{\ignorespaces Evaluation path through eight stages. Red (dashed): re-retrieval when the grounding gate rejects the first context.}}{24}{}%
+\contentsline {figure}{\numberline {5.2}{\ignorespaces Integration test path: API request through retrieval, generation, scoring, and JSON response.}}{27}{}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {6.1}{\ignorespaces Ingestion: clean, chunk at sentence boundaries, embed into ChromaDB, build BM25 pickle.}}{30}{}%
+\contentsline {figure}{\numberline {6.2}{\ignorespaces Generation backends compared (TinyLlama base, QLoRA TinyLlama, BioMistral-7B). QLoRA wins keyword coverage; BioMistral leads ROUGE-L and BERTScore.}}{32}{}%
+\contentsline {figure}{\numberline {6.3}{\ignorespaces CI on push to \texttt {main}; Compose runs API + Streamlit with KB and BM25 on a shared volume.}}{33}{}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {7.1}{\ignorespaces Per-metric comparison on the 97-question set. QLoRA lifts keyword coverage most; BioMistral leads ROUGE-L and BERTScore F1.}}{35}{}%
+\contentsline {figure}{\numberline {7.2}{\ignorespaces Keyword coverage when each confidence signal is removed. Source agreement moves the bar the most.}}{37}{}%
+\contentsline {figure}{\numberline {7.3}{\ignorespaces Reliability diagram (raw scores). Points are bins; the diagonal is perfect calibration. The model is under-confident: predicted scores sit below empirical accuracy in every bin.}}{39}{}%
+\contentsline {figure}{\numberline {7.4}{\ignorespaces Latency by stage (warm path $\approx $115~s). Retrieval and generation dominate; other stages stay under $\sim $3~s each.}}{40}{}%
+\addvspace {10\p@ }

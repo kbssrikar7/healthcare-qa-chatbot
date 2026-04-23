@@ -1,0 +1,229 @@
+---
+type: community
+cohesion: 0.02
+members: 164
+---
+
+# Community 6
+
+**Cohesion:** 0.02 - loosely connected
+**Members:** 164 nodes
+
+## Members
+- [[Am()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[Bne()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[Dx()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[Dz()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[E9()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[Fz()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[Gue()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[IV()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[M3()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[Mre()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[OV()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[Pne()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[Q6()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[Qpe()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[Uz()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[Vne()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[W2()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[Wv()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[Xz()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[Z2()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_3()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_animationFrame()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_applyBindings()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_areTexturesRenderable()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_calculateVertexCount()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_createAnimationLoop()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_createBrowserWorker()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_createNodeWorker()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_createOverlay()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_getBufferProps()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_getModuleList()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_getRefine()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_getTilesetOptions()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_hashShader()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_initDevice()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_initMatrices()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_initializeBinaryProperties()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_initializeBinaryProperty()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_initializeContent()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_initializeLodMetric()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_initializeRenderingState()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_initializeTraverser()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_loadConfiguration()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_logFramebuffer()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_onUpdate()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_parseDeprecationDefinitions()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_postUpdate()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_print()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_requestAnimationFrame()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_setAutoCreatedCanvasId()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_setGeometryAttributes()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_setModelAttributes()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_setPipelineNeedsUpdate()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_setupModels()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_setupWeightAttributes()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_updateMinMaxValues()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_updateModels()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_updatePipeline()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[_validateAttributeUpdaters()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[aR()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[addDefaultShaderModule()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[allocateResources()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[assembleShader()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[assembleShaderPair()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[bind()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[bindUniformBuffers()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[bv()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[cB()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[constructor()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[createBuffer()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[createFramebuffer()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[createSampler()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[createShader()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[createTransformFeedback()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[createUniformBuffer()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[createVertexArray()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[d5()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[draw()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[e3()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[ehe()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[eie()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[find()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[foe()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[fx()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[getBinMap()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[getDefaultPipelineFactory()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[getDefaultShaderFactory()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[getDimensionChanges()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[getDomainUniforms()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[getLastPickedObject()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[getManagedUniformBuffer()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[getUniformBufferByteLength()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[getUniformValues()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[incrementTimestamp()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[ine()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[initializeCube()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[instantiateModules()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[iz()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[jhe()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[jpe()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[jue()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[kz()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[lC()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[loe()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[mB()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[multiplyLeft()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[n_e()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[nfe()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[nne()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[nz()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[o5()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[oSe()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[o_e()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[ohe()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[oz()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[parseMaterial()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[pm()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[predraw()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[premultiply()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[que()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[r3()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[rne()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[setAttributes()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[setBindings()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[setBufferLayout()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[setBuffers()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[setConstantAttributes()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[setConstantWebGL()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[setCubeMapImageData()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[setGeometry()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[setImageDataForFace()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[setIndexBuffer()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[setInstanceCount()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[setMap()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[setNeedsRedraw()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[setParameters()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[setShaderInputs()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[setSpectorMetadata()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[setTexture()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[setTopology()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[setTransformFeedback()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[setUniforms()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[setVertexCount()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[start()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[swe()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[t5()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[tne()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[toDataURL()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[unbind()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[unbindAfterRender()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[unbindUniformBuffers()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[updatePbrMaterialUniforms()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[updateShaderInputs()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[ux()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[v9()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[waitForRender()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[warn()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[x9()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[xue()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[y3()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[z9()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[zie()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[zne()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+- [[zz()]] - code - /home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js
+
+## Live Query (requires Dataview plugin)
+
+```dataview
+TABLE source_file, type FROM #community/Community_6
+SORT file.name ASC
+```
+
+## Connections to other communities
+- 169 edges to [[_COMMUNITY_Community 3]]
+- 148 edges to [[_COMMUNITY_Community 1]]
+- 50 edges to [[_COMMUNITY_Community 8]]
+- 24 edges to [[_COMMUNITY_Community 22]]
+- 23 edges to [[_COMMUNITY_Community 12]]
+- 20 edges to [[_COMMUNITY_Community 7]]
+- 18 edges to [[_COMMUNITY_Community 18]]
+- 18 edges to [[_COMMUNITY_Community 17]]
+- 16 edges to [[_COMMUNITY_Community 15]]
+- 14 edges to [[_COMMUNITY_Community 14]]
+- 11 edges to [[_COMMUNITY_Community 20]]
+- 11 edges to [[_COMMUNITY_Community 32]]
+- 10 edges to [[_COMMUNITY_Community 29]]
+- 10 edges to [[_COMMUNITY_Community 24]]
+- 10 edges to [[_COMMUNITY_Community 30]]
+- 7 edges to [[_COMMUNITY_Community 31]]
+- 7 edges to [[_COMMUNITY_Community 0]]
+- 6 edges to [[_COMMUNITY_Community 2]]
+- 5 edges to [[_COMMUNITY_Community 34]]
+- 5 edges to [[_COMMUNITY_Community 21]]
+- 4 edges to [[_COMMUNITY_Community 10]]
+- 4 edges to [[_COMMUNITY_Community 35]]
+- 3 edges to [[_COMMUNITY_Community 39]]
+- 3 edges to [[_COMMUNITY_Community 23]]
+- 2 edges to [[_COMMUNITY_Community 28]]
+- 2 edges to [[_COMMUNITY_Community 37]]
+- 2 edges to [[_COMMUNITY_Community 41]]
+- 1 edge to [[_COMMUNITY_Community 19]]
+- 1 edge to [[_COMMUNITY_Community 11]]
+- 1 edge to [[_COMMUNITY_Community 38]]
+- 1 edge to [[_COMMUNITY_Community 36]]
+- 1 edge to [[_COMMUNITY_Community 45]]
+- 1 edge to [[_COMMUNITY_Community 26]]
+- 1 edge to [[_COMMUNITY_Community 44]]
+- 1 edge to [[_COMMUNITY_Community 4]]
+- 1 edge to [[_COMMUNITY_Community 16]]
+- 1 edge to [[_COMMUNITY_Community 13]]
+
+## Top bridge nodes
+- [[constructor()]] - degree 198, connects to 25 communities
+- [[warn()]] - degree 63, connects to 21 communities
+- [[find()]] - degree 40, connects to 15 communities
+- [[draw()]] - degree 48, connects to 13 communities
+- [[bind()]] - degree 53, connects to 12 communities

@@ -1,0 +1,179 @@
+{
+  "version": "v2-eval10",
+  "description": "10 patient-facing questions for fast eval",
+  "total": 10,
+  "test_cases": [
+    {
+      "id": "medqa_012",
+      "query": "A chi-square test is performed to test the significance of the relationship, and an odds ratio of 2.1 was computed for the association between low education and the risk of MI, with a confidence interval of 0.9\u20139.7. What inference can be made on the association between young age MI and educational status from this study?",
+      "reference_answer": "The association is not statistically significant, and low education is not a risk factor.",
+      "expected_keywords": [
+        "association",
+        "statistically",
+        "significant",
+        "education",
+        "risk",
+        "factor"
+      ],
+      "category": "clinical",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_012_src"
+      ]
+    },
+    {
+      "id": "medqa_029",
+      "query": "He has been sexually active in the past with multiple female partners. In addition to an influenza vaccine, which vaccine should be administered to this patient during this visit?",
+      "reference_answer": "Tetanus, diphtheria, and acellular pertussis booster (Tdap) vaccine",
+      "expected_keywords": [
+        "tetanus",
+        "diphtheria",
+        "acellular",
+        "pertussis",
+        "booster",
+        "tdap"
+      ],
+      "category": "treatment",
+      "source": "MedQA-USMLE-step2&3",
+      "relevant_ids": [
+        "medqa_029_src"
+      ]
+    },
+    {
+      "id": "chatdoc_014",
+      "query": "So I playing a game at my church last weekend and the game involved running and I ended up tripping and falling down on my right knee and it hurt really bad and the next day my knee was swollen and bruised and it hurts to kneel on or when I put pressure on it and it has been like this for about a we",
+      "reference_answer": "Welcome to Chat Doctor . I have gone through your query and can understand your concern. As per your complaint it seems that due to traumatic injury there has been inflammation of the soft tissues and there is accumulation of inflammatory exudate and cells in the area leading to swelling. The bruising is due to ruptured blood vessels leading to Hematoma formation. I would suggest you to do alternate warm and cool compresses over the swelling. Take anti-inflammatory painkiller like Ibuprofen. App",
+      "expected_keywords": [
+        "swelling",
+        "injury",
+        "inflammation",
+        "ibuprofen",
+        "hematoma"
+      ],
+      "category": "clinical",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_014_src"
+      ]
+    },
+    {
+      "id": "chatdoc_019",
+      "query": "if i do any physical activities my body  experiences burning feeling with rashes all over the body and severe itches. I referred several doctors they said it is because of some allergy but cannot be diagnosed, they prescribed me with cetrizine tablets, I am taking it for nearly 10 years so became ad",
+      "reference_answer": "Thank you for asking at Chat Doctor. I went through your history. I would like to ask you about your symptoms in great detail, like - what are the activities that precipitate itching & rashes, whether they occur without any activity as well, whether you have any other medical conditions, whether you are taking any other medicines on regular basis, whether you have any other allergies, etc. etc. However, from your history, I would first think of what we call \\\"Cholinergic urticaria\\\". It is not e",
+      "expected_keywords": [
+        "cholinergic",
+        "urticaria",
+        "itching",
+        "rashes",
+        "allergy"
+      ],
+      "category": "treatment",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_019_src"
+      ]
+    },
+    {
+      "id": "chatdoc_001",
+      "query": "Three years ago I was diagnosed with a very small carcinoid tumor which was found accidentally near the end of my small intestine duriing a colonoscopy. Sugery was reccommended, but I passed. About three weeks ago I had a very bad cold, and a little sinus infection. After the cold got better I notic",
+      "reference_answer": "and welcome to Chat Doctor. Thank you for your query. I am Chat Doctor, I understand your concerns and I will try to help you as much as I can. In most cases these spots are benign growths such as cysts or hematomas. Hematoma is very small and this can't cause such symptoms unless larger than 10\\u00a0cm. You should do MRI scan or liver biopsy to find what type of lesion it is.  Less common this may be malignant issues such as hepatocellular carcinoma. This abdominal pain may not be related to li",
+      "expected_keywords": [
+        "liver",
+        "biopsy",
+        "carcinoid",
+        "hematoma",
+        "mri"
+      ],
+      "category": "diagnosis",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_001_src"
+      ]
+    },
+    {
+      "id": "chatdoc_021",
+      "query": "Hi, may I answer your health queries right now ? Please type your query here...hie my name is Leonorah, i recently went to see a doctor and she told me i most probably have kidney infection .this problem has been there since 2008.i experiance pain both sides (were the kidneys are (that s what the do",
+      "reference_answer": "Thanks for writing to us. The pain on both the sides with a normal ultrasound scan could be due to a myofascial syn Chat Doctor. You can take mild painkillers like ibuprofen along with a good muscle relaxant for symptomatic relief after consulting your physician. Since the pain is persistent, it is less likely to be related to a renal infection. I hope this information has been both informative and helpful for you.",
+      "expected_keywords": [
+        "pain",
+        "kidney",
+        "infection",
+        "ibuprofen",
+        "ultrasound"
+      ],
+      "category": "treatment",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_021_src"
+      ]
+    },
+    {
+      "id": "chatdoc_009",
+      "query": "i am renal transplant patient since 08-07-2004. presently having low grade fever(last 9 days). takinng livoflox 500 once daily i have to take one paracetamol almost daily then temp is range bound 99.00 to 99.6 now doctors have prescribed suftum500 tds. should i shift or try for few more days.",
+      "reference_answer": "Yes it may be useful in reducing the temperature. Ceftum-500 is an antibiotic commonly prescribed to treat infections caused by susceptible bacteria like respiratory tract infections, urine infections and other conditions.  By killing the bacteria septum helps in reducing the raised body temperature. Continue to take septum along with paracetamol as prescribed. Hope I have answered your query. Let me know if I can assist you further. Take care",
+      "expected_keywords": [
+        "infections",
+        "reducing",
+        "temperature",
+        "prescribed",
+        "bacteria"
+      ],
+      "category": "treatment",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_009_src"
+      ]
+    },
+    {
+      "id": "chatdoc_012",
+      "query": "Hello, for the past few weeks I have been experiencing dizzy spells. This is accompanied by a numb, almost cold feeling, in my hands, feet and face. My vision goes a bit blurry too. It happens after I ve had chocolate or a fizzy drink. I am on an antidepressant too.",
+      "reference_answer": "Thanks for choosing Chat Doctor for posting your query. I have gone through your question in detail and I can understand what you are going through. It could be due to interaction with an antidepressant. You need to state which antidepressant you are on. Is it MAO Inhibitors? Hope I am able to answer your concerns. If you have any further query, I would be glad to help you. In future if you wish to contact me directly, you can use the below-mentioned link",
+      "expected_keywords": [
+        "antidepressant",
+        "interaction",
+        "dizzy",
+        "mao",
+        "inhibitors"
+      ],
+      "category": "symptoms",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_012_src"
+      ]
+    },
+    {
+      "id": "chatdoc_007",
+      "query": "hi docs!i am Saugat from Nepal.My father is of 53 yrs.From last 3 yrs he has been suffering from high rate palpation about 120 per minute.My father does have Br. asthma too.He has visited many doctors but none of them and none of their medicine can cure palpation.At beginning of this,my father first",
+      "reference_answer": "First do u have any ECG report. Is it showing any abnormalities. What I can suggest, first get one thyroid test done. Secondly is he inhaler on regular basis if yes then one content in inhaler is albuterol or formoterol or levosalbutamol, this content causes palpitations tremors and other complaints. So you asked your physician to remove this content from inhaler. Or sometimes if bronchial asthma is not controlled then it causes low oxygen level in blood and palpitations.",
+      "expected_keywords": [
+        "inhaler",
+        "palpitations",
+        "thyroid",
+        "asthma",
+        "albuterol"
+      ],
+      "category": "treatment",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_007_src"
+      ]
+    },
+    {
+      "id": "chatdoc_002",
+      "query": "Hi I recently received the depo-provera shot on October 9th. By the 12th I started feeling tired and now I can t even go to school with out feeling sick and very very tired. I used to workout (run and strength train) at least 4 times a week and now I can t even get through a 20 minute run which used",
+      "reference_answer": "CassctiexxThanks for writing in to Chat Doctor ! The change of mood, depression, lack of concentration can be expected with Depot Proverb, but the other things like feeling red and unwell and fast heart rate are unexpected sequela. I think yours nurse is right you may be having some viral syn Chat Doctor.  Infection or infectious mononucleosis etc. If you have any further query please let me know I would try to answer it for you. Wish you a great health!",
+      "expected_keywords": [
+        "mood",
+        "vitamin",
+        "deficiency",
+        "symptoms",
+        "blood"
+      ],
+      "category": "treatment",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_002_src"
+      ]
+    }
+  ]
+}

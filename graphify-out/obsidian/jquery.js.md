@@ -1,0 +1,85 @@
+---
+source_file: "/home/kbs/Documents/final_project/scratch/tools/Plagiarism-Checker/assets/js/jquery.js"
+type: "code"
+community: "Community 13"
+location: "L1"
+tags:
+  - graphify/code
+  - graphify/EXTRACTED
+  - community/Community_13
+---
+
+# jquery.js
+
+## Connections
+- [[Animation()]] - `contains` [EXTRACTED]
+- [[Sizzle()]] - `contains` [EXTRACTED]
+- [[Tween()]] - `contains` [EXTRACTED]
+- [[actualDisplay()]] - `contains` [EXTRACTED]
+- [[addCombinator()]] - `contains` [EXTRACTED]
+- [[addHandle()]] - `contains` [EXTRACTED]
+- [[addToPrefiltersOrTransports()]] - `contains` [EXTRACTED]
+- [[ajaxConvert()]] - `contains` [EXTRACTED]
+- [[ajaxExtend()]] - `contains` [EXTRACTED]
+- [[ajaxHandleResponses()]] - `contains` [EXTRACTED]
+- [[assert()_1]] - `contains` [EXTRACTED]
+- [[augmentWidthOrHeight()]] - `contains` [EXTRACTED]
+- [[boolHandler()]] - `contains` [EXTRACTED]
+- [[buildParams()]] - `contains` [EXTRACTED]
+- [[cloneCopyEvent()]] - `contains` [EXTRACTED]
+- [[condense()]] - `contains` [EXTRACTED]
+- [[createActiveXHR()]] - `contains` [EXTRACTED]
+- [[createButtonPseudo()]] - `contains` [EXTRACTED]
+- [[createCache()]] - `contains` [EXTRACTED]
+- [[createFxNow()]] - `contains` [EXTRACTED]
+- [[createInputPseudo()]] - `contains` [EXTRACTED]
+- [[createOptions()]] - `contains` [EXTRACTED]
+- [[createPositionalPseudo()]] - `contains` [EXTRACTED]
+- [[createSafeFragment()]] - `contains` [EXTRACTED]
+- [[createStandardXHR()]] - `contains` [EXTRACTED]
+- [[createTween()]] - `contains` [EXTRACTED]
+- [[css_defaultDisplay()]] - `contains` [EXTRACTED]
+- [[dataAttr()]] - `contains` [EXTRACTED]
+- [[defaultPrefilter()]] - `contains` [EXTRACTED]
+- [[disableScript()]] - `contains` [EXTRACTED]
+- [[done()_1]] - `contains` [EXTRACTED]
+- [[elementMatcher()]] - `contains` [EXTRACTED]
+- [[fixCloneNodeIssues()]] - `contains` [EXTRACTED]
+- [[fixDefaultChecked()]] - `contains` [EXTRACTED]
+- [[genFx()]] - `contains` [EXTRACTED]
+- [[getAll()]] - `contains` [EXTRACTED]
+- [[getWidthOrHeight()]] - `contains` [EXTRACTED]
+- [[getWindow()]] - `contains` [EXTRACTED]
+- [[inspectPrefiltersOrTransports()]] - `contains` [EXTRACTED]
+- [[internalData()]] - `contains` [EXTRACTED]
+- [[internalRemoveData()]] - `contains` [EXTRACTED]
+- [[interpolationHandler()]] - `contains` [EXTRACTED]
+- [[isArraylike()]] - `contains` [EXTRACTED]
+- [[isEmptyDataObject()]] - `contains` [EXTRACTED]
+- [[isHidden()]] - `contains` [EXTRACTED]
+- [[isNative()]] - `contains` [EXTRACTED]
+- [[manipulationTarget()]] - `contains` [EXTRACTED]
+- [[markFunction()]] - `contains` [EXTRACTED]
+- [[matcherFromGroupMatchers()]] - `contains` [EXTRACTED]
+- [[matcherFromTokens()]] - `contains` [EXTRACTED]
+- [[multipleContexts()]] - `contains` [EXTRACTED]
+- [[propFilter()]] - `contains` [EXTRACTED]
+- [[restoreScript()]] - `contains` [EXTRACTED]
+- [[returnFalse()]] - `contains` [EXTRACTED]
+- [[returnTrue()]] - `contains` [EXTRACTED]
+- [[safeActiveElement()]] - `contains` [EXTRACTED]
+- [[select()]] - `contains` [EXTRACTED]
+- [[setFilters()]] - `contains` [EXTRACTED]
+- [[setGlobalEval()]] - `contains` [EXTRACTED]
+- [[setMatcher()]] - `contains` [EXTRACTED]
+- [[setPositiveNumber()]] - `contains` [EXTRACTED]
+- [[showHide()]] - `contains` [EXTRACTED]
+- [[sibling()]] - `contains` [EXTRACTED]
+- [[siblingCheck()]] - `contains` [EXTRACTED]
+- [[toSelector()]] - `contains` [EXTRACTED]
+- [[tokenize()]] - `contains` [EXTRACTED]
+- [[valueHandler()]] - `contains` [EXTRACTED]
+- [[vendorPropName()]] - `contains` [EXTRACTED]
+- [[winnow()]] - `contains` [EXTRACTED]
+
+#graphify/code #graphify/EXTRACTED #community/Community_13

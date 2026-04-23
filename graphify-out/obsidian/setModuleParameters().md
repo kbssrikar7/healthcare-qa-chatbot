@@ -1,0 +1,20 @@
+---
+source_file: "/home/kbs/Documents/final_project/venv312/share/jupyter/nbextensions/pydeck/index.js"
+type: "code"
+community: "Community 8"
+location: "L1797"
+tags:
+  - graphify/code
+  - graphify/EXTRACTED
+  - community/Community_8
+---
+
+# setModuleParameters()
+
+## Connections
+- [[_drawLayer()]] - `calls` [EXTRACTED]
+- [[getModels()]] - `calls` [EXTRACTED]
+- [[index.js]] - `contains` [EXTRACTED]
+- [[updateModuleSettings()]] - `calls` [EXTRACTED]
+
+#graphify/code #graphify/EXTRACTED #community/Community_8

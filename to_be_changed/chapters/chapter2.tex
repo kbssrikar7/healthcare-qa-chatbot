@@ -1,0 +1,70 @@
+\chapter{\MakeUppercase{Project Description and Goals}}
+
+\section{Literature review}
+
+\subsection{Retrieval-augmented generation}
+
+Lewis et al.~\cite{lewis2020rag} introduced \ac{rag} as a method for improving factual accuracy on knowledge-intensive tasks. Their architecture paired a dense retriever (DPR~\cite{karpukhin2020dpr}) with a sequence-to-sequence generator (BART) and showed that conditioning generation on retrieved passages reduced hallucination on open-domain \ac{qa} benchmarks. In short, letting the model read fresh passages at query time beat relying only on weights frozen after pre-training.
+
+Guu et al.~\cite{guu2020realm} went further, integrating retrieval directly into pre-training. REALM is more expensive to train but produces tighter retrieval-generation coupling. Most deployed \ac{rag} systems, including this one, use the simpler modular pipeline from Lewis et al., where retrieval and generation are separate components that can be swapped independently.
+
+I chose the \ac{rag} framework over fine-tuning for a practical reason: you can update the knowledge base without retraining the language model. When new data arrives, you just index the documents and the existing model continues to work. Fine-tuning alone would require an expensive retrain every time the source data changes.
+
+\subsection{Medical language models}
+
+BioGPT~\cite{luo2022biogpt} is a GPT-2-scale model pre-trained on 15 million PubMed abstracts and full articles. It performs well on biomedical relation extraction and named entity recognition, but was not designed for conversational \ac{qa}. PubMedBERT~\cite{gu2021pubmedbert} takes a different approach: pre-training a BERT-scale model on PubMed text from scratch, rather than fine-tuning general-domain BERT. Starting from scratch avoids vocabulary mismatch and improves performance on downstream biomedical \ac{nlp} tasks.
+
+ChatDoctor~\cite{li2023chatdoctor} is a LLaMA-based conversational model fine-tuned on 100,000 patient-doctor dialogues from HealthCareMagic. It generates more natural-sounding medical responses than general-purpose \ac{llm}s, but without a retrieval component its answers are bounded by what appeared in its training data. The ChatDoctor-HealthCareMagic dataset was used as one of the three knowledge sources in this project.
+
+BioMistral-7B~\cite{labrak2024biomistral} continues pre-training Mistral-7B on PubMed Central Open Access articles. On the MedMCQA benchmark, BioMistral-7B reaches 59.1\% accuracy against 53.2\% for the Mistral-7B base model. In the evaluations described in Chapter 7, BioMistral produced higher ROUGE-L scores than TinyLlama (0.299 vs.\ 0.208) but lower keyword coverage (0.3088 vs.\ 0.3845) --- a difference explained by its more discursive output\allowbreak{} style.
+
+TinyLlama 1.1B~\cite{zhang2024tinyllama} was trained on 3 trillion tokens using the Llama 2 architecture. It is not a medical model. It is included because, at 1.1B parameters in bfloat16, it needs only about 2.2~GB of \ac{ram} and remains the only backend that stayed within tolerable \ac{cpu} latency in this project without quantisation.
+
+\subsection{Hybrid retrieval}
+
+Dense retrieval~\cite{karpukhin2020dpr} uses a bi-encoder to embed queries and documents into a shared vector space, enabling approximate nearest-neighbour search at scale. \ac{bm25}~\cite{robertson2009bm25} scores documents by term frequency and inverse document frequency with length normalisation --- a probabilistic sparse method that has been competitive in information retrieval benchmarks for decades. Neither method dominates the other across all query types: dense retrieval handles semantic paraphrasing better; \ac{bm25} handles exact term matching better.
+
+Cross-benchmark evaluations of sparse and dense methods~\cite{ma2022hybrid} have consistently shown that combining both outperforms either alone. Cormack et al.~\cite{cormack2009rrf} proposed \ac{rrf} as a fusion method that merges ranked lists using only rank positions, requiring no score normalisation between retrieval systems. This project uses \ac{rrf} to combine the BM25 and dense ranked lists before passing the top documents to the generation stage.
+
+\subsection{Explainability and calibration}
+
+Guo et al.~\cite{guo2017calibration} showed that modern neural networks are miscalibrated: their softmax confidence scores overstate certainty and do not correspond well to empirical accuracy. Platt scaling~\cite{platt1999probabilistic} corrects this post-hoc by fitting a logistic on raw scores with a held-out calibration set. The method is cheap to add and works when raw scores rise and fall with accuracy in a mostly monotone way.
+
+For hallucination detection, DeBERTa~\cite{he2021deberta} fine-tuned as an \ac{nli} classifier checks whether a generated answer is entailed by, contradicted by, or neutral with respect to each retrieved source. This faithfulness-checking approach was evaluated in dialogue settings by Honovich et al.~\cite{honovich2022true} and Dziri et al.~\cite{dziri2022faithdial}, both of whom found \ac{nli}-based checking more reliable than overlap-based metrics for detecting factual inconsistency.
+
+\section{Research gap}
+
+To the author's knowledge, no published open-source system combines all five of the following in a single deployment: \ac{cpu}-compatible inference, hybrid retrieval, Platt-scaled confidence scores, \ac{nli}-based hallucination detection, and source attribution. The nearest tools each miss part of that stack:
+
+\begin{itemize}
+    \item ChatDoctor~\cite{li2023chatdoctor} has no retrieval component and no uncertainty estimation.
+    \item BioGPT~\cite{luo2022biogpt} and PubMedBERT~\cite{gu2021pubmedbert} are classification and extraction models, not conversational \ac{qa} systems.
+    \item General-purpose \ac{rag} pipelines~\cite{lewis2020rag} are not adapted for medical safety requirements and produce no domain-specific confidence signals.
+    \item Systems with calibrated confidence~\cite{guo2017calibration} typically operate on structured tasks with definite correct answers, not open-ended medical questions.
+\end{itemize}
+
+The system built for this thesis is a single locally deployable, privacy-preserving medical \ac{qa} pipeline. It returns grounded answers with per-response confidence breakdowns, hallucination checks, and source attribution, without requiring \ac{gpu} hardware at inference time.
+
+\section{Objectives}
+
+\begin{enumerate}
+    \item Build a medical knowledge base from ChatDoctor-HealthCareMagic, PubMedQA, and \allowbreak{}MedMCQA using a sentence-boundary-aware chunking strategy.
+    \item Implement hybrid \ac{bm25} and dense retrieval with \ac{rrf} fusion.
+    \item Evaluate TinyLlama base, TinyLlama with QLoRA fine-tuning, and BioMistral-7B as generation backends.
+    \item Build a five-signal \ac{xai} confidence scorer with Platt-scaled calibration.
+    \item Integrate DeBERTa-based \ac{nli} hallucination detection.
+    \item Expose the pipeline through a FastAPI \ac{rest} service with a React frontend.
+    \item Evaluate on a 97-question held-out test set covering four medical query types.
+\end{enumerate}
+
+\section{Problem statement}
+
+Patients and caregivers seeking medical information online still lack a locally running, privacy-preserving \ac{qa} system that grounds answers in verified medical documents, reports calibrated uncertainty, and runs a hallucination check before the text is shown. Existing open-source medical \ac{qa} tools either depend on cloud inference or give no usable read on whether an answer is trustworthy.
+
+\section{Project plan}
+
+The project ran in six phases. Phase 0 covered environment setup and a baseline performance snapshot. Phase 1 addressed local optimisations: \ac{lru} caching for embeddings, BM25 pickle caching, per-stage latency instrumentation, and API startup warmup.
+
+Phase 2 evaluated BioMistral as an alternative generation backend, identifying the decoding parameter changes needed to make its output usable. Phase 3 ran on Google Colab across three sessions: Session A built knowledge base v2 using the RecursiveSentenceChunker on a \ac{tpu} v5e instance; Session B ran ablation studies, calibration experiments, and full model evaluations on a T4; Session C ran the A/B comparison between knowledge base versions that confirmed the v2 gain of 0.292 keyword coverage points.
+
+Phase 4 switched the production configuration to knowledge base v2 and updated the system settings accordingly. Phase 5 covered paper and report writing. Phase 6 addressed reproducibility: Dockerfile, dependency lock file, and Makefile targets for local evaluation.

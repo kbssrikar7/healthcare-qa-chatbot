@@ -1,0 +1,495 @@
+{
+  "version": "v2-eval30",
+  "description": "30 patient-facing questions (clinical/treatment/symptoms/diagnosis)",
+  "total": 30,
+  "test_cases": [
+    {
+      "id": "chatdoc_018",
+      "query": "Hi, i am 22 year old trying to get pregnant. It has been 45 days since my last cycle and wanted to check with doctor for pregnancy. The urine report has come negative and doctor advised to take Susten 100 for 5 days. What could be the reason for doctor to advise this medication. Does it mean am I no",
+      "reference_answer": "I think you should take this medicine. This Austen is generally given to support the pregnancy and also to induce the period if the periods get delayed. What you can do is to repeat a urine pregnancy test after 1 week. She.  Sometimes ovulation is delayed and thus pregnancy can happen. So you can confirm your pregnancy status after 1 week. She.  Austen has no negative effects on pregnancy. So if you are pregnant it will support this. If you are not pregnant it will induce your periods. Hope I ha",
+      "expected_keywords": [
+        "pregnancy",
+        "austen",
+        "support",
+        "induce"
+      ],
+      "category": "treatment",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_018_src"
+      ]
+    },
+    {
+      "id": "medqa_017",
+      "query": "The uvula is deviated to the left. Laboratory studies show:\nHemoglobin 13.0 g/dL\nHematocrit 39%\nLeukocyte count 12,000/mm3\nPlatelet Count 200,000/mm3\nSerum\nNa+ 138 mEq/L\nCl- 100 mEq/L\nK+ 4.5 mEq/L\nHCO3- 24 mEq/L\nUrea nitrogen 14.0 mg/dL\nCreatinine 1.1 mg/dL\nWhich of the following is the most appropriate next step in management?\"",
+      "reference_answer": "Incision and drainage with intravenous ampicillin-sulbactam therapy",
+      "expected_keywords": [
+        "incision",
+        "drainage",
+        "intravenous",
+        "ampicillin-sulbactam",
+        "therapy"
+      ],
+      "category": "treatment",
+      "source": "MedQA-USMLE-step2&3",
+      "relevant_ids": [
+        "medqa_017_src"
+      ]
+    },
+    {
+      "id": "chatdoc_009",
+      "query": "i am renal transplant patient since 08-07-2004. presently having low grade fever(last 9 days). takinng livoflox 500 once daily i have to take one paracetamol almost daily then temp is range bound 99.00 to 99.6 now doctors have prescribed suftum500 tds. should i shift or try for few more days.",
+      "reference_answer": "Yes it may be useful in reducing the temperature. Ceftum-500 is an antibiotic commonly prescribed to treat infections caused by susceptible bacteria like respiratory tract infections, urine infections and other conditions.  By killing the bacteria septum helps in reducing the raised body temperature. Continue to take septum along with paracetamol as prescribed. Hope I have answered your query. Let me know if I can assist you further. Take care",
+      "expected_keywords": [
+        "infections",
+        "reducing",
+        "temperature",
+        "prescribed",
+        "bacteria"
+      ],
+      "category": "treatment",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_009_src"
+      ]
+    },
+    {
+      "id": "chatdoc_022",
+      "query": "am 27 yrs , 5 .3 feet and 52 kg.am suffering from irregular periods from 13 yrs onwards. am having treatment of this. also thyriod for which am taking thyronorm 50 mcg , for PCOD am taking ChromiNACA. I got married and wants to be pregnant . can I.",
+      "reference_answer": "Sure. PCs is completely treatable and patients do conceive n deliver healthy babies. Your BMI is average. Continue with chroming A. ASK YOUR CONSULTANT TO START TAB OVA CET TWICE A DAY. It has got Chat Doctor.  Get your ovulation study done to see whether you are ovulating or not. If ovulation is occurring on time with the regime you can conceive or else you might need induction of ovulation by tabs or in. In both cases valet is good.",
+      "expected_keywords": [
+        "ovulation",
+        "conceive",
+        "sure",
+        "completely"
+      ],
+      "category": "treatment",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_022_src"
+      ]
+    },
+    {
+      "id": "medqa_029",
+      "query": "He has been sexually active in the past with multiple female partners. In addition to an influenza vaccine, which vaccine should be administered to this patient during this visit?",
+      "reference_answer": "Tetanus, diphtheria, and acellular pertussis booster (Tdap) vaccine",
+      "expected_keywords": [
+        "tetanus",
+        "diphtheria",
+        "acellular",
+        "pertussis",
+        "booster",
+        "tdap"
+      ],
+      "category": "treatment",
+      "source": "MedQA-USMLE-step2&3",
+      "relevant_ids": [
+        "medqa_029_src"
+      ]
+    },
+    {
+      "id": "chatdoc_025",
+      "query": "I have an elderly parent with glaucoma and  asthma problems.  The Meds are outrageously expensive.  She has been taking Pilocarpine 4% Eye Drops  for a few years now.  With the rising cost of her other drugs she is in need of assistance.  Does Alcon have any program that would help?  Is there an app",
+      "reference_answer": "If your elderly parent is having problems with the glaucoma medication, his/her ophthalmologist is the only one who can decide in changing medications and their dose according to the current health situation of the patient. If you are worried about the price, you can discuss with your parent doctor about the possibility of disbursement. According to my knowledge and my practice, many countries do apply insurance policies in treating patients with various diagnosis, including glaucoma. In fact, I",
+      "expected_keywords": [
+        "glaucoma",
+        "medications",
+        "ophthalmologist",
+        "insurance"
+      ],
+      "category": "treatment",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_025_src"
+      ]
+    },
+    {
+      "id": "medqa_031",
+      "query": "A CT scan of the chest shows clustered air spaces and reticular opacities in the basal parts of the lung. Which of the following is the most likely underlying mechanism of this patient's dyspnea?",
+      "reference_answer": "Excess collagen deposition in the extracellular matrix of the lung",
+      "expected_keywords": [
+        "excess",
+        "collagen",
+        "deposition",
+        "extracellular",
+        "matrix",
+        "lung"
+      ],
+      "category": "treatment",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_031_src"
+      ]
+    },
+    {
+      "id": "medqa_019",
+      "query": "His chest radiograph shows pulmonary infiltrates and mediastinal lymphadenopathy, sputum smear is negative, Mantoux test is 12 mm \u00d7 14 mm, CD4+ T cell count is 370/\u03bcL, and HIV RNA is 2,900 copies/mL. What is the most appropriate initial step in treatment?",
+      "reference_answer": "Continue antitubercular therapy and antiretroviral therapy without any change",
+      "expected_keywords": [
+        "therapy",
+        "antitubercular",
+        "antiretroviral",
+        "without"
+      ],
+      "category": "treatment",
+      "source": "MedQA-USMLE-step2&3",
+      "relevant_ids": [
+        "medqa_019_src"
+      ]
+    },
+    {
+      "id": "medqa_004",
+      "query": "A 34-year-old woman presents to the plastic surgery office 3 months following a rhinoplasty procedure. The patient has been recovering well. However, she has noticed a small whistling noise when she respires through her nose, which you appreciate on physical exam. Which of the following is the most likely cause of this phenomenon?",
+      "reference_answer": "A septal hematoma causing a perforation",
+      "expected_keywords": [
+        "septal",
+        "hematoma",
+        "perforation"
+      ],
+      "category": "diagnosis",
+      "source": "MedQA-USMLE-step2&3",
+      "relevant_ids": [
+        "medqa_004_src"
+      ]
+    },
+    {
+      "id": "medqa_023",
+      "query": "Physical examination is significant for left-sided, tender, ulcerative lymph nodes with a dark discoloration. Which of the following is most likely to be seen in this patient's condition?",
+      "reference_answer": "PCR positive for Chlamydia trachomatis",
+      "expected_keywords": [
+        "positive",
+        "chlamydia",
+        "trachomatis"
+      ],
+      "category": "diagnosis",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_023_src"
+      ]
+    },
+    {
+      "id": "medqa_032",
+      "query": "On anoscopy, a non-tender, dilated vascular protrusion is noted superior to the pectinate line. Which of the following is most likely true about this patient\u2019s current symptoms?",
+      "reference_answer": "The vascular protrusion drains into the superior rectal vein.",
+      "expected_keywords": [
+        "vascular",
+        "protrusion",
+        "drains",
+        "superior",
+        "rectal"
+      ],
+      "category": "diagnosis",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_032_src"
+      ]
+    },
+    {
+      "id": "medqa_028",
+      "query": "A fundoscopic examination shows small red dots in the superficial retinal layers suggestive of microaneurysms. The HbA1c is 9% and the urinalysis shows the following:\nColor Pale yellow (light/pale-to-dark/deep amber)\nClarity Cloudy\npH 6.6\nSpecific gravity 1.010\nGlucose 199 mg/dl\nKetones None\nNitrites Negative\nLeukocyte esterase Negative\nBilirubin Negative\nUrinary bilirubin Traces\nRed blood cells 3 RBCs\nProtein 120 mg/d\nRBCs \u2264 2 RBCs/hpf\nWBCs 22 WBCs/hpf\nEpithelial cells 27 squamous epithelial cells/hpf\nCasts 5 hyaline casts/lpf\nCrystals Occasional\nBacteria None\nYeast Present\nWhich of the following statements best describes the cause of this patient\u2019s glucosuria?",
+      "reference_answer": "Secondary active transporters fail to completely reabsorb glucose in the renal tubules",
+      "expected_keywords": [
+        "secondary",
+        "active",
+        "transporters",
+        "fail",
+        "completely",
+        "reabsorb"
+      ],
+      "category": "diagnosis",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_028_src"
+      ]
+    },
+    {
+      "id": "medqa_026",
+      "query": "A 22-year-old man from Nepal presents to the emergency department complaining of swelling and pain in his right testicle. The patient states that he just arrived in the United States to live with his wife, with whom he is monogamous. The patient denies painful urination or urethral discharge, but admits that 10 days ago he \u201cfelt like he had a fever\u201d and the right side of his face was swollen and painful. Which of the following is characteristic of the most likely diagnosis?",
+      "reference_answer": "Preventable by a live attenuated vaccine",
+      "expected_keywords": [
+        "preventable",
+        "attenuated",
+        "vaccine"
+      ],
+      "category": "diagnosis",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_026_src"
+      ]
+    },
+    {
+      "id": "chatdoc_001",
+      "query": "Three years ago I was diagnosed with a very small carcinoid tumor which was found accidentally near the end of my small intestine duriing a colonoscopy. Sugery was reccommended, but I passed. About three weeks ago I had a very bad cold, and a little sinus infection. After the cold got better I notic",
+      "reference_answer": "and welcome to Chat Doctor. Thank you for your query. I am Chat Doctor, I understand your concerns and I will try to help you as much as I can. In most cases these spots are benign growths such as cysts or hematomas. Hematoma is very small and this can't cause such symptoms unless larger than 10\\u00a0cm. You should do MRI scan or liver biopsy to find what type of lesion it is.  Less common this may be malignant issues such as hepatocellular carcinoma. This abdominal pain may not be related to li",
+      "expected_keywords": [
+        "liver",
+        "biopsy",
+        "carcinoid",
+        "hematoma",
+        "mri"
+      ],
+      "category": "diagnosis",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_001_src"
+      ]
+    },
+    {
+      "id": "medqa_015",
+      "query": "A photomicrograph of the resected specimen is shown. Further histopathological examination is most likely to show which of the following findings?",
+      "reference_answer": "Cells staining positive for CD15 and CD30",
+      "expected_keywords": [
+        "cells",
+        "staining",
+        "positive"
+      ],
+      "category": "diagnosis",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_015_src"
+      ]
+    },
+    {
+      "id": "medqa_021",
+      "query": "An investigator is studying the effects of different gastrointestinal regulatory substances. A healthy subject is asked to eat a meal at hour 0, and the pH of stomach contents and rate of stomach acid secretions are measured over the next 4 hours. Results of the study are shown. Which of the following mechanisms most likely contributes to the changes seen at point D in the graph?",
+      "reference_answer": "Increased activity of D cells",
+      "expected_keywords": [
+        "increased",
+        "activity",
+        "cells"
+      ],
+      "category": "diagnosis",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_021_src"
+      ]
+    },
+    {
+      "id": "medqa_001",
+      "query": "Neurological examination reveals asterixis, and his stool is guaiac-positive. Liver function test are shown below:\nTotal albumin 2 g/dL\nProthrombin time 9 seconds\nTotal bilirubin 5 mg/dL\nAlanine aminotransferase (ALT) 100 U/L\nAspartate aminotransferase (AST) 220 U/L\nWhich of the following is a feature of this patient condition?",
+      "reference_answer": "It is a diagnosis of exclusion",
+      "expected_keywords": [
+        "diagnosis",
+        "exclusion"
+      ],
+      "category": "symptoms",
+      "source": "MedQA-USMLE-step2&3",
+      "relevant_ids": [
+        "medqa_001_src"
+      ]
+    },
+    {
+      "id": "medqa_025",
+      "query": "Autopsy of brain tissue suggests a viral infection. The likely causal virus spreads to the central nervous system (CNS) in the following manner:",
+      "reference_answer": "Retrograde migration up peripheral nerve axons",
+      "expected_keywords": [
+        "retrograde",
+        "migration",
+        "peripheral",
+        "nerve",
+        "axons"
+      ],
+      "category": "symptoms",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_025_src"
+      ]
+    },
+    {
+      "id": "chatdoc_010",
+      "query": "i sprained my ankle 5 weeks ago. I try to stay off it and my job is a sitting one. I also wear a wrap to secure the ankle and help with the swelling. I originally had an xray that showed no break and I iced it and kept off the foot for a week. However, the ankle swells quite a bit each day and if I ",
+      "reference_answer": "Thanks for writing to us, I have studied your case with diligence. As per your history and injury pattern there can be tear in ankle ligament leading to pain and swelling. Instability may increase due to laxity of ligament. I will advise doing MRI ankle for soft tissue involvement. Till time, you can continue use supportive splint or brace. Physiotherapy like ultrasound and TENS will help in early healing. Persistent pain after ankle injury is common and may take 6 months to heal. Hope this answ",
+      "expected_keywords": [
+        "ankle",
+        "injury",
+        "ligament",
+        "sprain",
+        "treatment"
+      ],
+      "category": "symptoms",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_010_src"
+      ]
+    },
+    {
+      "id": "chatdoc_017",
+      "query": "Dear Dr. Matthew MintzI have a very sore tongue. It looks like blotches of raw tongue where it looks like the skin came off. It is constant and very painful with a large degree of burning. I also have little ulcers (white dots) which also are extremely sore. It hurts to eat anything with salt or som",
+      "reference_answer": "Welcome Thanks for consulting Chat Doctor, I have gone through your query, as you have mentioned that you have sore painful tongue, don't worry it can be due to National deficiency, or decapitation of papillae.  You do is take one capsule vitamin B complex supplement, twice daily for 5 days.  You can apply ointment McCoppin or colonel twice daily for 5\\u00a0days.  If then you won't get relief then go to dentist for examination and if necessary investigations.  Hope this will help you.",
+      "expected_keywords": [
+        "antibiotic",
+        "infection",
+        "dosage",
+        "treatment",
+        "bacteria"
+      ],
+      "category": "symptoms",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_017_src"
+      ]
+    },
+    {
+      "id": "chatdoc_004",
+      "query": "i start have pain my back last nite then i woke up this moring  i couldnt move it hurt so badly i would cry my arm hurts for while then my arm stop hurting now my boob on side my back is hurt and my back still hurting i cant move or lay down on stomach or side and now  im have pain in my chest i can",
+      "reference_answer": "I have studied your case. According to your symptoms this looks as acute lumbar muscle sprain in your lower back. Most probably due to bad posture or sudden jerk. Another differential diagnosis can be lumbar disc bulge leading to sudden onset of pain. Intervertebral disc compresses spinal cord and leads to lower back pain. When such patient comes to our hospital we usually do x-ray to rule out any nerve compression. MRI spine will show any disc bulge is there or not. And when muscle sprain is co",
+      "expected_keywords": [
+        "muscle",
+        "disc",
+        "answer"
+      ],
+      "category": "symptoms",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_004_src"
+      ]
+    },
+    {
+      "id": "medqa_007",
+      "query": "A 47-year-old executive schedules an appointment his physician for a routine medical check-up. He currently has no complaints and claims to be \u201cas fit as a fiddle.\u201d The physical examination findings are unremarkable, except for a mid-systolic murmur heard in the 2nd left intercostal space that radiates to the carotids on auscultation. The physician instructs the patient to stand from a supine position with the stethoscope still placed on his chest. Which of the following changes would occur with this maneuver?",
+      "reference_answer": "A reduction in diastolic filling time",
+      "expected_keywords": [
+        "reduction",
+        "diastolic",
+        "filling",
+        "time"
+      ],
+      "category": "symptoms",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_007_src"
+      ]
+    },
+    {
+      "id": "chatdoc_012",
+      "query": "Hello, for the past few weeks I have been experiencing dizzy spells. This is accompanied by a numb, almost cold feeling, in my hands, feet and face. My vision goes a bit blurry too. It happens after I ve had chocolate or a fizzy drink. I am on an antidepressant too.",
+      "reference_answer": "Thanks for choosing Chat Doctor for posting your query. I have gone through your question in detail and I can understand what you are going through. It could be due to interaction with an antidepressant. You need to state which antidepressant you are on. Is it MAO Inhibitors? Hope I am able to answer your concerns. If you have any further query, I would be glad to help you. In future if you wish to contact me directly, you can use the below-mentioned link",
+      "expected_keywords": [
+        "antidepressant",
+        "interaction",
+        "dizzy",
+        "mao",
+        "inhibitors"
+      ],
+      "category": "symptoms",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_012_src"
+      ]
+    },
+    {
+      "id": "medqa_012",
+      "query": "A chi-square test is performed to test the significance of the relationship, and an odds ratio of 2.1 was computed for the association between low education and the risk of MI, with a confidence interval of 0.9\u20139.7. What inference can be made on the association between young age MI and educational status from this study?",
+      "reference_answer": "The association is not statistically significant, and low education is not a risk factor.",
+      "expected_keywords": [
+        "association",
+        "statistically",
+        "significant",
+        "education",
+        "risk",
+        "factor"
+      ],
+      "category": "clinical",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_012_src"
+      ]
+    },
+    {
+      "id": "medqa_010",
+      "query": "A 3rd year resident in good standing with his residency training program would like to work more hours outside his residency obligations to gain more experience and pay for his medical school loans. He currently works and trains 60 hours per week as a resident and has a 10-hour shift external to his residency program on Saturdays. He is free of any educational and work obligations on Sundays. Based on the most recent standards set by the Accreditation Council for Graduate Medical Education (ACGME), which of the following is the most accurate statement regarding this resident\u2019s moonlighting and patient safety?",
+      "reference_answer": "He may work longer shifts",
+      "expected_keywords": [
+        "longer",
+        "shifts"
+      ],
+      "category": "clinical",
+      "source": "MedQA-USMLE-step2&3",
+      "relevant_ids": [
+        "medqa_010_src"
+      ]
+    },
+    {
+      "id": "chatdoc_024",
+      "query": "Every now and then when I eat foods or take in drinks with high sugar concentration, I get blood in my stool . The blood colour is always pure red, just like the blood you get when you have a cut. As indicated, this happens once a while and sometimes 60 days can elapse without this experience. The l",
+      "reference_answer": "thanks for writing to Chat Doctor. Your condition is called rectal bleeding/hematochezia. This bleeding can happen if there is any bleeding in the intestinal tract. Since you say the color is bright, it is possible there is internal bleeding towards the lower intestinal tract i.e. rectum or anus. But, you should also be concerned if there is possible cancerous cells. In regard to diet, I am glad you have noticed that sweets do not work well with you. It may be because your Gastrointestinal tract",
+      "expected_keywords": [
+        "bleeding",
+        "tract",
+        "possible"
+      ],
+      "category": "clinical",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_024_src"
+      ]
+    },
+    {
+      "id": "chatdoc_006",
+      "query": "I lacerated my liver over 2 months ago, i was in the hospital for a week but did not need surgery. I followed my doctors orders and still have some discomfort. today is my 21st birthday and i want to have a beer, would that significantly slow my healing progress?",
+      "reference_answer": "I understand your concern about recovery. Single time consumption of beer has no effect on healing process of liver laceration. But you must be careful not to fall down under effect of alcohol as this is the bigger risk factor for not healing liver laceration. Alcohol consumption on regular basis is surely compromising liver function and over the time it may lead to end-stage of liver disease.",
+      "expected_keywords": [
+        "liver",
+        "time",
+        "consumption",
+        "effect",
+        "healing"
+      ],
+      "category": "clinical",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_006_src"
+      ]
+    },
+    {
+      "id": "medqa_022",
+      "query": "A multi-specialty physician practice is meeting to determine which compensation scheme would best serve the practice and its patient population. Which of the following are true in regards to physician compensation?",
+      "reference_answer": "Fee-for-service may incentivize physicians to increase healthcare utilization irrespective of quality",
+      "expected_keywords": [
+        "fee-for-service",
+        "incentivize",
+        "physicians",
+        "increase",
+        "healthcare",
+        "utilization"
+      ],
+      "category": "clinical",
+      "source": "MedQA-USMLE-step1",
+      "relevant_ids": [
+        "medqa_022_src"
+      ]
+    },
+    {
+      "id": "chatdoc_014",
+      "query": "So I playing a game at my church last weekend and the game involved running and I ended up tripping and falling down on my right knee and it hurt really bad and the next day my knee was swollen and bruised and it hurts to kneel on or when I put pressure on it and it has been like this for about a we",
+      "reference_answer": "Welcome to Chat Doctor . I have gone through your query and can understand your concern. As per your complaint it seems that due to traumatic injury there has been inflammation of the soft tissues and there is accumulation of inflammatory exudate and cells in the area leading to swelling. The bruising is due to ruptured blood vessels leading to Hematoma formation. I would suggest you to do alternate warm and cool compresses over the swelling. Take anti-inflammatory painkiller like Ibuprofen. App",
+      "expected_keywords": [
+        "swelling",
+        "injury",
+        "inflammation",
+        "ibuprofen",
+        "hematoma"
+      ],
+      "category": "clinical",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_014_src"
+      ]
+    },
+    {
+      "id": "chatdoc_011",
+      "query": "We have received the following semen analysis and are slightly confused by what we are reading online v what we have been told.  Can you advise if it is normal or if you think we may need asssistance as we have been trying for 18 months.  Appearance - NormalConsistancy - Abnormal Volume - 3.2 mlLiqu",
+      "reference_answer": "welcome to Chat Doctor.I have gone through your question. As semen analysis shows liquefaction time 1 hour is abnormal, motility is normal, morphology is below normal. Count 53 million/ml ? Then is normal (20 million/ml) should be at least. I would advise going for ultrasound color Doppler to see vascularity of testes and to rule out varicocele. Consult urologist with these reports. Hope I answered your question. Would be happy to help you further. Take care.",
+      "expected_keywords": [
+        "normal",
+        "question",
+        "million"
+      ],
+      "category": "clinical",
+      "source": "ChatDoctor-HealthCareMagic",
+      "relevant_ids": [
+        "chatdoc_011_src"
+      ]
+    }
+  ]
+}

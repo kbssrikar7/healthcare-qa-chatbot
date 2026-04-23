@@ -1,0 +1,61 @@
+{
+  "summary": {
+    "ragas_version": "0.4.3",
+    "test_set": "evaluation/test_set_v2.json",
+    "variant": "standard",
+    "model": "tinyllama",
+    "n": 1,
+    "num_sources": 5,
+    "metrics": {
+      "non_llm_context_precision_with_reference": {
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "non_llm_context_recall": {
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "rouge_score(mode=fmeasure)": {
+        "mean": 0.5102,
+        "min": 0.5102,
+        "max": 0.5102
+      },
+      "exact_match": {
+        "mean": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      }
+    },
+    "notes": [
+      "reference_contexts are approximated from reference_answer because the test set lacks gold supporting passages",
+      "this runner uses non-LLM metrics only, so it does not require evaluator API keys"
+    ]
+  },
+  "rows": [
+    {
+      "id": "chatdoc_014",
+      "user_input": "So I playing a game at my church last weekend and the game involved running and I ended up tripping and falling down on my right knee and it hurt really bad and the next day my knee was swollen and bruised and it hurts to kneel on or when I put pressure on it and it has been like this for about a we",
+      "response": "I understand your concern. As per your complaint, you have swelling, bruising, and pain in your knee. The swelling is due to the accumulation of inflammatory exudate and cells in the area. You have bruising due to the ruptured blood vessels leading to hematoma formation. I would suggest you to do alternate warm and cool compresses over the swelling. Take anti-inflammatory painkiller like Ibuprofen. Apply an analgesic gel containing Diclofenac. Apply heparin gel for faster disruption of hematoma. Elevate your leg while lying down. Avoid putting excessive pressure over the knee until it heals well. In case of no improvement in a week consult an Orthopedic and get evaluated. Hope this information helps.",
+      "reference": "Welcome to Chat Doctor . I have gone through your query and can understand your concern. As per your complaint it seems that due to traumatic injury there has been inflammation of the soft tissues and there is accumulation of inflammatory exudate and cells in the area leading to swelling. The bruising is due to ruptured blood vessels leading to Hematoma formation. I would suggest you to do alternate warm and cool compresses over the swelling. Take anti-inflammatory painkiller like Ibuprofen. App",
+      "retrieved_contexts": [
+        "Question: So I playing a game at my church last weekend and the game involved running and I ended up tripping and falling down on my right knee and it hurt really bad and the next day my knee was swollen and bruised and it hurts to kneel on or when I put pressure on it and it has been like this for about a week now what should I do? Answer: Hi. Welcome to Chat Doctor . I have gone through your query and can understand your concern. As per your complaint it seems that due to traumatic injury there has been inflammation of the soft tissues and there is accumulation of inflammatory exudate and cells in the area leading to swelling. The bruising is due to ruptured blood vessels leading to Hematoma formation. I would suggest you to do alternate warm and cool compresses over the swelling. Take anti-inflammatory painkiller like Ibuprofen. Apply an analgesic gel containing Diclofenac. Apply heparin gel for faster disruption of hematoma. Elevate your leg while lying down. Avoid putting excessive pressure over the knee until it heals well. In case of no improvement in a week consult an Orthopedic and get evaluated. Hope this information helps. Thanks and regards. Chat Doctor. .",
+        "Question: If you are a doctor, please answer the medical questions based on the patient's description. So I playing a game at my church last weekend and the game involved running and I ended up tripping and falling down on my right knee and it hurt really bad and the next day my knee was swollen and bruised and it hurts to kneel on or when I put pressure on it and it has been like this for about a week now what should I do? Answer: Hi. Welcome to Chat Doctor . I have gone through your query and can understand your concern. As per your complaint it seems that due to traumatic injury there has been inflammation of the soft tissues and there is accumulation of inflammatory exudate and cells in the area leading to swelling. The bruising is due to ruptured blood vessels leading to Hematoma formation. I would suggest you to do alternate warm and cool compresses over the swelling. Take anti-inflammatory painkiller like Ibuprofen. Apply an analgesic gel containing Diclofenac. Apply heparin gel for faster disruption of hematoma. Elevate your leg while lying down. Avoid putting excessive pressure over the knee until it heals well. In case of no improvement in a week consult an Orthopedic and get evaluated. Hope this information helps. Thanks and regards. Chat Doctor. .",
+        "Question: A month or two ago I fell playing basketball and it made a popping noise almost like it came out of place. my leg was weak feeling and I put ice on right away I could walk and everything okay still just week feeling. the next day my knee was twice the size of what it normally is. The swelling immediately went down the next few day but now everytime I bend to a certain point it like catches on something and lately it s been hurting doing simply things like getting up or walking down stairs and I ve also started running which might be part of it. I was looking at the runners knee and another diagnosis but I m still not positive but I want to know soon so I can get it healed as soon as I can! Answer: His a precaution you must stop all activity of knee like walking, stairs,gaming-take complete rest, wear a knee brace and take anti-inflammatory and analgesics tablets. Consult an orthopedic surgeon and have a knee MRI done.-Meniscal tear and cruciate ligaments tear is a common injury and need specific treatment after diagnosis-sometimes surgeons prefer to do surgical intervention to correct they neglect ow may be harmful to knee",
+        "Question: hello. i am a high school and small college basketball official. had game early this afternoon. i planted my right leg and turned quickly to follow the flow of the game. i immediately felt something pop in my knee. not much pain at first but gradually worsening the last couple of hours. cant hardly straighten my leg without pain. also testing the leg and knee to turn is painful. small swelling on front of knee. im 32 yrs old and been athlete all my life and a sports official for the past 10 yrs. never had knee problems, but have broken ankles, arms, nose, etc. what do you think? thank you Answer: Hello, It looks from your details that most probably you have either injured your menisci or cruciate ligament at your knee. In this case I shall advise you following - -Avoid straining your knee.-Wear a knee cap to avoid further injury.-Consult to your doctor and get an MRI scan done.-Meanwhile you may have an analgesic like acetaminophen for relief.-Apply cold compress over affected knee. Hope I have answered your query. Let me know if I can assist you further. Take care",
+        "Question: Hi! I injured my knee at a football game 2 days ago, mechanism of injury=I kept falling on my knees,high impact. No instant swelling that I noted (adrenalin) but did feel pain, I admit I kept playing so did weightbear after falls..first fall of significance in first half. Knee started to stiffen up and get more painful towards end of match, knee noticeably swelling and real discomfort on car home and painful to sleep, ache walking and stairs or kneeling painful...used price technique straight away..iced it straight away, tubrigrip compression and elevated..knee now feels better..widespread bruising tender on palpation of joint line/bruises, knee not as stiff but still an ache at end range flexion swelling has reduced. I think when the bruising goes the dull ache in my knee should go too, I feel I dont need physio or medical intervention as its only been 3 days since injury and to let healing process take its course? Am I foolish or should I check if ligaments/cartilage isnt Injured even though the symptoms/mechanism don t match? Thanks Answer: Hello, I have studied your case. As per your history there is possibility of soft tissue injury in knee. Most commonly meniscus injury occurs may be associated collateral ligament injury. If pain persists then you may need to do MRI knee to see for any functional defect. As per your symptoms you need to do physiotherapy and knee exercises to improve range of motion. Rest and ice fomentation along with supportive brace will help to reduce swelling and pain. Small meniscus tear can be managed conservatively with physiotherapy with USG and TENS. Meniscus injury can be managed by arthroscopic repair. Hope this answers your query. If you have additional questions or follow-up queries then please do not hesitate in writing to us. I will be happy to answer your queries. Wishing you good health. Take care."
+      ],
+      "reference_contexts": [
+        "Welcome to Chat Doctor . I have gone through your query and can understand your concern. As per your complaint it seems that due to traumatic injury there has been inflammation of the soft tissues and there is accumulation of inflammatory exudate and cells in the area leading to swelling. The bruising is due to ruptured blood vessels leading to Hematoma formation. I would suggest you to do alternate warm and cool compresses over the swelling. Take anti-inflammatory painkiller like Ibuprofen. App"
+      ],
+      "category": "clinical",
+      "source_dataset": "ChatDoctor-HealthCareMagic",
+      "num_retrieved_contexts": 5,
+      "non_llm_context_precision_with_reference": 0.0,
+      "non_llm_context_recall": 0.0,
+      "rouge_score(mode=fmeasure)": 0.5102040816326531,
+      "exact_match": 0.0
+    }
+  ]
+}

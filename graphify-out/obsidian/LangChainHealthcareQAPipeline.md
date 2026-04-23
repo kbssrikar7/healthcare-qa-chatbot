@@ -1,0 +1,86 @@
+---
+source_file: "/home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py"
+type: "code"
+community: "Community 4"
+location: "L76"
+tags:
+  - graphify/code
+  - graphify/INFERRED
+  - community/Community_4
+---
+
+# LangChainHealthcareQAPipeline
+
+## Connections
+- [[.__init__()_31]] - `method` [EXTRACTED]
+- [[._build_chain()]] - `method` [EXTRACTED]
+- [[._check_answerability()]] - `method` [EXTRACTED]
+- [[._enrich_with_xai()]] - `method` [EXTRACTED]
+- [[._format_and_generate()]] - `method` [EXTRACTED]
+- [[._retrieve_documents()]] - `method` [EXTRACTED]
+- [[.ainvoke()_1]] - `method` [EXTRACTED]
+- [[.answer()_1]] - `method` [EXTRACTED]
+- [[.invoke()_1]] - `method` [EXTRACTED]
+- [[.test_grounding_gate_blocks_low_relevance()]] - `calls` [INFERRED]
+- [[.test_langchain_adaptive_threshold()]] - `calls` [INFERRED]
+- [[.test_langchain_grounding_gate_with_low_rrf_scores()]] - `calls` [INFERRED]
+- [[.test_langchain_pipeline_answer()]] - `calls` [INFERRED]
+- [[.test_langchain_pipeline_init()]] - `calls` [INFERRED]
+- [[.test_langchain_pipeline_invoke()]] - `calls` [INFERRED]
+- [[.test_langchain_unanswerable()]] - `calls` [INFERRED]
+- [[.test_pipeline_initialization()]] - `calls` [INFERRED]
+- [[.to_qa_response()_1]] - `method` [EXTRACTED]
+- [[Integration tests for LangChain and LangGraph pipelines.  Verifies that both pip]] - `uses` [INFERRED]
+- [[LangChain LCEL-based Healthcare QA Pipeline.      Uses LangChain Expression Lang]] - `rationale_for` [EXTRACTED]
+- [[LangChainHybridRetriever]] - `uses` [INFERRED]
+- [[LangChainMedicalLLMFromExisting]] - `uses` [INFERRED]
+- [[Mock document for testing._1]] - `uses` [INFERRED]
+- [[MockDocument_2]] - `uses` [INFERRED]
+- [[QAResponse]] - `uses` [INFERRED]
+- [[Test QAResponse conversion for API compatibility.]] - `uses` [INFERRED]
+- [[Test basic invoke returns valid result.]] - `uses` [INFERRED]
+- [[Test basic invoke returns valid state dict.]] - `uses` [INFERRED]
+- [[Test callback handler initializes correctly.]] - `uses` [INFERRED]
+- [[Test grounding gate passes with RRF-scale scores (~0.016).]] - `uses` [INFERRED]
+- [[Test pipeline initializes correctly.]] - `uses` [INFERRED]
+- [[Test routing after verification when grounded.]] - `uses` [INFERRED]
+- [[Test routing to enrich_xai when retries exhausted.]] - `uses` [INFERRED]
+- [[Test routing to generate when enough relevant docs.]] - `uses` [INFERRED]
+- [[Test routing to refine when not enough docs but can retry.]] - `uses` [INFERRED]
+- [[Test routing to refine when not grounded and can retry.]] - `uses` [INFERRED]
+- [[Test routing to unanswerable when no docs and max retries.]] - `uses` [INFERRED]
+- [[Test that LLM wrapper initializes correctly.]] - `uses` [INFERRED]
+- [[Test that LangChain pipeline initializes without errors.]] - `uses` [INFERRED]
+- [[Test that LangGraph pipeline initializes and compiles graph.]] - `uses` [INFERRED]
+- [[Test that _call properly delegates to underlying LLM.]] - `uses` [INFERRED]
+- [[Test that adaptive threshold handles RRF-scale scores.]] - `uses` [INFERRED]
+- [[Test that chain start is logged.]] - `uses` [INFERRED]
+- [[Test that documents are properly converted to LangChain format.]] - `uses` [INFERRED]
+- [[Test that empty retrieval routes to unanswerable.]] - `uses` [INFERRED]
+- [[Test that grounding gate blocks when docs have low relevance.]] - `uses` [INFERRED]
+- [[Test that retriever wrapper initializes correctly.]] - `uses` [INFERRED]
+- [[Test the answer() method returns a proper result dict.]] - `uses` [INFERRED]
+- [[Test unanswerable response when no documents found.]] - `uses` [INFERRED]
+- [[TestHallucinationDetector]] - `uses` [INFERRED]
+- [[TestLangChainCallbacks]] - `uses` [INFERRED]
+- [[TestLangChainLLMWrapper]] - `uses` [INFERRED]
+- [[TestLangChainPipeline]] - `uses` [INFERRED]
+- [[TestLangChainPipeline_1]] - `uses` [INFERRED]
+- [[TestLangChainRetrieverWrapper]] - `uses` [INFERRED]
+- [[TestLangGraphPipeline_1]] - `uses` [INFERRED]
+- [[TestLangGraphRouting_1]] - `uses` [INFERRED]
+- [[TestTextCleaning]] - `uses` [INFERRED]
+- [[Tests for LangChain Pipeline.  Unit tests for the LangChain-based Healthcare QA]] - `uses` [INFERRED]
+- [[Tests for LangChain callback handler.]] - `uses` [INFERRED]
+- [[Tests for LangChainHealthcareQAPipeline.]] - `uses` [INFERRED]
+- [[Tests for LangChainHybridRetriever wrapper.]] - `uses` [INFERRED]
+- [[Tests for LangChainMedicalLLM wrapper.]] - `uses` [INFERRED]
+- [[Tests for LangGraph routing functions.]] - `uses` [INFERRED]
+- [[Tests for the LangChain LCEL pipeline.]] - `uses` [INFERRED]
+- [[Tests for the LangGraph StateGraph pipeline.]] - `uses` [INFERRED]
+- [[Tests for the completed HallucinationDetector.]] - `uses` [INFERRED]
+- [[Tests for the shared text cleaning utility.]] - `uses` [INFERRED]
+- [[create_langchain_pipeline()]] - `calls` [EXTRACTED]
+- [[langchain_pipeline.py]] - `contains` [EXTRACTED]
+
+#graphify/code #graphify/INFERRED #community/Community_4

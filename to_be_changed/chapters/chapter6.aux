@@ -1,0 +1,107 @@
+\relax 
+\@writefile{toc}{\contentsline {chapter}{\numberline {6}\MakeUppercase    []{Project Implementation}}{29}{}\protected@file@percent }
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\@writefile{toc}{\contentsline {section}{\numberline {6.1}Repository structure}{29}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.2}Knowledge base construction}{29}{}\protected@file@percent }
+\ACRO{recordpage}{tpu}{37}{1}{29}
+\@writefile{lof}{\contentsline {figure}{\numberline {6.1}{\ignorespaces Ingestion: clean, chunk at sentence boundaries, embed into ChromaDB, build BM25 pickle.}}{30}{}\protected@file@percent }
+\newlabel{fig:data_ingestion}{{6.1}{30}{Knowledge base construction}{}{}}
+\ACRO{recordpage}{tpu}{38}{1}{30}
+\ACRO{recordpage}{tpu}{38}{1}{30}
+\@writefile{toc}{\contentsline {section}{\numberline {6.3}Pipeline implementation}{31}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.1}Retrieval module}{31}{}\protected@file@percent }
+\ACRO{recordpage}{lru}{39}{1}{31}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.2}Generation module}{31}{}\protected@file@percent }
+\ACRO{recordpage}{gguf}{39}{1}{31}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {6.1}{\ignorespaces Prompt construction for TinyLlama}}{31}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6.2}{\ignorespaces Generation backends compared (TinyLlama base, QLoRA TinyLlama, BioMistral-7B). QLoRA wins keyword coverage; BioMistral leads ROUGE-L and BERTScore.}}{32}{}\protected@file@percent }
+\newlabel{fig:metric_comparison}{{6.2}{32}{Generation module}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.3}XAI module}{32}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.4}Frontend implementation}{32}{}\protected@file@percent }
+\ACRO{recordpage}{ui}{41}{1}{33}
+\@writefile{toc}{\contentsline {section}{\numberline {6.4}LangGraph implementation}{33}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.5}Deployment}{33}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6.3}{\ignorespaces CI on push to \texttt  {main}; Compose runs API + Streamlit with KB and BM25 on a shared volume.}}{33}{}\protected@file@percent }
+\newlabel{fig:deployment_arch}{{6.3}{33}{Deployment}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5.1}Docker Compose deployment}{34}{}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {6.2}{\ignorespaces Docker Compose deployment}}{34}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5.2}Continuous integration}{34}{}\protected@file@percent }
+\ACRO{recordpage}{api}{42}{1}{34}
+\@setckpt{chapters/chapter6}{
+\setcounter{page}{35}
+\setcounter{equation}{0}
+\setcounter{enumi}{5}
+\setcounter{enumii}{0}
+\setcounter{enumiii}{0}
+\setcounter{enumiv}{0}
+\setcounter{footnote}{0}
+\setcounter{mpfootnote}{0}
+\setcounter{part}{0}
+\setcounter{chapter}{6}
+\setcounter{section}{5}
+\setcounter{subsection}{2}
+\setcounter{subsubsection}{0}
+\setcounter{paragraph}{0}
+\setcounter{subparagraph}{0}
+\setcounter{figure}{3}
+\setcounter{table}{0}
+\setcounter{caption@flags}{2}
+\setcounter{continuedfloat}{0}
+\setcounter{subfigure}{0}
+\setcounter{subtable}{0}
+\setcounter{NAT@ctr}{0}
+\setcounter{LT@tables}{0}
+\setcounter{LT@chunks}{0}
+\setcounter{float@type}{16}
+\setcounter{algorithm}{1}
+\setcounter{ALG@line}{14}
+\setcounter{ALG@rem}{14}
+\setcounter{ALG@nested}{0}
+\setcounter{ALG@Lnr}{2}
+\setcounter{ALG@blocknr}{10}
+\setcounter{ALG@storecount}{0}
+\setcounter{ALG@tmpcounter}{0}
+\setcounter{lstnumber}{2}
+\setcounter{lcword@index}{0}
+\setcounter{word@count}{0}
+\setcounter{lc@words}{0}
+\setcounter{dia@count}{0}
+\setcounter{arg@@@index}{0}
+\setcounter{AM@survey}{0}
+\setcounter{r@tfl@t}{0}
+\setcounter{parentequation}{0}
+\setcounter{g@acro@ai@int}{1}
+\setcounter{g@acro@ml@int}{0}
+\setcounter{g@acro@nlp@int}{1}
+\setcounter{g@acro@rag@int}{8}
+\setcounter{g@acro@llm@int}{3}
+\setcounter{g@acro@qa@int}{10}
+\setcounter{g@acro@api@int}{7}
+\setcounter{g@acro@xai@int}{2}
+\setcounter{g@acro@bm25@int}{10}
+\setcounter{g@acro@rrf@int}{8}
+\setcounter{g@acro@qlora@int}{1}
+\setcounter{g@acro@nli@int}{7}
+\setcounter{g@acro@url@int}{0}
+\setcounter{g@acro@cpu@int}{8}
+\setcounter{g@acro@gpu@int}{9}
+\setcounter{g@acro@kb@int}{0}
+\setcounter{g@acro@ui@int}{1}
+\setcounter{g@acro@ece@int}{2}
+\setcounter{g@acro@rouge@int}{0}
+\setcounter{g@acro@lru@int}{3}
+\setcounter{g@acro@rest@int}{2}
+\setcounter{g@acro@tpu@int}{5}
+\setcounter{g@acro@gguf@int}{3}
+\setcounter{g@acro@ram@int}{3}
+\setcounter{g@acro@ssd@int}{0}
+\setcounter{g@acro@beta@int}{1}
+\setcounter{g@acro@delta@int}{1}
+\setcounter{g@acro@sigma@int}{1}
+\setcounter{g@acro@rrfk@int}{1}
+\setcounter{g@acro@wr@int}{1}
+\setcounter{g@acro@tau@int}{1}
+\setcounter{g@acro@eceeq@int}{1}
+\setcounter{lstlisting}{2}
+}

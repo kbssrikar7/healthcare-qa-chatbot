@@ -1,0 +1,408 @@
+/* ============================================================
+   MediQuery — Chainlit UI Styles
+   Font: Inter (UI) · JetBrains Mono (data/meta)
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --mq-blue:     #4f46e5;
+  --mq-blue-alt: #1d4ed8;
+  --mq-green:    #10b981;
+  --mq-amber:    #f59e0b;
+  --mq-red:      #ef4444;
+  --mq-crimson:  #dc2626;
+  --mq-radius:   8px;
+  --mq-mono:     'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* ---- Primary button / send button ---- */
+.MuiButton-containedPrimary,
+button[data-testid="send-button"] {
+  background-color: var(--mq-blue-alt) !important;
+}
+.MuiButton-containedPrimary:hover,
+button[data-testid="send-button"]:hover {
+  background-color: #1e40af !important;
+}
+.MuiChip-root {
+  border-radius: 999px !important;
+}
+
+/* ---- Logo size ---- */
+img[src*="mediquery-logo.svg"],
+img[src*="mediquery-chainlit-logo.svg"] {
+  width: 140px !important;
+  height: auto !important;
+  max-height: 32px !important;
+}
+
+/* ============================================================
+   EMERGENCY BANNER
+   ============================================================ */
+.mq-emergency {
+  background: var(--mq-crimson);
+  color: #fff;
+  padding: 12px 16px;
+  border-radius: var(--mq-radius);
+  font-weight: 600;
+  margin-bottom: 14px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   DRUG WARNING
+   ============================================================ */
+.mq-drug-warning {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1.5px solid var(--mq-amber);
+  color: #92400e;
+  border-radius: var(--mq-radius);
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   SAFETY BADGE
+   ============================================================ */
+.mq-safety-badge {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin: 6px 0;
+}
+
+/* ============================================================
+   META INFO LINE
+   ============================================================ */
+.mq-meta {
+  font-family: var(--mq-mono);
+  font-size: 0.72rem;
+  opacity: 0.42;
+  margin: 4px 0 10px;
+  letter-spacing: 0.02em;
+}
+
+/* ============================================================
+   CONFIDENCE BAR
+   ============================================================ */
+.mq-conf-wrap {
+  margin: 12px 0 8px;
+  padding: 13px 15px;
+  border-radius: var(--mq-radius);
+  background: rgba(128, 128, 128, 0.06);
+  border: 1px solid rgba(128, 128, 128, 0.13);
+}
+.mq-conf-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.mq-conf-label {
+  font-family: var(--mq-mono);
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.5;
+}
+.mq-conf-badge {
+  font-size: 0.73rem;
+  font-weight: 600;
+  padding: 2px 11px;
+  border-radius: 100px;
+}
+.mq-conf-track {
+  height: 5px;
+  background: rgba(128, 128, 128, 0.18);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.mq-conf-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.mq-conf-desc {
+  font-size: 0.8rem;
+  opacity: 0.55;
+  margin-top: 7px;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   XAI SIGNAL BREAKDOWN (inside <details>)
+   ============================================================ */
+.mq-signal-row {
+  margin-bottom: 11px;
+}
+.mq-signal-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.83rem;
+  margin-bottom: 4px;
+  opacity: 0.85;
+}
+.mq-signal-val {
+  font-family: var(--mq-mono);
+  font-weight: 600;
+}
+.mq-signal-weight {
+  opacity: 0.5;
+  font-weight: 400;
+}
+.mq-signal-track {
+  height: 5px;
+  background: rgba(128, 128, 128, 0.16);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.mq-signal-fill {
+  height: 100%;
+  border-radius: 3px;
+}
+
+/* ============================================================
+   KEY MEDICAL TERMS
+   ============================================================ */
+.mq-terms-wrap {
+  margin: 10px 0 8px;
+}
+.mq-terms-label {
+  font-family: var(--mq-mono);
+  font-size: 0.62rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.45;
+  display: block;
+  margin-bottom: 7px;
+}
+.mq-terms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.mq-kterm {
+  display: inline-block;
+  background: rgba(79, 70, 229, 0.10);
+  color: #4f46e5;
+  border-radius: 100px;
+  padding: 3px 11px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  transition: background 0.15s;
+}
+.mq-kterm:hover {
+  background: rgba(79, 70, 229, 0.18);
+}
+
+/* ============================================================
+   COLLAPSIBLE DETAILS/SUMMARY (like st.expander)
+   ============================================================ */
+.mq-details {
+  margin: 10px 0;
+  border: 1px solid rgba(128, 128, 128, 0.17);
+  border-radius: var(--mq-radius);
+  overflow: hidden;
+}
+.mq-details > summary {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.88rem;
+  background: rgba(128, 128, 128, 0.05);
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  outline: none;
+}
+.mq-details > summary::-webkit-details-marker { display: none; }
+.mq-details > summary::before {
+  content: '▶';
+  font-size: 0.6rem;
+  opacity: 0.45;
+  transition: transform 0.18s ease;
+  flex-shrink: 0;
+}
+.mq-details[open] > summary::before {
+  transform: rotate(90deg);
+}
+.mq-details > summary:hover {
+  background: rgba(128, 128, 128, 0.10);
+}
+.mq-details-body {
+  padding: 12px 14px;
+  border-top: 1px solid rgba(128, 128, 128, 0.1);
+}
+
+/* ============================================================
+   SOURCE CARDS
+   ============================================================ */
+.mq-src-card {
+  border: 1px solid rgba(128, 128, 128, 0.16);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 9px;
+  font-size: 0.84rem;
+  transition: border-color 0.18s;
+}
+.mq-src-card:hover {
+  border-color: rgba(79, 70, 229, 0.35);
+}
+.mq-src-score {
+  display: inline-block;
+  background: rgba(79, 70, 229, 0.11);
+  color: #4f46e5;
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: var(--mq-mono);
+  padding: 2px 9px;
+  border-radius: 100px;
+  margin-bottom: 7px;
+}
+.mq-src-text {
+  line-height: 1.55;
+  opacity: 0.80;
+  margin-bottom: 6px;
+}
+.mq-src-meta {
+  font-size: 0.73rem;
+  opacity: 0.45;
+  font-style: italic;
+}
+.mq-src-link {
+  margin-left: 8px;
+  color: var(--mq-blue);
+  text-decoration: none;
+  font-weight: 500;
+  font-style: normal;
+}
+.mq-src-link:hover { text-decoration: underline; }
+
+/* ============================================================
+   CLAIM ATTRIBUTION CARDS
+   ============================================================ */
+.mq-attr-card {
+  background: rgba(128, 128, 128, 0.05);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+.mq-attr-claim {
+  font-style: italic;
+  font-size: 0.87rem;
+  margin-bottom: 4px;
+  opacity: 0.82;
+  line-height: 1.5;
+}
+.mq-attr-source {
+  font-size: 0.76rem;
+  opacity: 0.5;
+}
+
+/* ============================================================
+   HALLUCINATION ANALYSIS
+   ============================================================ */
+.mq-hal-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.mq-hal-badge {
+  display: inline-block;
+  font-family: var(--mq-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 4px;
+}
+.mq-hal-risk {
+  font-size: 0.84rem;
+  opacity: 0.72;
+}
+.mq-hal-exp {
+  font-size: 0.82rem;
+  opacity: 0.65;
+  margin-top: 8px;
+  line-height: 1.5;
+}
+.mq-hal-flags {
+  margin-top: 8px;
+  padding: 7px 11px;
+  background: rgba(239, 68, 68, 0.08);
+  border-radius: 5px;
+  font-size: 0.82rem;
+  color: #b91c1c;
+}
+
+/* ============================================================
+   AI REASONING
+   ============================================================ */
+.mq-reasoning {
+  font-size: 0.88rem;
+  line-height: 1.65;
+  opacity: 0.84;
+}
+
+/* ============================================================
+   MEDICAL DISCLAIMER
+   ============================================================ */
+.mq-disclaimer {
+  border-left: 3px solid var(--mq-amber);
+  background: rgba(245, 158, 11, 0.07);
+  padding: 11px 15px;
+  border-radius: 0 8px 8px 0;
+  margin-top: 14px;
+}
+.mq-disc-title {
+  font-family: var(--mq-mono);
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #d97706;
+  margin-bottom: 5px;
+}
+.mq-disc-text {
+  font-size: 0.82rem;
+  line-height: 1.55;
+  opacity: 0.7;
+}
+
+/* ============================================================
+   DARK MODE ADJUSTMENTS
+   ============================================================ */
+.dark .mq-drug-warning,
+[data-theme="dark"] .mq-drug-warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fcd34d;
+}
+.dark .mq-kterm,
+[data-theme="dark"] .mq-kterm {
+  background: rgba(79, 70, 229, 0.20);
+  color: #a5b4fc;
+}
+.dark .mq-src-score,
+[data-theme="dark"] .mq-src-score {
+  background: rgba(79, 70, 229, 0.22);
+  color: #a5b4fc;
+}
+.dark .mq-hal-flags,
+[data-theme="dark"] .mq-hal-flags {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+}
+.dark .mq-disc-title,
+[data-theme="dark"] .mq-disc-title {
+  color: #fbbf24;
+}

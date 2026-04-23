@@ -1,0 +1,18 @@
+---
+source_file: "/home/kbs/Documents/final_project/tests/test_retrieval.py"
+type: "code"
+community: "Community 16"
+location: "L67"
+tags:
+  - graphify/code
+  - graphify/EXTRACTED
+  - community/Community_16
+---
+
+# chunker()
+
+## Connections
+- [[MedicalTextChunker]] - `calls` [INFERRED]
+- [[test_retrieval.py]] - `contains` [EXTRACTED]
+
+#graphify/code #graphify/EXTRACTED #community/Community_16

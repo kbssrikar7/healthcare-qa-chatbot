@@ -78,15 +78,18 @@ package-lock.json
 # ==============================================
 data/raw/
 data/knowledge_base/
+data/knowledge_base_v2/
 data/embeddings/
 data/processed/
 data/cache/
 data/tmp_chroma_test/
 data/question_history.json
+data/audio_recordings/
 api/data/
 models/
 outputs/
 images/
+graphify-out/cache/
 
 # ==============================================
 # Presentation Generation (one-off scripts)

@@ -1,0 +1,153 @@
+{
+  "summary": {
+    "mode": "offline",
+    "n": 36,
+    "mean_retrieval_hit_proxy": 0.9722222222222222
+  },
+  "rows": [
+    {
+      "id": "g001",
+      "retrieval_hit_proxy": false
+    },
+    {
+      "id": "g002",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g003",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g004",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g005",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g006",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g007",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g008",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g009",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g010",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g011",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g012",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g013",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g014",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g015",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g016",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g017",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g018",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g019",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g020",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g021",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g022",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g023",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g024",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g025",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g026",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g027",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g028",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g029",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g030",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g031",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g032",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g033",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g034",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g035",
+      "retrieval_hit_proxy": true
+    },
+    {
+      "id": "g036",
+      "retrieval_hit_proxy": true
+    }
+  ]
+}

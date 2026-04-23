@@ -1,0 +1,36 @@
+{"id": "g001", "question": "What is hypertension?", "risk_class": "definition", "gold_source_substrings": ["MedMCQA", "PubMed", "wikidoc"], "gold_content_keywords": ["blood", "pressure"]}
+{"id": "g002", "question": "What are common symptoms of diabetes mellitus?", "risk_class": "symptom", "gold_source_substrings": ["MedMCQA", "MIMIC"], "gold_content_keywords": ["glucose", "polyuria"]}
+{"id": "g003", "question": "What causes acute migraine headache?", "risk_class": "causation", "gold_source_substrings": ["MedMCQA", "PubMed"], "gold_content_keywords": ["migraine", "headache"]}
+{"id": "g004", "question": "What is the first-line treatment for community-acquired pneumonia?", "risk_class": "factual", "gold_source_substrings": ["MedMCQA", "wikidoc"], "gold_content_keywords": ["antibiotic", "pneumonia"]}
+{"id": "g005", "question": "How does aspirin affect platelet function?", "risk_class": "factual", "gold_source_substrings": ["MedMCQA"], "gold_content_keywords": ["platelet", "aspirin"]}
+{"id": "g006", "question": "What are warning signs of stroke?", "risk_class": "emergency", "gold_source_substrings": ["MedMCQA", "PubMed"], "gold_content_keywords": ["stroke", "weakness"]}
+{"id": "g007", "question": "What is chronic obstructive pulmonary disease?", "risk_class": "definition", "gold_source_substrings": ["MedMCQA"], "gold_content_keywords": ["COPD", "lung"]}
+{"id": "g008", "question": "What medications are used for allergic rhinitis?", "risk_class": "drug", "gold_source_substrings": ["MedMCQA"], "gold_content_keywords": ["antihistamine", "rhinitis"]}
+{"id": "g009", "question": "What is the difference between type 1 and type 2 diabetes?", "risk_class": "comparison", "gold_source_substrings": ["MedMCQA"], "gold_content_keywords": ["insulin", "diabetes"]}
+{"id": "g010", "question": "What are complications of untreated hyperthyroidism?", "risk_class": "causation", "gold_source_substrings": ["MedMCQA", "wikidoc"], "gold_content_keywords": ["thyroid", "tachycardia"]}
+{"id": "g011", "question": "What is acute coronary syndrome?", "risk_class": "definition", "gold_source_substrings": ["MedMCQA"], "gold_content_keywords": ["coronary", "chest"]}
+{"id": "g012", "question": "What are clinical features of asthma exacerbation?", "risk_class": "symptom", "gold_source_substrings": ["MedMCQA"], "gold_content_keywords": ["wheeze", "asthma"]}
+{"id": "g013", "question": "What laboratory tests assess kidney function?", "risk_class": "factual", "gold_source_substrings": ["MedMCQA"], "gold_content_keywords": ["creatinine", "kidney"]}
+{"id": "g014", "question": "What is atrial fibrillation?", "risk_class": "definition", "gold_source_substrings": ["MedMCQA"], "gold_content_keywords": ["atrial", "fibrillation"]}
+{"id": "g015", "question": "What are risk factors for deep vein thrombosis?", "risk_class": "causation", "gold_source_substrings": ["MedMCQA", "PubMed"], "gold_content_keywords": ["thrombosis", "immobility"]}
+{"id": "g016", "question": "What is gastroesophageal reflux disease?", "risk_class": "definition", "gold_source_substrings": ["MedMCQA"], "gold_content_keywords": ["reflux", "esophagus"]}
+{"id": "g017", "question": "What are symptoms of urinary tract infection?", "risk_class": "symptom", "gold_source_substrings": ["MedMCQA"], "gold_content_keywords": ["urinary", "infection"]}
+{"id": "g018", "question": "What imaging is used to evaluate appendicitis?", "risk_class": "factual", "gold_source_substrings": ["MedMCQA"], "gold_content_keywords": ["appendicitis", "CT"]}
+{"id": "g019", "question": "What is rheumatoid arthritis?", "risk_class": "definition", "gold_source_substrings": ["MedMCQA"], "gold_content_keywords": ["arthritis", "joint"]}
+{"id": "g020", "question": "What vaccines are recommended for older adults?", "risk_class": "factual", "gold_source_substrings": ["MedMCQA", "CDC"], "gold_content_keywords": ["vaccine", "influenza"]}
+{"id": "g021", "question": "What causes anemia?", "risk_class": "causation", "gold_source_substrings": ["MedMCQA"], "gold_content_keywords": ["anemia", "hemoglobin"]}
+{"id": "g022", "question": "What is sepsis?", "risk_class": "definition", "gold_source_substrings": ["MedMCQA", "MIMIC"], "gold_content_keywords": ["sepsis", "infection"]}
+{"id": "g023", "question": "What are signs of dehydration?", "risk_class": "symptom", "gold_source_substrings": ["MedMCQA"], "gold_content_keywords": ["dehydration", "thirst"]}
+{"id": "g024", "question": "What is major depressive disorder?", "risk_class": "definition", "gold_source_substrings": ["MedMCQA"], "gold_content_keywords": ["depression", "mood"]}
+{"id": "g025", "question": "What monitoring is needed for warfarin therapy?", "risk_class": "drug", "gold_source_substrings": ["MedMCQA"], "gold_content_keywords": ["warfarin", "INR"]}
+{"id": "g026", "question": "What is heart failure with reduced ejection fraction?", "risk_class": "definition", "gold_source_substrings": ["MedMCQA"], "gold_content_keywords": ["ejection", "heart"]}
+{"id": "g027", "question": "What are causes of acute pancreatitis?", "risk_class": "causation", "gold_source_substrings": ["MedMCQA"], "gold_content_keywords": ["pancreatitis", "gallstone"]}
+{"id": "g028", "question": "What is celiac disease?", "risk_class": "definition", "gold_source_substrings": ["MedMCQA"], "gold_content_keywords": ["celiac", "gluten"]}
+{"id": "g029", "question": "What are symptoms of hypothyroidism?", "risk_class": "symptom", "gold_source_substrings": ["MedMCQA"], "gold_content_keywords": ["hypothyroid", "fatigue"]}
+{"id": "g030", "question": "What is cirrhosis of the liver?", "risk_class": "definition", "gold_source_substrings": ["MedMCQA", "wikidoc"], "gold_content_keywords": ["cirrhosis", "liver"]}
+{"id": "g031", "question": "What are contraindications to beta blockers?", "risk_class": "contraindication", "gold_source_substrings": ["MedMCQA"], "gold_content_keywords": ["beta", "blocker"]}
+{"id": "g032", "question": "What is acute kidney injury?", "risk_class": "definition", "gold_source_substrings": ["MedMCQA"], "gold_content_keywords": ["kidney", "creatinine"]}
+{"id": "g033", "question": "What causes fever in infection?", "risk_class": "causation", "gold_source_substrings": ["MedMCQA", "PubMed"], "gold_content_keywords": ["fever", "pyrogen"]}
+{"id": "g034", "question": "What is osteoporosis?", "risk_class": "definition", "gold_source_substrings": ["MedMCQA"], "gold_content_keywords": ["bone", "density"]}
+{"id": "g035", "question": "What are features of influenza infection?", "risk_class": "symptom", "gold_source_substrings": ["MedMCQA"], "gold_content_keywords": ["influenza", "fever"]}
+{"id": "g036", "question": "What is obstructive sleep apnea?", "risk_class": "definition", "gold_source_substrings": ["MedMCQA"], "gold_content_keywords": ["sleep", "apnea"]}

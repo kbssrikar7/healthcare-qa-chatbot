@@ -1,0 +1,352 @@
+---
+type: community
+cohesion: 0.02
+members: 314
+---
+
+# Community 4
+
+**Cohesion:** 0.02 - loosely connected
+**Members:** 314 nodes
+
+## Members
+- [[.__init__()_1]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[.__init__()_3]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[.__init__()_2]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[.__init__()_33]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[.__init__()_34]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[.__init__()_32]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_llm.py
+- [[.__init__()_31]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[.__init__()_30]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_retriever.py
+- [[.__init__()_15]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[.__init__()_14]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_pipeline.py
+- [[._aget_relevant_documents()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_retriever.py
+- [[._build_chain()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[._build_graph()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_pipeline.py
+- [[._call()_1]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_llm.py
+- [[._check_answerability()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[._format_and_generate()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[._get_relevant_documents()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_retriever.py
+- [[._retrieve_documents()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[._stream()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_llm.py
+- [[.aenrich_xai()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[.agenerate_answer()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[.ainvoke()_1]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[.ainvoke()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_pipeline.py
+- [[.answer()_1]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[.answer()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_pipeline.py
+- [[.aretrieve_documents()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[.attribute_answer()]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[.build_prompt()]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[.calculate_confidence()]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[.cleanup()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_llm.py
+- [[.embed_documents()]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[.embed_query()]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[.generate()]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[.generate_answer()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[.get_graph_visualization()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_pipeline.py
+- [[.get_medical_disclaimer()]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[.grade_relevance()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[.handle_error()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[.invoke()_1]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[.invoke()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_pipeline.py
+- [[.refine_query()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[.retrieve()]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[.retrieve_documents()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[.retrieve_with_context()]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[.retrieve_with_context()_4]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_retriever.py
+- [[.test_callback_handler_initialization()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[.test_callback_logs_chain_start()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[.test_clean_response_collapses_whitespace()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[.test_clean_response_handles_empty()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[.test_clean_response_removes_prefixes()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[.test_clean_response_truncates_at_stop_pattern()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[.test_create_initial_state()]] - code - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[.test_grade_relevance_node()]] - code - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[.test_grounding_gate_blocks_low_relevance()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[.test_handle_error_node()]] - code - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[.test_langchain_adaptive_threshold()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[.test_langchain_grounding_gate_with_low_rrf_scores()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[.test_langchain_pipeline_answer()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[.test_langchain_pipeline_init()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[.test_langchain_pipeline_invoke()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[.test_langchain_unanswerable()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[.test_langgraph_pipeline_init()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[.test_langgraph_pipeline_invoke()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[.test_langgraph_to_qa_response()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[.test_langgraph_unanswerable_route()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[.test_llm_call_delegates_to_underlying()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[.test_llm_wrapper_initialization()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[.test_nodes_initialization()]] - code - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[.test_pipeline_builds_graph()]] - code - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[.test_pipeline_initialization()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[.test_retrieve_documents_node()]] - code - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[.test_retriever_converts_documents()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[.test_retriever_wrapper_initialization()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[.test_route_after_grading_generate()_1]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[.test_route_after_grading_generate()]] - code - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[.test_route_after_grading_refine()_1]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[.test_route_after_grading_refine()]] - code - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[.test_route_after_grading_unanswerable()_1]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[.test_route_after_grading_unanswerable()]] - code - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[.test_route_after_verify_exhausted_retries()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[.test_route_after_verify_grounded()_1]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[.test_route_after_verify_grounded()]] - code - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[.test_route_after_verify_not_grounded()]] - code - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[.test_route_after_verify_not_grounded_retry()]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[.test_state_has_required_fields()]] - code - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[.test_unanswerable_response_node()]] - code - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[.test_verify_grounding_node()]] - code - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[.to_qa_response()_1]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[.to_qa_response()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_pipeline.py
+- [[.unanswerable_response()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[Aggregate metrics from callback logs for monitoring dashboards.]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[Answer a medical question using the LangGraph pipeline.          Args]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_pipeline.py
+- [[Answer a medical question.          Args             question User's medical q]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[Answer a question and return QAResponse (compatible with existing pipeline)._1]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[Answer a question and return QAResponse (compatible with existing pipeline).]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_pipeline.py
+- [[Async version - delegates to sync for now.]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_retriever.py
+- [[Async version of invoke._1]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[Async version of invoke.]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_pipeline.py
+- [[Attribution]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[BaseCallbackHandler]] - code
+- [[BaseRetriever]] - code
+- [[Build the LCEL pipeline chain.          Pipeline structure         1. Retrieve]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[Build the self-correcting RAG StateGraph.          Graph structure]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_pipeline.py
+- [[Callback handler for logging and monitoring medical QA interactions.      Logs]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[Check if the question can be answered from retrieved documents.          Impleme]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[Clean an LLM response by removing training-data leakage.      Steps     0. Stri]] - rationale - /home/kbs/Documents/final_project/src/utils/text_cleaning.py
+- [[Clearly safe inputs for testing.]] - rationale - /home/kbs/Documents/final_project/tests/conftest.py
+- [[Compute a relevance score threshold that works for both cosine-similarity     sc]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[Convert LangChainQAResult to QAResponse for API compatibility.          Args]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[Convert LangGraphQAResult to QAResponse for API compatibility.]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_pipeline.py
+- [[Create initial state for a new query.      Args         question The user's me]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_state.py
+- [[Detect and cut repetition loops in LLM output.      Scans for any clausesentenc]] - rationale - /home/kbs/Documents/final_project/src/utils/text_cleaning.py
+- [[Edge case questions for robustness testing.]] - rationale - /home/kbs/Documents/final_project/tests/conftest.py
+- [[Embed multiple texts.]] - rationale - /home/kbs/Documents/final_project/tests/conftest.py
+- [[Factory function to create a LangChain Healthcare QA Pipeline.      Args]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[Factory function to create a LangGraph Healthcare QA Pipeline.      Args]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_pipeline.py
+- [[Format context and generate answer.]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[Generate deterministic embeddings based on text hash.]] - rationale - /home/kbs/Documents/final_project/tests/conftest.py
+- [[Generate text from the prompt.]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_llm.py
+- [[Get a Mermaid diagram of the graph for visualization.]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_pipeline.py
+- [[HealthcareRAGNodes]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[HealthcareRAGState]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_state.py
+- [[Initialize LangChain Healthcare QA Pipeline.          Args             retrieve]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[Initialize LangGraph Healthcare QA Pipeline.          Args             retrieve]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_pipeline.py
+- [[Initialize callback handler.          Args             log_file Path to JSONL]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[Initialize wrapper.          Accepts both `hybrid_retriever=` and legacy `retrie]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_retriever.py
+- [[Inputs that should trigger emergency detection.]] - rationale - /home/kbs/Documents/final_project/tests/conftest.py
+- [[Integration tests for LangChain and LangGraph pipelines.  Verifies that both pip]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[LLM]] - code
+- [[LangChain Callbacks for Monitoring and Observability.  Provides callback handler]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[LangChain LCEL-based Healthcare QA Pipeline.      Uses LangChain Expression Lang]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[LangChain LCEL-based RAG Pipeline for Healthcare QA.  This module provides a Lan]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[LangChain-compatible wrapper for HybridRetriever.      This wrapper allows using]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_retriever.py
+- [[LangChainHealthcareQAPipeline]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[LangChainHybridRetriever]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_retriever.py
+- [[LangChainMedicalLLM]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_llm.py
+- [[LangChainMedicalLLMFromExisting]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_llm.py
+- [[LangChainQAResult]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[LangGraph Node Functions for Healthcare RAG Pipeline.  Each node receives the fu]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[LangGraph Pipeline for Healthcare RAG.  Builds a self-correcting RAG graph using]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_pipeline.py
+- [[LangGraph Routing Logic for Healthcare RAG Pipeline.  Defines conditional edge f]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_routing.py
+- [[LangGraph State Schema for Healthcare RAG Pipeline.  Defines the state structure]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_state.py
+- [[LangGraph-based Healthcare QA Pipeline.      Uses a self-correcting RAG graph th]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_pipeline.py
+- [[LangGraphHealthcareQAPipeline]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_pipeline.py
+- [[LangGraphQAResult]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_pipeline.py
+- [[MedicalQACallbackHandler]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[MetricsAggregator]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[Mock LLM for testing without GPU.]] - rationale - /home/kbs/Documents/final_project/tests/conftest.py
+- [[Mock LLM generation result.]] - rationale - /home/kbs/Documents/final_project/tests/conftest.py
+- [[Mock confidence scorer for testing.]] - rationale - /home/kbs/Documents/final_project/tests/conftest.py
+- [[Mock document for testing retrieval.]] - rationale - /home/kbs/Documents/final_project/tests/conftest.py
+- [[Mock document for testing._1]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[Mock document for testing.]] - rationale - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[Mock embedding model for testing.]] - rationale - /home/kbs/Documents/final_project/tests/conftest.py
+- [[Mock prompt manager for testing.]] - rationale - /home/kbs/Documents/final_project/tests/conftest.py
+- [[Mock retriever for testing.]] - rationale - /home/kbs/Documents/final_project/tests/conftest.py
+- [[Mock source attributor for testing.]] - rationale - /home/kbs/Documents/final_project/tests/conftest.py
+- [[MockConfidenceScorer]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[MockDocument]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[MockDocument_2]] - code - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[MockDocument_1]] - code - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[MockEmbedder]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[MockGenerationResult]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[MockLLM]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[MockPromptManager]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[MockRetriever]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[MockSourceAttributor]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[Node implementations for Healthcare RAG graph.      Wraps existing components (r]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[Node Generate answer using LLM with retrieved context.          Fixes vs previo]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[Node Grade document relevance to the question.          Uses an adaptive thre]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[Node Handle errors gracefully with a safe fallback response.]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[Node Refine query for better retrieval.          Attempts LLM-based refinement]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[Node Retrieve documents from knowledge base.          Uses the most recently re]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[Node Return a safe, honest unanswerable response.]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[Provide mock LLM with medical responses.]] - rationale - /home/kbs/Documents/final_project/tests/conftest.py
+- [[Provide mock confidence scorer.]] - rationale - /home/kbs/Documents/final_project/tests/conftest.py
+- [[Provide mock embedder.]] - rationale - /home/kbs/Documents/final_project/tests/conftest.py
+- [[Provide mock prompt manager.]] - rationale - /home/kbs/Documents/final_project/tests/conftest.py
+- [[Provide mock retriever with sample documents.]] - rationale - /home/kbs/Documents/final_project/tests/conftest.py
+- [[Provide mock source attributor.]] - rationale - /home/kbs/Documents/final_project/tests/conftest.py
+- [[Pytest fixtures for Healthcare QA Chatbot tests.  Includes mock components for t]] - rationale - /home/kbs/Documents/final_project/tests/conftest.py
+- [[QAResponse]] - code - /home/kbs/Documents/final_project/src/pipeline/qa_pipeline.py
+- [[Recursively convert numpy scalar  array types to plain Python natives     so th]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[Result]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[Result from LangChain QA pipeline.]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[Result from LangGraph QA pipeline.]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_pipeline.py
+- [[Retrieve documents and build context string.          Args             query S_1]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_retriever.py
+- [[Retrieve relevant documents for a query.          Args             query Searc]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_retriever.py
+- [[Retrieve relevant documents using current k setting.]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[Return documents and concatenated context.]] - rationale - /home/kbs/Documents/final_project/tests/conftest.py
+- [[Return mock attributions.]] - rationale - /home/kbs/Documents/final_project/tests/conftest.py
+- [[Return mock documents.]] - rationale - /home/kbs/Documents/final_project/tests/conftest.py
+- [[Return mock generation result.]] - rationale - /home/kbs/Documents/final_project/tests/conftest.py
+- [[Route after document grading.      Decides whether to     - generate Proceed]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_routing.py
+- [[Route after grounding verification.      Decides whether to     - enrich_xai]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_routing.py
+- [[Shared text cleaning utilities for LLM response post-processing.  Consolidates d]] - rationale - /home/kbs/Documents/final_project/src/utils/text_cleaning.py
+- [[State schema for the Healthcare RAG graph.      This state flows through all nod]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_state.py
+- [[Stream generation (falls back to non-streaming for now).          Note The unde]] - rationale - /home/kbs/Documents/final_project/src/langchain/langchain_llm.py
+- [[Stream the graph execution for debuggingobservability.          Yields state up]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_pipeline.py
+- [[Test QAResponse conversion for API compatibility.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[Test basic invoke returns valid result.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[Test basic invoke returns valid state dict.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[Test callback handler initializes correctly.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[Test document relevance grading node.]] - rationale - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[Test document retrieval node.]] - rationale - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[Test error handling node.]] - rationale - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[Test grounding gate passes with RRF-scale scores (~0.016).]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[Test grounding verification node.]] - rationale - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[Test initial state creation.]] - rationale - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[Test nodes class initializes correctly.]] - rationale - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[Test pipeline initializes correctly.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[Test routing after verification when grounded.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[Test routing to enrich_xai when retries exhausted.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[Test routing to generate when docs are relevant.]] - rationale - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[Test routing to generate when enough relevant docs.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[Test routing to refine when docs not relevant enough.]] - rationale - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[Test routing to refine when not enough docs but can retry.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[Test routing to refine when not grounded and can retry.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[Test routing to unanswerable after max retries.]] - rationale - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[Test routing to unanswerable when no docs and max retries.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[Test routing when answer is grounded.]] - rationale - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[Test routing when answer is not grounded.]] - rationale - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[Test that LLM wrapper initializes correctly.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[Test that LangChain pipeline initializes without errors.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[Test that LangGraph pipeline initializes and compiles graph.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[Test that _call properly delegates to underlying LLM.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[Test that adaptive threshold handles RRF-scale scores.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[Test that chain start is logged.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[Test that documents are properly converted to LangChain format.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[Test that empty retrieval routes to unanswerable.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[Test that grounding gate blocks when docs have low relevance.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[Test that pipeline builds a valid graph.]] - rationale - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[Test that retriever wrapper initializes correctly.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[Test that state schema has all required fields.]] - rationale - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[Test the answer() method returns a proper result dict.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[Test unanswerable response node.]] - rationale - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[Test unanswerable response when no documents found.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[TestLangChainCallbacks]] - code - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[TestLangChainLLMWrapper]] - code - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[TestLangChainPipeline]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[TestLangChainPipeline_1]] - code - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[TestLangChainRetrieverWrapper]] - code - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[TestLangGraphNodes]] - code - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[TestLangGraphPipeline_1]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[TestLangGraphPipeline]] - code - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[TestLangGraphRouting_1]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[TestLangGraphRouting]] - code - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[TestLangGraphState]] - code - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[TestTextCleaning]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[Tests for LangChain Pipeline.  Unit tests for the LangChain-based Healthcare QA]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[Tests for LangChain callback handler.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[Tests for LangChainHealthcareQAPipeline.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[Tests for LangChainHybridRetriever wrapper.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[Tests for LangChainMedicalLLM wrapper.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[Tests for LangGraph Pipeline.  Unit tests for the LangGraph-based Healthcare RAG]] - rationale - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[Tests for LangGraph conditional routing.]] - rationale - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[Tests for LangGraph node implementations.]] - rationale - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[Tests for LangGraph routing functions.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[Tests for LangGraph state management.]] - rationale - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[Tests for the LangChain LCEL pipeline.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[Tests for the LangGraph StateGraph pipeline.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[Tests for the complete LangGraph pipeline.]] - rationale - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[Tests for the shared text cleaning utility.]] - rationale - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[Thin wrapper delegating to the shared context-builder utility.      The full imp]] - rationale - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[TypedDict]] - code
+- [[_adaptive_threshold()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[_build_safe_context()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[_cut_repetition_loop()]] - code - /home/kbs/Documents/final_project/src/utils/text_cleaning.py
+- [[_identifying_params()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_llm.py
+- [[_llm_type()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_llm.py
+- [[_sanitize_state()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[clean_llm_response()]] - code - /home/kbs/Documents/final_project/src/utils/text_cleaning.py
+- [[conftest.py]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[create_initial_state()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_state.py
+- [[create_langchain_pipeline()]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[create_langgraph_pipeline()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_pipeline.py
+- [[dotoken()]] - code - /home/kbs/Documents/final_project/scratch/tools/sherlock/original/sig.c
+- [[edge_case_questions()]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[emergency_inputs()]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[hash()_1]] - code - /home/kbs/Documents/final_project/scratch/tools/sherlock/original/sig.c
+- [[langchain_callbacks.py]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_callbacks.py
+- [[langchain_llm.py]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_llm.py
+- [[langchain_pipeline.py]] - code - /home/kbs/Documents/final_project/src/langchain/langchain_pipeline.py
+- [[langgraph_nodes.py]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_nodes.py
+- [[langgraph_pipeline.py]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_pipeline.py
+- [[langgraph_routing.py]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_routing.py
+- [[langgraph_state.py]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_state.py
+- [[main()_35]] - code - /home/kbs/Documents/final_project/scratch/tools/sherlock/original/sig.c
+- [[mock_confidence_scorer()]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[mock_embedder()]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[mock_llm()]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[mock_llm()_2]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[mock_llm()_3]] - code - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[mock_llm()_1]] - code - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[mock_prompt_manager()]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[mock_retriever()]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[mock_retriever()_2]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[mock_retriever()_3]] - code - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[mock_retriever()_1]] - code - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[mock_source_attributor()]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[route_after_grading()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_routing.py
+- [[route_after_verify()]] - code - /home/kbs/Documents/final_project/src/langgraph/langgraph_routing.py
+- [[safe_inputs()]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[sample_documents()]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[sample_qa_pairs()]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[sample_question()]] - code - /home/kbs/Documents/final_project/tests/conftest.py
+- [[sig.c]] - code - /home/kbs/Documents/final_project/scratch/tools/sherlock/original/sig.c
+- [[signature()_1]] - code - /home/kbs/Documents/final_project/scratch/tools/sherlock/original/sig.c
+- [[test_langchain_langgraph.py]] - code - /home/kbs/Documents/final_project/tests/test_langchain_langgraph.py
+- [[test_langchain_pipeline.py]] - code - /home/kbs/Documents/final_project/tests/test_langchain_pipeline.py
+- [[test_langgraph_pipeline.py]] - code - /home/kbs/Documents/final_project/tests/test_langgraph_pipeline.py
+- [[text_cleaning.py]] - code - /home/kbs/Documents/final_project/src/utils/text_cleaning.py
+- [[tokenize()_1]] - code - /home/kbs/Documents/final_project/scratch/tools/sherlock/original/sig.c
+- [[usage()_2]] - code - /home/kbs/Documents/final_project/scratch/tools/sherlock/original/sig.c
+
+## Live Query (requires Dataview plugin)
+
+```dataview
+TABLE source_file, type FROM #community/Community_4
+SORT file.name ASC
+```
+
+## Connections to other communities
+- 91 edges to [[_COMMUNITY_Community 2]]
+- 82 edges to [[_COMMUNITY_Community 0]]
+- 9 edges to [[_COMMUNITY_Community 1]]
+- 3 edges to [[_COMMUNITY_Community 5]]
+- 1 edge to [[_COMMUNITY_Community 12]]
+- 1 edge to [[_COMMUNITY_Community 16]]
+- 1 edge to [[_COMMUNITY_Community 6]]
+- 1 edge to [[_COMMUNITY_Community 27]]
+- 1 edge to [[_COMMUNITY_Community 10]]
+- 1 edge to [[_COMMUNITY_Community 33]]
+
+## Top bridge nodes
+- [[clean_llm_response()]] - degree 18, connects to 6 communities
+- [[QAResponse]] - degree 40, connects to 5 communities
+- [[.refine_query()]] - degree 7, connects to 3 communities
+- [[_cut_repetition_loop()]] - degree 6, connects to 3 communities
+- [[LangChainHybridRetriever]] - degree 46, connects to 2 communities
