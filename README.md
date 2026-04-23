@@ -1,5 +1,9 @@
 <div align="center">
-  <img src="public/mediquery-logo.svg" alt="MediQuery" width="260" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="public/mediquery-logo-dark.svg" />
+    <source media="(prefers-color-scheme: light)" srcset="public/mediquery-logo.svg" />
+    <img src="public/mediquery-logo.svg" alt="MediQuery" width="260" />
+  </picture>
   <br /><br />
   <p>A retrieval-augmented generation system for healthcare question answering, with explainability and safety guardrails built in.</p>
 
@@ -214,4 +218,4 @@ The knowledge base was built from publicly available medical datasets (MedQuAD, 
 
 ## License
 
-This project was built as a final-year undergraduate capstone. The source code is available for academic and educational reference.
+[MIT](LICENSE) — built as a final-year undergraduate capstone. The source code is available for academic and educational reference.
