@@ -184,7 +184,7 @@ jobs:
           # Export only backend files — HF Spaces rejects large binaries/notebooks
           DEPLOY_DIR=$(mktemp -d)
           git archive HEAD -- \
-            api/ src/ config/ requirements.txt Dockerfile .dockerignore \
+            api/ src/ config/ requirements.txt requirements-hf.txt Dockerfile .dockerignore \
             pyproject.toml start.sh Makefile data/drug_knowledge/ tests/ \
             | tar -x -C "$DEPLOY_DIR"
           printf -- "---\ntitle: Healthcare QA API\nemoji: 🏥\ncolorFrom: blue\ncolorTo: red\nsdk: docker\napp_port: 7860\npinned: false\n---\n" \
