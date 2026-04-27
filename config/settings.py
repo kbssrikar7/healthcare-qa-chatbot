@@ -23,6 +23,7 @@ class ModelChoice(str, Enum):
     BIOMISTRAL = "biomistral"
     EXTRACTIVE = "extractive"
     OLLAMA = "ollama"
+    OPENROUTER = "openrouter"
 
 
 # Model registry with metadata

@@ -168,19 +168,28 @@ class LangGraphHealthcareQAPipeline:
         else:
             return builder.compile()
 
-    def invoke(self, question: str, config: Optional[dict] = None) -> LangGraphQAResult:
+    def invoke(
+        self,
+        question: str,
+        config: Optional[dict] = None,
+        num_documents: Optional[int] = None,
+    ) -> LangGraphQAResult:
         """
         Answer a medical question using the LangGraph pipeline.
 
         Args:
             question: User's medical question
             config: Optional config with thread_id for checkpointing
+            num_documents: Override default k for this invocation (thread-safe)
 
         Returns:
             LangGraphQAResult with answer and metadata
         """
         # Create initial state
         initial_state = create_initial_state(question)
+        # Embed k in state so retrieve_documents reads it — avoids self.nodes.k mutation
+        if num_documents is not None:
+            initial_state["num_documents"] = num_documents
 
         # Use default config if not provided
         if config is None:
@@ -276,7 +285,7 @@ class LangGraphHealthcareQAPipeline:
         )
 
     def answer(
-        self, question: str, num_documents: int = None, include_explanation: bool = True
+        self, question: str, num_documents: int = None, include_explanation: bool = True, **kwargs
     ) -> QAResponse:
         """
         Answer a question and return QAResponse (compatible with existing pipeline).
@@ -289,17 +298,10 @@ class LangGraphHealthcareQAPipeline:
         Returns:
             QAResponse compatible with existing API
         """
-        original_k = self.k
-        original_nodes_k = self.nodes.k
-        if num_documents is not None:
-            self.k = num_documents
-            self.nodes.k = num_documents  # Propagate to nodes
-        try:
-            result = self.invoke(question)
-            return self.to_qa_response(result)
-        finally:
-            self.k = original_k
-            self.nodes.k = original_nodes_k  # Restore nodes k
+        # Pass num_documents through state so retrieve_documents reads it — no self.k mutation
+        # (thread-safe: each invoke() call gets its own isolated state dict).
+        result = self.invoke(question, num_documents=num_documents)
+        return self.to_qa_response(result)
 
     def get_graph_visualization(self) -> str:
         """

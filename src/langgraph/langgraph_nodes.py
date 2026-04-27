@@ -245,9 +245,10 @@ class HealthcareRAGNodes:
         """
         history = state.get("query_history", [])
         query = history[-1] if history else state.get("question", "")
+        k = state.get("num_documents", self.k)
 
         try:
-            docs = self.retriever.retrieve(query, k=self.k)
+            docs = self.retriever.retrieve(query, k=k)
 
             lc_docs: List[Document] = []
             for doc in docs:

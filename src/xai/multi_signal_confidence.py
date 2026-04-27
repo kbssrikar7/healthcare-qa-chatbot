@@ -68,10 +68,10 @@ class MultiSignalConfidenceScorer:
     # - Entity coverage *hurts* calibration (removing it: ECE 0.2417→0.2079)
     # - Consistency slightly hurts (removing it: ECE 0.2417→0.2272)
     DEFAULT_WEIGHTS: Dict[str, float] = {
-        "retrieval": 0.40,  # High weight
-        "source_agreement": 0.30,  # High weight
-        "generation": 0.20,  # Medium weight
-        "consistency": 0.10,  # Low weight
+        "retrieval": 0.45,       # High weight (boosted from 0.40)
+        "source_agreement": 0.35, # High weight (boosted from 0.30)
+        "generation": 0.20,       # Medium weight
+        "consistency": 0.00,      # Disabled: alternative_answers never passed → always 0.5
         "entity_coverage": 0.00,  # Removed (weight = 0)
     }
 
@@ -142,7 +142,10 @@ class MultiSignalConfidenceScorer:
         -------
         ConfidenceBreakdown with all signal scores and explanation.
         """
+        # Use ollama weights for local ollama; bypass Platt for both ollama and openrouter
+        # (Platt params were fitted on TinyLlama outputs only).
         is_ollama = backend == "ollama"
+        skip_platt = backend in ("ollama", "openrouter")
         weights = self.OLLAMA_WEIGHTS if is_ollama else self.weights
 
         bd = ConfidenceBreakdown()
@@ -151,7 +154,11 @@ class MultiSignalConfidenceScorer:
         bd.generation_confidence = self._generation_confidence(generation_probabilities)
         bd.consistency_score = self._self_consistency_score(answer, alternative_answers)
         bd.source_agreement = self._source_agreement_score(answer, retrieved_documents)
-        bd.medical_entity_coverage = self._entity_coverage_score(query, answer, retrieved_documents)
+        # Skip entity_coverage computation when its weight is 0 — saves CPU cycles.
+        if weights.get("entity_coverage", 0) > 0:
+            bd.medical_entity_coverage = self._entity_coverage_score(query, answer, retrieved_documents)
+        else:
+            bd.medical_entity_coverage = 0.0
 
         raw = (
             weights.get("retrieval", 0) * bd.retrieval_confidence
@@ -162,9 +169,8 @@ class MultiSignalConfidenceScorer:
         )
 
         bd.overall_confidence = float(np.clip(raw, 0.0, 1.0))
-        # Ollama answers are paraphrased — Platt scaling trained on TinyLlama compresses
-        # scores incorrectly. Use raw weighted score directly for Ollama.
-        bd.calibrated_confidence = bd.overall_confidence if is_ollama else self._platt_calibrate(bd.overall_confidence)
+        # Skip Platt scaling for backends not trained on — use raw weighted score directly.
+        bd.calibrated_confidence = bd.overall_confidence if skip_platt else self._platt_calibrate(bd.overall_confidence)
         bd.confidence_level = self._confidence_level(bd.calibrated_confidence)
         bd.signal_weights = dict(weights)
         bd.explanation = self._generate_explanation(bd)

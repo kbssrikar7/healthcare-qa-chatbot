@@ -829,25 +829,9 @@ def _get_low_latency_settings() -> Dict[str, Any]:
 
 
 def _adaptive_generation_max_tokens(question: str, low_latency: bool = False) -> Optional[int]:
-    """Use tighter token budgets for low-latency and high-precision query types."""
+    """Use tighter token budgets only in low-latency mode."""
     settings = _get_low_latency_settings()
     if low_latency:
-        return int(settings["max_new_tokens"])
-
-    q = (question or "").lower()
-    high_precision_markers = (
-        "first-line",
-        "first line",
-        "therapy",
-        "therapies",
-        "treatment",
-        "management",
-        "contraindication",
-        "dosage",
-        "dose",
-        "guideline",
-    )
-    if any(m in q for m in high_precision_markers):
         return int(settings["max_new_tokens"])
     return None
 
@@ -1180,6 +1164,11 @@ async def _prepare_and_execute_pipeline(
 
     # ── 2. Resolve model and pipeline ────────────────────────────────────
     model_choice = request.model_choice or os.getenv("DEFAULT_MODEL", "extractive")
+    if model_choice not in AVAILABLE_MODELS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown model '{model_choice}'. Valid options: {sorted(AVAILABLE_MODELS.keys())}",
+        )
     pipeline_name = "Standard"
 
     # Determine pipeline: per-request flags override config default
@@ -1261,7 +1250,7 @@ async def _prepare_and_execute_pipeline(
             include_explanation=effective_include_explanation,
             **(
                 {"conversation_context": conversation_context}
-                if conversation_context and not (request.use_langgraph or request.use_langchain)
+                if conversation_context
                 else {}
             ),
         )
@@ -1580,7 +1569,7 @@ async def feedback_stats():
     dependencies=[Depends(verify_api_key)],
 )
 async def ask_stream(request: QuestionRequest):
-    """Stream a medical answer token by token (NDJSON).
+    """Stream a medical answer word-chunk by word-chunk (NDJSON).
 
     Event types emitted:
       {"type": "meta",  "data": <full response object with answer="")}
@@ -1588,8 +1577,8 @@ async def ask_stream(request: QuestionRequest):
       {"type": "done",  "data": ""}
       {"type": "error", "data": "<message>"}   (on failure)
 
-    Uses native TextIteratorStreamer (transformers) or llama-cpp stream=True
-    (GGUF) when available so tokens arrive incrementally, not word-chunked.
+    Note: runs the full pipeline first, then streams the pre-computed answer
+    3 words at a time. True token-level streaming is not yet wired to the API.
     """
     start_ts = time.time()
 
@@ -1748,11 +1737,7 @@ async def clear_cache():
 
 
 def _get_langchain_pipeline(model_choice: str = "tinyllama", adapter_path: Optional[str] = None):
-    """Lazy load LangChain pipeline with specified model.
-
-    Args:
-        model_choice: Model to use (tinyllama or biomistral)
-    """
+    """Lazy load LangChain pipeline with specified model."""
     resolved_adapter_path = _resolve_adapter_path(adapter_path)
     cache_key = f"langchain_{model_choice}::{resolved_adapter_path or 'base'}"
     if cache_key in pipelines:
@@ -1761,16 +1746,35 @@ def _get_langchain_pipeline(model_choice: str = "tinyllama", adapter_path: Optio
         shared = _get_shared_components()
         if not shared:
             return None
-        import torch as _torch
 
-        from src.generation.llm_wrapper import MedicalLLM
+        model_info = AVAILABLE_MODELS.get(model_choice)
+        if not model_info:
+            logger.error(f" Unknown model for LangChain pipeline: {model_choice}")
+            return None
+
+        backend = model_info.get("backend", "transformers")
+
+        if backend == "extractive":
+            from src.generation.llm_wrapper import MedicalLLM
+            llm = MedicalLLM(model_name="extractive")
+        elif backend == "ollama":
+            from src.generation.llm_wrapper import OllamaLLM
+            llm = OllamaLLM()
+        elif backend == "openrouter":
+            from src.generation.llm_wrapper import OpenRouterLLM
+            llm = OpenRouterLLM()
+        else:
+            import torch as _torch
+            from src.generation.llm_wrapper import MedicalLLM
+            resolved_model_name = model_info.get("model_name") or model_choice
+            llm_model_arg = model_choice if backend == "gguf" else resolved_model_name
+            llm = MedicalLLM(
+                model_name=llm_model_arg,
+                adapter_path=resolved_adapter_path,
+                load_in_4bit=bool(resolved_adapter_path) and _torch.cuda.is_available(),
+            )
+
         from src.langchain import create_langchain_pipeline
-
-        llm = MedicalLLM(
-            model_name=model_choice,  # Use requested model instead of hardcoded tinyllama
-            adapter_path=resolved_adapter_path,
-            load_in_4bit=bool(resolved_adapter_path) and _torch.cuda.is_available(),
-        )
         pipeline = create_langchain_pipeline(
             retriever=shared["retriever"],
             llm=llm,
@@ -1778,7 +1782,7 @@ def _get_langchain_pipeline(model_choice: str = "tinyllama", adapter_path: Optio
             source_attributor=shared["source_attributor"],
         )
         pipelines[cache_key] = pipeline
-        logger.info(f" LangChain pipeline loaded with {model_choice}")
+        logger.info(f" LangChain pipeline loaded with {model_choice} (backend={backend})")
         return pipeline
     except Exception as e:
         logger.error(f" Failed to load LangChain pipeline: {e}")
@@ -1786,11 +1790,7 @@ def _get_langchain_pipeline(model_choice: str = "tinyllama", adapter_path: Optio
 
 
 def _get_langgraph_pipeline(model_choice: str = "tinyllama", adapter_path: Optional[str] = None):
-    """Lazy load LangGraph pipeline with specified model.
-
-    Args:
-        model_choice: Model to use (tinyllama or biomistral)
-    """
+    """Lazy load LangGraph pipeline with specified model."""
     resolved_adapter_path = _resolve_adapter_path(adapter_path)
     cache_key = f"langgraph_{model_choice}::{resolved_adapter_path or 'base'}"
     if cache_key in pipelines:
@@ -1799,18 +1799,37 @@ def _get_langgraph_pipeline(model_choice: str = "tinyllama", adapter_path: Optio
         shared = _get_shared_components()
         if not shared:
             return None
-        import torch as _torch
+
+        model_info = AVAILABLE_MODELS.get(model_choice)
+        if not model_info:
+            logger.error(f" Unknown model for LangGraph pipeline: {model_choice}")
+            return None
+
+        backend = model_info.get("backend", "transformers")
+
+        if backend == "extractive":
+            from src.generation.llm_wrapper import MedicalLLM
+            llm = MedicalLLM(model_name="extractive")
+        elif backend == "ollama":
+            from src.generation.llm_wrapper import OllamaLLM
+            llm = OllamaLLM()
+        elif backend == "openrouter":
+            from src.generation.llm_wrapper import OpenRouterLLM
+            llm = OpenRouterLLM()
+        else:
+            import torch as _torch
+            from src.generation.llm_wrapper import MedicalLLM
+            resolved_model_name = model_info.get("model_name") or model_choice
+            llm_model_arg = model_choice if backend == "gguf" else resolved_model_name
+            llm = MedicalLLM(
+                model_name=llm_model_arg,
+                adapter_path=resolved_adapter_path,
+                load_in_4bit=bool(resolved_adapter_path) and _torch.cuda.is_available(),
+            )
 
         from config.settings import config as _cfg
-        from src.generation.llm_wrapper import MedicalLLM
         from src.langgraph import create_langgraph_pipeline
-
         pipeline_cfg = getattr(_cfg, "pipeline", None)
-        llm = MedicalLLM(
-            model_name=model_choice,  # Use requested model instead of hardcoded tinyllama
-            adapter_path=resolved_adapter_path,
-            load_in_4bit=bool(resolved_adapter_path) and _torch.cuda.is_available(),
-        )
         pipeline = create_langgraph_pipeline(
             retriever=shared["retriever"],
             llm=llm,
@@ -1821,7 +1840,7 @@ def _get_langgraph_pipeline(model_choice: str = "tinyllama", adapter_path: Optio
             ),
         )
         pipelines[cache_key] = pipeline
-        logger.info(f" LangGraph pipeline loaded with {model_choice}")
+        logger.info(f" LangGraph pipeline loaded with {model_choice} (backend={backend})")
         return pipeline
     except Exception as e:
         logger.error(f" Failed to load LangGraph pipeline: {e}")

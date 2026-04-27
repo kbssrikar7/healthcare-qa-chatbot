@@ -176,6 +176,9 @@ def test_ask_low_latency_profile_reduces_work(monkeypatch):
 
 
 def test_ask_adaptive_token_budget_for_high_precision_query(monkeypatch):
+    """High-precision queries (treatment, first-line) must NOT get a capped token budget
+    unless low_latency=True.  The old behaviour of capping non-low-latency treatment
+    queries was a bug — it truncated answers that needed complete coverage."""
     import api.main as api_main
 
     api_main, pipeline = _patch_lightweight_api(monkeypatch)
@@ -201,7 +204,9 @@ def test_ask_adaptive_token_budget_for_high_precision_query(monkeypatch):
     )
 
     assert response.status_code == 200
-    assert pipeline.calls[0]["generation_max_tokens"] == 192
+    # No token cap expected — high-precision queries outside low-latency mode should
+    # generate full-length answers.
+    assert "generation_max_tokens" not in pipeline.calls[0]
     assert pipeline.calls[0]["include_explanation"] is True
 
 

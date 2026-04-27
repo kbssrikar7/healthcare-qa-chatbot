@@ -426,30 +426,42 @@ class OpenRouterLLM:
             "HTTP-Referer": "https://github.com/healthcare-qa-chatbot",
         }
 
-        try:
-            resp = requests.post(
-                f"{self.base_url}/chat/completions",
-                json=payload,
-                headers=headers,
-                timeout=60,
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            response_text = data["choices"][0]["message"]["content"].strip()
-            if not response_text:
-                raise ValueError("Empty response from OpenRouter")
-            usage = data.get("usage", {})
-            return GenerationResult(
-                response=response_text,
-                input_tokens=usage.get("prompt_tokens", 0),
-                generated_tokens=usage.get("completion_tokens", 0),
-                generation_backend_used="openrouter",
-            )
-        except Exception as e:
-            logger.warning("OpenRouterLLM failed ({}), falling back to ExtractiveQA", e)
-            result = self._fallback.generate(question=question, context=context)
-            result.generation_backend_used = "extractive_fallback"
-            return result
+        import time as _time
+
+        last_exc: Exception = Exception("no attempts made")
+        for attempt in range(3):
+            try:
+                resp = requests.post(
+                    f"{self.base_url}/chat/completions",
+                    json=payload,
+                    headers=headers,
+                    timeout=60,
+                )
+                resp.raise_for_status()
+                data = resp.json()
+                response_text = data["choices"][0]["message"]["content"].strip()
+                if not response_text:
+                    raise ValueError("Empty response from OpenRouter")
+                usage = data.get("usage", {})
+                return GenerationResult(
+                    response=response_text,
+                    input_tokens=usage.get("prompt_tokens", 0),
+                    generated_tokens=usage.get("completion_tokens", 0),
+                    generation_backend_used="openrouter",
+                )
+            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+                last_exc = e
+                if attempt < 2:
+                    _time.sleep(2 ** attempt)  # 1s, 2s backoff
+                    logger.warning("OpenRouterLLM transient error (attempt {}/3): {}", attempt + 1, e)
+            except Exception as e:
+                last_exc = e
+                break  # non-retryable (auth, bad response, etc.)
+
+        logger.warning("OpenRouterLLM failed after retries ({}), falling back to ExtractiveQA", last_exc)
+        result = self._fallback.generate(question=question, context=context)
+        result.generation_backend_used = "extractive_fallback"
+        return result
 
     def cleanup(self) -> None:
         pass

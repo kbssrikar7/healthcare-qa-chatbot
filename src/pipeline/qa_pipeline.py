@@ -10,12 +10,13 @@ Enhanced with:
 - Cache context key including model/pipeline/KB fingerprint
 """
 
-from loguru import logger
-
+import re
 import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+from loguru import logger
 
 from src.utils.stopwords import ENGLISH_STOPWORDS as _PIPELINE_STOPWORDS
 
@@ -505,12 +506,13 @@ class HealthcareQAPipeline:
                 logger.warning(f" Factual consistency check failed: {e}")
 
         # 7b. HALLUCINATION DETECTION (DeBERTa NLI + rule-based)
-        # Skip for Ollama — DeBERTa NLI produces systematic false positives on MCQ-format
-        # context combined with Ollama's paraphrased answers (not word-for-word copies).
+        # Skip for local Ollama only — DeBERTa NLI produces systematic false positives on
+        # MCQ-format context combined with locally-hosted paraphrased answers.
+        # OpenRouter (cloud LLM) produces high-quality answers; run XAI on them.
         _s = time.perf_counter()
         hallucination_result = None
         _hal_gate_result = None  # used by quality gate even on fast path
-        _is_ollama_backend = (_generation_backend_used in ("ollama", "openrouter"))
+        _is_ollama_backend = (_generation_backend_used == "ollama")
         if self.hallucination_detector and answer and not _is_ollama_backend:
             try:
                 if verify_context != context:
@@ -636,9 +638,9 @@ class HealthcareQAPipeline:
         _t["confidence_ms"] = (time.perf_counter() - _s) * 1000
 
         # 8b. POST-GENERATION QUALITY GATE
-        # Ollama (Qwen2.5-7B) is a strong model — skip TinyLlama-targeted hallucination
-        # gates which incorrectly reject good Ollama answers based on source_agreement/NLI.
-        _skip_quality_gates = (_generation_backend_used in ("ollama", "openrouter"))
+        # Skip for local Ollama only — its paraphrased output triggers bag-of-words
+        # source_agreement and NLI gates incorrectly. OpenRouter (cloud) keeps gates on.
+        _skip_quality_gates = (_generation_backend_used == "ollama")
 
         if answer and not _skip_quality_gates:
             # (a) Medication entity grounding
@@ -675,13 +677,12 @@ class HealthcareQAPipeline:
 
                 # Bypass: on-topic + well-retrieved answers should not be blocked by NLI
                 # (DeBERTa-MNLI is unreliable for exam-format medical knowledge base chunks)
-                import re as _re
                 _q_terms = {
-                    t for t in _re.findall(r"\w+", question.lower())
+                    t for t in re.findall(r"\w+", question.lower())
                     if len(t) > 3
                 }
                 _a_terms = {
-                    t for t in _re.findall(r"\w+", answer.lower())
+                    t for t in re.findall(r"\w+", answer.lower())
                     if len(t) > 3
                 }
                 _medical_overlap = len(_q_terms & _a_terms)
@@ -737,7 +738,7 @@ class HealthcareQAPipeline:
             # relying on TinyLlama's paraphrase (which can misclassify drug classes, etc.)
             # Skip when already using the extractive or ollama backend.
             # OllamaLLM handles its own fallback to ExtractiveQA internally.
-            _already_extractive = _backend_type in ("extractive", "ollama", "openrouter")
+            _already_extractive = _backend_type in ("extractive", "ollama", "openrouter")  # skip extractive fallback for capable LLMs
             if not _already_extractive and answer != self.UNANSWERABLE_RESPONSE and self._is_factoid_question(question):
                 _conf_score = confidence.get("score", 1.0) if isinstance(confidence, dict) else 1.0
                 if _conf_score < 0.55:
@@ -964,16 +965,15 @@ class HealthcareQAPipeline:
             return False
 
         if self.grounding_min_term_overlap > 0 and question.strip():
-            import re as _re
             q_terms = {
-                t for t in _re.findall(r"\w+", question.lower())
+                t for t in re.findall(r"\w+", question.lower())
                 if len(t) > 3 and t not in _PIPELINE_STOPWORDS
             }
             if q_terms:
                 ok = False
                 for doc in relevant_docs:
                     content = doc.content if hasattr(doc, "content") else str(doc)
-                    c_terms = set(_re.findall(r"\w+", content.lower()))
+                    c_terms = set(re.findall(r"\w+", content.lower()))
                     if len(q_terms & c_terms) / len(q_terms) >= self.grounding_min_term_overlap:
                         ok = True
                         break
@@ -1018,8 +1018,6 @@ class HealthcareQAPipeline:
 
     @staticmethod
     def _contains_medication_term(text: str, term: str) -> bool:
-        import re
-
         t = re.escape(term.lower().strip())
         # Allow common pluralization (e.g. paracetamols), require word boundaries.
         return bool(re.search(rf"\b{t}(?:s)?\b", (text or "").lower()))
@@ -1150,8 +1148,6 @@ class HealthcareQAPipeline:
         if not documents:
             return None
 
-        import re as _re
-
         # Markers that indicate a sentence directly answers a factoid question.
         # Weighted by relevance: treatment/first-line markers score highest.
         _cause_markers = (
@@ -1169,21 +1165,21 @@ class HealthcareQAPipeline:
             "that", "these", "those", "and", "but", "or", "as", "by", "from",
         }
         q_terms = {
-            t for t in _re.findall(r"\w+", question.lower())
+            t for t in re.findall(r"\w+", question.lower())
             if len(t) > 3 and t not in _stopwords
         }
 
         def _best_sentence(content: str) -> tuple:
             """Return (score, best_sentence) from a document chunk."""
             # For MedMCQA/MedQA docs, prefer the Answer: section over the question text.
-            _ans_match = _re.search(r"Answer\s*:\s*(.+?)(?:\n|$)", content, _re.IGNORECASE)
+            _ans_match = re.search(r"Answer\s*:\s*(.+?)(?:\n|$)", content, re.IGNORECASE)
             if _ans_match:
                 ans_text = _ans_match.group(1).strip()
                 if len(ans_text) > 10:
                     return 1.0, ans_text
 
             sentences = [
-                s.strip() for s in _re.split(r"(?<=[.!?])\s+", content)
+                s.strip() for s in re.split(r"(?<=[.!?])\s+", content)
                 if len(s.strip()) > 20 and not s.strip().endswith("?")  # skip question sentences
             ]
             if not sentences:
@@ -1191,7 +1187,7 @@ class HealthcareQAPipeline:
             best_s, best_score = "", 0.0
             for sent in sentences:
                 s_lower = sent.lower()
-                s_terms = set(_re.findall(r"\w+", s_lower))
+                s_terms = set(re.findall(r"\w+", s_lower))
                 overlap = len(q_terms & s_terms) / max(len(q_terms), 1) if q_terms else 0.0
                 causal_bonus = sum(0.15 for m in _cause_markers if m in s_lower)
                 s_score = overlap + causal_bonus

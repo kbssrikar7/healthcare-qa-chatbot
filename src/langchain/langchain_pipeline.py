@@ -429,11 +429,27 @@ class LangChainHealthcareQAPipeline:
             from_cache=False,
         )
 
+    def _retrieve_with_k(self, question: str, k: int) -> dict:
+        """Retrieve documents using an explicit k — no self.k mutation (thread-safe)."""
+        from langchain_core.documents import Document as _Doc
+        docs = self.lc_retriever.hybrid_retriever.retrieve(
+            question, k=k, use_reranking=self.lc_retriever.use_reranking
+        )
+        lc_docs = [
+            _Doc(
+                page_content=d.content,
+                metadata={"source": d.source, "score": d.score, **d.metadata},
+            )
+            for d in docs
+        ]
+        return {"question": question, "documents": lc_docs}
+
     def answer(
         self,
         question: str,
         num_documents: Optional[int] = None,
         include_explanation: bool = True,
+        **kwargs,
     ) -> QAResponse:
         """
         Answer a question and return QAResponse (compatible with existing pipeline).
@@ -446,15 +462,13 @@ class LangChainHealthcareQAPipeline:
         Returns:
             QAResponse compatible with existing API
         """
-        # Temporarily override k if caller specifies num_documents
-        original_k = self.k
-        if num_documents is not None:
-            self.k = num_documents
-        try:
-            result = self.invoke(question)
-            return self.to_qa_response(result)
-        finally:
-            self.k = original_k
+        k = num_documents if num_documents is not None else self.k
+        # Use thread-safe direct retrieval (no self.k mutation)
+        state = self._retrieve_with_k(question, k)
+        state = self._check_answerability(state)
+        state = self._format_and_generate(state)
+        result = self._enrich_with_xai(state)
+        return self.to_qa_response(result)
 
 
 def create_langchain_pipeline(
