@@ -46,7 +46,8 @@ export function Sidebar() {
 
   useEffect(() => { fetchModels().then(setModels); }, []);
 
-  const modelKeys = Object.keys(models);
+  // Only show models that are actually loaded/available on the backend
+  const modelKeys = Object.keys(models).filter((k) => models[k].loaded);
   const selectedPipeline = PIPELINES.find((p) => p.value === settings.pipeline);
 
   const handleClearCache = async () => {
