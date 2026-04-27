@@ -169,7 +169,8 @@ def test_ask_low_latency_profile_reduces_work(monkeypatch):
     )
 
     assert response.status_code == 200
-    assert pipeline.calls[0]["num_documents"] == 2
+    # low_latency no longer overrides num_sources — user's value (6) is respected
+    assert pipeline.calls[0]["num_documents"] == 6
     assert pipeline.calls[0]["include_explanation"] is True
     assert pipeline.calls[0]["generation_max_tokens"] == 192
 
