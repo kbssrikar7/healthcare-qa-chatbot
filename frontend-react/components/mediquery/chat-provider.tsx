@@ -83,7 +83,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<Settings>({
     modelChoice: "ollama",
     pipeline: "standard",
-    numSources: 3,
+    numSources: 5,
     fullXai: false,
   });
   const [feedbackState, setFeedbackState] = useState<FeedbackState>({});

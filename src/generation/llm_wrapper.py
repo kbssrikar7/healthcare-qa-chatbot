@@ -4,6 +4,7 @@ Supports TinyLlama (transformers), BioMistral (GGUF), and Extractive QA (no mode
 """
 
 import gc
+import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -12,6 +13,26 @@ from typing import Dict, List, Optional
 import torch
 from loguru import logger
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, StoppingCriteria, StoppingCriteriaList
+
+
+_THINK_TAG_RE = re.compile(r"<think>.*?</think>", re.DOTALL | re.IGNORECASE)
+# Matches a reasoning preamble ONLY when it occupies its own line(s) before the real answer.
+# Requires a newline after the preamble so we don't strip "Based on X, <answer>" in one sentence.
+_REASONING_PREAMBLE_RE = re.compile(
+    r"^(Hmm[,.]?|Let me|Looking at|I need to|The user is asking|I should|Okay[,.]?|"
+    r"So[,.]?\s+the user|Alright[,.]?|The reference text|The user'?s (situation|scenario|question)|"
+    r"This (isn'?t|is not|seems|appears)|Based on (the|my) (reference|analysis|reading))[^\n]*\n+",
+    re.IGNORECASE,
+)
+
+
+def _strip_think_tags(text: str) -> str:
+    """Remove <think>...</think> blocks and leading reasoning paragraphs from qwen3 output."""
+    text = _THINK_TAG_RE.sub("", text).strip()
+    # Strip leading reasoning lines (only when followed by \n so we keep one-line answers)
+    while _REASONING_PREAMBLE_RE.match(text):
+        text = _REASONING_PREAMBLE_RE.sub("", text, count=1).strip()
+    return text
 
 
 # Custom exceptions for granular error handling
@@ -304,6 +325,16 @@ class OllamaLLM:
             resp.raise_for_status()
             data = resp.json()
             response_text = data.get("response", "").strip()
+            # Strip <think>...</think> blocks that qwen3 emits even with think=false;
+            # then grab the text that follows as the actual answer.
+            response_text = _strip_think_tags(response_text)
+            # qwen3 sometimes emits everything into the "thinking" field and returns
+            # an empty "response". Use the thinking text (also stripped) in that case.
+            if not response_text:
+                thinking_text = _strip_think_tags(data.get("thinking", "").strip())
+                if thinking_text:
+                    logger.debug("Ollama returned empty response; using stripped thinking field")
+                    response_text = thinking_text
             if not response_text:
                 raise ValueError("Empty response from Ollama")
             return GenerationResult(
@@ -320,6 +351,108 @@ class OllamaLLM:
 
     def cleanup(self) -> None:
         pass  # no local resources to free
+
+
+class OpenRouterLLM:
+    """
+    OpenRouter API backend — OpenAI-compatible, gives access to hosted models
+    (e.g. meta-llama/llama-3.2-3b-instruct) without local installation.
+
+    Reads from environment:
+      OPENROUTER_API_KEY   — required bearer token
+      OPENROUTER_MODEL     — default meta-llama/llama-3.2-3b-instruct
+    """
+
+    def __init__(self):
+        self.api_key = os.getenv("OPENROUTER_API_KEY", "")
+        self.model = os.getenv("OPENROUTER_MODEL", "meta-llama/llama-3.2-3b-instruct")
+        self.base_url = "https://openrouter.ai/api/v1"
+        self.backend = "openrouter"
+        self._fallback = ExtractiveQA()
+        if not self.api_key:
+            logger.warning("OPENROUTER_API_KEY not set — OpenRouterLLM will always fall back to ExtractiveQA")
+        else:
+            logger.info("OpenRouterLLM: model={}", self.model)
+
+    def generate_with_context(
+        self,
+        question: str,
+        context: str,
+        max_new_tokens: int = 512,
+    ) -> GenerationResult:
+        """Call OpenRouter chat completions endpoint."""
+        import requests
+
+        if not self.api_key:
+            result = self._fallback.generate(question=question, context=context)
+            result.generation_backend_used = "extractive_fallback"
+            return result
+
+        question_words = set(question.lower().split())
+        context_lower = context.lower()
+        overlap = sum(1 for w in question_words if len(w) > 4 and w in context_lower)
+        context_is_relevant = overlap >= 2
+
+        if context_is_relevant:
+            system_content = (
+                "You are a medical information assistant. "
+                "Synthesize information from ALL provided reference sources to give a complete, accurate answer. "
+                "Do not focus only on the first source — read every source and combine the key points. "
+                "If the sources contain a list of tests, procedures, or symptoms, include all of them. "
+                "Always end with: 'Please consult a healthcare professional before making medical decisions.'"
+            )
+            user_content = f"Reference text:\n{context}\n\nQuestion: {question}"
+        else:
+            system_content = (
+                "You are a medical information assistant with broad medical knowledge. "
+                "Answer the question completely and accurately, covering all major points. "
+                "Always end with: 'Please consult a healthcare professional before making medical decisions.'"
+            )
+            user_content = f"Question: {question}"
+
+        payload = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": system_content},
+                {"role": "user", "content": user_content},
+            ],
+            "max_tokens": max_new_tokens,
+            "temperature": 0.1,
+        }
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://github.com/healthcare-qa-chatbot",
+        }
+
+        try:
+            resp = requests.post(
+                f"{self.base_url}/chat/completions",
+                json=payload,
+                headers=headers,
+                timeout=60,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            response_text = data["choices"][0]["message"]["content"].strip()
+            if not response_text:
+                raise ValueError("Empty response from OpenRouter")
+            usage = data.get("usage", {})
+            return GenerationResult(
+                response=response_text,
+                input_tokens=usage.get("prompt_tokens", 0),
+                generated_tokens=usage.get("completion_tokens", 0),
+                generation_backend_used="openrouter",
+            )
+        except Exception as e:
+            logger.warning("OpenRouterLLM failed ({}), falling back to ExtractiveQA", e)
+            result = self._fallback.generate(question=question, context=context)
+            result.generation_backend_used = "extractive_fallback"
+            return result
+
+    def cleanup(self) -> None:
+        pass
 
 
 class MedicalLLM:

@@ -163,7 +163,7 @@ def is_hallucinated_caps_spam(text: str) -> bool:
     return bool(_CAPS_ACRONYM_SPAM_RE.search(text))
 
 
-def _cut_repetition_loop(text: str, min_phrase_len: int = 15, max_repeats: int = 2) -> str:
+def _cut_repetition_loop(text: str, min_phrase_len: int = 80, max_repeats: int = 2) -> str:
     """
     Detect and cut repetition loops in LLM output.
 

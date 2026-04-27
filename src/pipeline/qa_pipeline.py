@@ -453,7 +453,7 @@ class HealthcareQAPipeline:
 
         # Extractive and Ollama backends: skip prompt_manager — they own their own prompt format
         _backend_type = getattr(self.llm, "backend", None)
-        if _backend_type in ("extractive", "ollama"):
+        if _backend_type in ("extractive", "ollama", "openrouter"):
             generation_result = self.llm.generate_with_context(
                 question=question,
                 context=generation_context,
@@ -510,7 +510,7 @@ class HealthcareQAPipeline:
         _s = time.perf_counter()
         hallucination_result = None
         _hal_gate_result = None  # used by quality gate even on fast path
-        _is_ollama_backend = (_generation_backend_used == "ollama")
+        _is_ollama_backend = (_generation_backend_used in ("ollama", "openrouter"))
         if self.hallucination_detector and answer and not _is_ollama_backend:
             try:
                 if verify_context != context:
@@ -638,7 +638,7 @@ class HealthcareQAPipeline:
         # 8b. POST-GENERATION QUALITY GATE
         # Ollama (Qwen2.5-7B) is a strong model — skip TinyLlama-targeted hallucination
         # gates which incorrectly reject good Ollama answers based on source_agreement/NLI.
-        _skip_quality_gates = (_generation_backend_used == "ollama")
+        _skip_quality_gates = (_generation_backend_used in ("ollama", "openrouter"))
 
         if answer and not _skip_quality_gates:
             # (a) Medication entity grounding
@@ -737,7 +737,7 @@ class HealthcareQAPipeline:
             # relying on TinyLlama's paraphrase (which can misclassify drug classes, etc.)
             # Skip when already using the extractive or ollama backend.
             # OllamaLLM handles its own fallback to ExtractiveQA internally.
-            _already_extractive = _backend_type in ("extractive", "ollama")
+            _already_extractive = _backend_type in ("extractive", "ollama", "openrouter")
             if not _already_extractive and answer != self.UNANSWERABLE_RESPONSE and self._is_factoid_question(question):
                 _conf_score = confidence.get("score", 1.0) if isinstance(confidence, dict) else 1.0
                 if _conf_score < 0.55:

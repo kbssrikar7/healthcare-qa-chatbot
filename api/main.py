@@ -670,6 +670,9 @@ def get_pipeline(model_choice: str = "tinyllama", adapter_path: Optional[str] = 
         elif backend == "ollama":
             from src.generation.llm_wrapper import OllamaLLM
             llm = OllamaLLM()
+        elif backend == "openrouter":
+            from src.generation.llm_wrapper import OpenRouterLLM
+            llm = OpenRouterLLM()
         else:
             # For GGUF models pass the shorthand key — MedicalLLM._resolve_model_path handles it
             llm_model_arg = model_choice if backend == "gguf" else resolved_model_name
@@ -1236,11 +1239,7 @@ async def _prepare_and_execute_pipeline(
         low_latency_cfg = _get_low_latency_settings()
         # Explicit per-request low_latency should always apply in tests and API usage.
         use_low_latency = bool(request.low_latency)
-        effective_num_sources = (
-            int(low_latency_cfg.get("num_sources", request.num_sources))
-            if use_low_latency
-            else int(request.num_sources)
-        )
+        effective_num_sources = int(request.num_sources)
         # If the client explicitly asks for explanations/XAI, honor it even in low-latency
         # mode. The static low-latency default only applies when the client leaves
         # include_explanation false (see tests/test_api_contract.py).

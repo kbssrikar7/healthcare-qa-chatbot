@@ -58,14 +58,24 @@ AVAILABLE_MODELS: Dict[str, Dict[str, Any]] = {
         "backend": "gguf",
     },
     "ollama": {
-        "model_name": os.getenv("OLLAMA_MODEL", "qwen2.5:7b"),
-        "display_name": "Qwen2.5-7B (Ollama)",
-        "description": "Qwen2.5-7B served via remote Ollama server — requires OLLAMA_BASE_URL",
-        "parameters": "7B",
+        "model_name": os.getenv("OLLAMA_MODEL", "llama3.2:3b"),
+        "display_name": "Llama 3.2 3B (Local)",
+        "description": "Meta Llama 3.2 3B running locally via Ollama — no API key needed",
+        "parameters": "3B",
         "max_new_tokens": 512,
         "requires_gpu": False,
         "load_in_4bit": False,
         "backend": "ollama",
+    },
+    "openrouter": {
+        "model_name": os.getenv("OPENROUTER_MODEL", "meta-llama/llama-3.2-3b-instruct"),
+        "display_name": "Llama 3.2 3B (OpenRouter)",
+        "description": "Meta Llama 3.2 3B served via OpenRouter API — requires OPENROUTER_API_KEY",
+        "parameters": "3B",
+        "max_new_tokens": 512,
+        "requires_gpu": False,
+        "load_in_4bit": False,
+        "backend": "openrouter",
     },
 }
 
@@ -106,7 +116,7 @@ class RetrievalConfig:
     vector_store_type: str = "chromadb"  # chromadb or pinecone
     collection_name: str = os.getenv("CHROMA_COLLECTION", "medical_knowledge_v2")
     persist_directory: str = os.getenv("KB_PERSIST_DIR", str(DATA_DIR / "knowledge_base_v2"))
-    top_k: int = 5
+    top_k: int = 7
     dense_weight: float = 0.7
     sparse_weight: float = 0.3
     rerank_top_k: int = 10
@@ -154,7 +164,7 @@ class SafetyConfig:
 class PipelineConfig:
     """QA Pipeline configuration."""
     # Grounding gate thresholds
-    min_retrieval_score: float = 0.3
+    min_retrieval_score: float = 0.1
     min_relevant_docs: int = 1
     enable_grounding_gate: bool = True
     # Adaptive threshold: doc is relevant if score >= max(absolute_floor, ratio * top_score)
@@ -192,7 +202,7 @@ class PipelineConfig:
     min_answer_confidence: float = float(os.getenv("MIN_ANSWER_CONFIDENCE", "0.0"))
 
     # Caching
-    enable_response_cache: bool = True
+    enable_response_cache: bool = False
     cache_ttl_seconds: int = 3600
     max_cache_items: int = 1000
     cache_dir: str = str(DATA_DIR / "cache")
@@ -266,7 +276,7 @@ class Config:
                 pipeline=PipelineConfig(
                     min_retrieval_score=0.4,
                     cache_ttl_seconds=7200,
-                    enable_response_cache=True,
+                    enable_response_cache=False,
                     min_answer_confidence=0.3,
                 ),
             )
@@ -281,7 +291,7 @@ class Config:
                 # Cache enabled in dev too — same question twice should be instant.
                 # TTL is shorter (30 min) so stale answers don't linger during iteration.
                 pipeline=PipelineConfig(
-                    enable_response_cache=True,
+                    enable_response_cache=False,
                     cache_ttl_seconds=1800,
                 ),
             )
