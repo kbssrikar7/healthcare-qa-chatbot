@@ -81,7 +81,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<MediMessage[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [settings, setSettings] = useState<Settings>({
-    modelChoice: "ollama",
+    modelChoice: "openrouter",
     pipeline: "standard",
     numSources: 5,
     fullXai: false,

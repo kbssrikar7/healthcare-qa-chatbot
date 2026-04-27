@@ -274,10 +274,10 @@ class Config:
                 llm=LLMConfig(model_name="TinyLlama/TinyLlama-1.1B-Chat-v1.0", load_in_4bit=False),
                 safety=SafetyConfig(confidence_threshold=0.6),
                 pipeline=PipelineConfig(
-                    min_retrieval_score=0.4,
+                    min_retrieval_score=0.1,
                     cache_ttl_seconds=7200,
                     enable_response_cache=False,
-                    min_answer_confidence=0.3,
+                    min_answer_confidence=0.0,
                 ),
             )
         elif env == "testing":

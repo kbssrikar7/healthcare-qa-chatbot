@@ -20,8 +20,7 @@ async function fetchModels(): Promise<Record<string, ModelInfo>> {
     if (res.ok) return res.json();
   } catch { /* ignore */ }
   return {
-    ollama: { display_name: "Llama 3.2 3B (Local)", description: "Local Ollama", parameters: "3B", requires_gpu: false, loaded: true },
-    openrouter: { display_name: "Llama 3.2 3B (OpenRouter)", description: "Via API", parameters: "3B", requires_gpu: false, loaded: false },
+    openrouter: { display_name: "Llama 3.2 3B (OpenRouter)", description: "Recommended", parameters: "3B", requires_gpu: false, loaded: true },
   };
 }
 
