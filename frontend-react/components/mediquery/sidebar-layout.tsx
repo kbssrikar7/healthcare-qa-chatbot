@@ -45,6 +45,15 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         {children}
+
+        <a
+          href="https://github.com/kbssrikar7"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fixed bottom-2 right-3 z-50 text-sm uppercase tracking-widest text-zinc-500 underline underline-offset-4 decoration-zinc-600 transition-colors hover:text-zinc-100 hover:decoration-zinc-100"
+        >
+          Done by kbssrikar
+        </a>
       </div>
     </div>
   );

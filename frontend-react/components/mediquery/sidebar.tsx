@@ -272,15 +272,6 @@ export function Sidebar() {
           </span>
         </button>
       </div>
-
-      <a
-        href="https://github.com/kbssrikar7"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="px-1 pb-1 text-center text-sm uppercase tracking-widest text-muted-foreground underline underline-offset-4 decoration-muted-foreground/50 transition-colors hover:text-foreground hover:decoration-foreground"
-      >
-        Done by kbssrikar
-      </a>
     </div>
   );
 }
