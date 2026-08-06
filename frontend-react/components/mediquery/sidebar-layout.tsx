@@ -50,9 +50,9 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
           href="https://github.com/kbssrikar7"
           target="_blank"
           rel="noopener noreferrer"
-          className="fixed bottom-2 right-3 z-50 text-sm uppercase tracking-widest text-zinc-500 underline underline-offset-4 decoration-zinc-600 transition-colors hover:text-zinc-100 hover:decoration-zinc-100"
+          className="fixed bottom-1.5 right-2 z-50 text-[10px] tracking-wide text-zinc-600 underline underline-offset-2 decoration-zinc-700 opacity-70 transition-opacity hover:text-zinc-300 hover:decoration-zinc-400 hover:opacity-100"
         >
-          Done by kbssrikar
+          done by kbssrikar
         </a>
       </div>
     </div>
