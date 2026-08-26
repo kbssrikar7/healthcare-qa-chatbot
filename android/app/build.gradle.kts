@@ -25,6 +25,25 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "0.1.0"
+
+        // arm64-v8a only: a 1B-param on-device LLM with a GPU delegate isn't
+        // realistically usable on 32-bit ARM or x86 hardware, and bundling
+        // the ~530MB model makes shipping all 4 ABIs' worth of native libs
+        // wasteful. Covers the vast majority of real Android phones from the
+        // last ~8 years; excludes emulators (x86/x86_64) and legacy 32-bit
+        // devices.
+        ndk {
+            abiFilters += listOf("arm64-v8a")
+        }
+    }
+
+    // Model/KB assets are already-compressed/high-entropy binary formats —
+    // compressing them again in the APK wastes build time for no size win,
+    // and (more importantly) an asset stored compressed can't be opened via
+    // AssetManager.openFd(), which AssetInstaller needs for the upfront
+    // total-size progress reporting during the first-run copy.
+    androidResources {
+        noCompress += listOf("task", "jsonl")
     }
 
     signingConfigs {

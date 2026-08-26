@@ -14,14 +14,12 @@ data class KbChunk(
 /**
  * Loads the mobile knowledge-base subset built by
  * evaluation/build_mobile_kb_subset.py (one JSON object per line: id, text,
- * source, chunk_id, embedding). Expected at MODEL_PATH-style convention:
- * pushed via `adb push mobile_kb_subset.jsonl /data/local/tmp/mobile_kb.jsonl`
- * — same pattern used for the .task model file in this spike.
+ * source, chunk_id, embedding). Bundled as an app asset (`mobile_kb.jsonl`)
+ * and copied out to a real file by AssetInstaller on first run — see
+ * MainActivity.loadModel().
  */
 object KnowledgeBase {
-    const val KB_PATH = "/data/local/tmp/mobile_kb.jsonl"
-
-    fun load(path: String = KB_PATH): List<KbChunk> {
+    fun load(path: String): List<KbChunk> {
         val file = File(path)
         if (!file.exists()) return emptyList()
         val chunks = ArrayList<KbChunk>()

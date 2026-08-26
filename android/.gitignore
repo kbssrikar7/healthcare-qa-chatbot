@@ -14,3 +14,10 @@ local.properties
 *.keystore
 *.jks
 signing.properties
+
+# Bundled model/KB assets — too large for git (model alone is ~530MB, GitHub
+# blocks files over 100MB). These are pulled/copied in locally before a build
+# and shipped inside the built APK/AAB instead; the APK itself goes to GitHub
+# Releases, not the repo. See mobile_port_notes.md.
+app/src/main/assets/gemma3-1b-it.task
+app/src/main/assets/mobile_kb.jsonl

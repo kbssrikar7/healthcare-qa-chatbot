@@ -104,7 +104,8 @@ import java.io.File
  * independent of this and always shows full history; there's just no true
  * cross-turn LLM memory yet. See mobile_port_notes.md for this tradeoff.
  */
-private const val MODEL_PATH = "/data/local/tmp/gemma3-1b-it.task"
+private const val MODEL_ASSET = "gemma3-1b-it.task"
+private const val KB_ASSET = "mobile_kb.jsonl"
 private const val RETRIEVE_K = 3
 private const val MAX_CONTEXT_CHARS_PER_CHUNK = 600
 
@@ -200,15 +201,24 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun loadModel() {
-        if (!File(MODEL_PATH).exists()) {
-            modelStatus.value = "LLM model not found at $MODEL_PATH — push it first"
-            return
-        }
-        modelStatus.value = "Loading embedder + knowledge base..."
+        modelStatus.value = "Setting up (first run)..."
         lifecycleScope.launch(Dispatchers.IO) {
             try {
+                var lastReportedPct = -1
+                val modelFile = AssetInstaller.ensureInstalled(
+                    this@MainActivity, MODEL_ASSET, File(filesDir, MODEL_ASSET),
+                ) { copied, total ->
+                    val pct = if (total > 0) (copied * 100 / total).toInt() else 0
+                    if (pct != lastReportedPct) {
+                        lastReportedPct = pct
+                        modelStatus.value = "Setting up model... $pct%"
+                    }
+                }
+                val kbFile = AssetInstaller.ensureInstalled(this@MainActivity, KB_ASSET, File(filesDir, KB_ASSET))
+
+                modelStatus.value = "Loading embedder + knowledge base..."
                 val newEmbedder = OnnxEmbedder(this@MainActivity)
-                val chunks = KnowledgeBase.load()
+                val chunks = KnowledgeBase.load(kbFile.absolutePath)
                 embedder = newEmbedder
                 retriever = HybridRetriever(chunks, newEmbedder)
                 withContext(Dispatchers.Main) {
@@ -217,7 +227,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 val engineConfig = EngineConfig(
-                    modelPath = MODEL_PATH,
+                    modelPath = modelFile.absolutePath,
                     backend = Backend.GPU(),
                     maxNumTokens = 2048,
                     cacheDir = getExternalFilesDir(null)?.absolutePath,

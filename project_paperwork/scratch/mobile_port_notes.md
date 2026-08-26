@@ -704,6 +704,67 @@ Desktop column is the paper's reported warm-path mean (`paper.tex`, TinyLlama, C
     code); left in `CalibrationRunner.kt` since it's explicitly a one-off
     diagnostic tool, not user-facing.
 
+- **2026-08-26 — Model + KB bundled into the APK; app now installs standalone.**
+  Previously the app depended on `adb push`-ing the ~530MB `.task` model and the
+  KB subset to `/data/local/tmp/` by hand — meaning it only ever worked on this
+  dev's own test device, never for anyone who'd just install the APK. Fixed:
+  - Pulled the model back off the device (it only existed there + in the
+    phone's Downloads folder, not on this machine) into
+    `android/app/src/main/assets/gemma3-1b-it.task`; copied the KB subset
+    (`evaluation/mobile_kb_subset.jsonl`) in as `mobile_kb.jsonl`. Both
+    git-ignored (~530MB — GitHub blocks anything over 100MB in a normal push
+    anyway) but present locally for Gradle to bundle into the built APK.
+  - `app/build.gradle.kts`: added `noCompress += listOf("task", "jsonl")` —
+    needed because `AssetManager.openFd()` (used for upfront total-size
+    progress reporting) only works on assets stored uncompressed. Also
+    restricted `ndk.abiFilters` to `arm64-v8a` only — a 1B-param model with a
+    GPU delegate isn't realistically usable on 32-bit ARM or x86 hardware, and
+    shipping all 4 ABIs' native libs alongside a 530MB model would have been
+    wasteful (covers the large majority of real phones from the last ~8
+    years; excludes emulators and legacy 32-bit devices).
+  - New `AssetInstaller.kt`: copies a bundled asset out to a real file on
+    first run (both LiteRT-LM's `modelPath` and `KnowledgeBase.load()` need an
+    actual filesystem path, not an asset stream), idempotent via a
+    size-match check so every launch after the first is instant. Reports
+    progress via a callback — `MainActivity.loadModel()` shows "Setting up
+    model... NN%" during the one-time copy.
+  - `KnowledgeBase.KB_PATH`'s hardcoded `/data/local/tmp/...` constant and
+    `MainActivity`'s `MODEL_PATH` constant were both removed in favor of
+    dynamic `filesDir`-relative paths computed after the asset copy.
+  - **Verified twice, not just build success:** (1) debug build — force-stopped
+    the app, `pm clear`'d its data, deleted every file this app had ever relied
+    on under `/data/local/tmp` on the device, fresh-launched, confirmed
+    "1444 sources loaded" and a correct answer with confidence score, all with
+    zero adb pushes. (2) release build — full uninstall/reinstall of the
+    actual signed release APK (not debug), same standalone verification,
+    ready in ~20s, correct answer with sources and confidence. This is the
+    real distributable artifact, tested as an end user would experience it.
+- **2026-08-26 — Release keystore regenerated.** The placeholder keystore used
+  throughout earlier Play Store prep had a weak hardcoded password
+  (`mediquery-dev-2026`) — fine for testing the build pipeline, not fine for
+  an APK that's about to be a real public download (whoever holds the signing
+  key controls all future "trusted update" releases). Generated a fresh 2048-
+  bit RSA keystore with a strong random password (`openssl rand -base64 24`);
+  both the keystore file and `signing.properties` remain git-ignored as
+  before. This is the only keystore that should be used for any real release
+  going forward — the old placeholder should be treated as retired.
+- **Distribution decision:** Play Store submission is explicitly not
+  happening. Distribution is via GitHub Releases instead — a single signed
+  APK attached to a repo release, downloaded and sideloaded directly. This
+  sidesteps Play Store's base-APK size limits (which would have forced Play
+  Asset Delivery for the 530MB model) since GitHub Releases allows up to 2GB
+  per file with no special packaging needed. Final release APK: **619MB**,
+  arm64-v8a only, signed with the new keystore above.
+- **Disk space incident during this work:** the release build initially failed
+  with `IOException: No space left on device` — the machine's root
+  filesystem was at 100% (221GB/233GB used, 110MB free), unrelated to this
+  session specifically. Freed space by deleting
+  `android/app/build/` (4.8GB of pure regenerable Gradle build output, no
+  different from a `dist/` folder) — nothing else on the machine was touched.
+  Disk sits at ~2.8GB free after the release build completed — worth a real
+  cleanup pass (Docker build cache showed 2.09GB fully reclaimable, `.npm`
+  cache was 6.9GB) before the next large build on this machine.
+
 ---
 
 ## Open Items / Pre-Publication Flags
