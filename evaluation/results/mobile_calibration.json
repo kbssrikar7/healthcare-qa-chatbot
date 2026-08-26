@@ -1,0 +1,51 @@
+{
+  "model": "gemma3-1b-it (LiteRT-LM, GPU backend)",
+  "n": 97,
+  "skipped_error_rows": 0,
+  "label_positive_rate": 0.3711,
+  "mean_raw_score": 0.5268,
+  "ece_raw": 0.1611,
+  "platt_a": 5.688081,
+  "platt_b": -3.604085,
+  "mean_calibrated_score": 0.3711,
+  "ece_calibrated": 0.0318,
+  "bin_confidences_raw": [
+    0.14817678272961377,
+    0.28946799856146255,
+    0.3869537249010398,
+    0.44007733833962726,
+    0.5825135928871648
+  ],
+  "bin_accuracies_raw": [
+    0.0,
+    0.3333333333333333,
+    0.0,
+    0.1111111111111111,
+    0.4342105263157895
+  ],
+  "bin_counts_raw": [
+    5,
+    6,
+    1,
+    9,
+    76
+  ],
+  "bin_confidences_calibrated": [
+    0.05947864382184491,
+    0.13426516101401811,
+    0.24960411199500088,
+    0.42784623157944673
+  ],
+  "bin_accuracies_calibrated": [
+    0.0,
+    0.2857142857142857,
+    0.1111111111111111,
+    0.4342105263157895
+  ],
+  "bin_counts_calibrated": [
+    5,
+    7,
+    9,
+    76
+  ]
+}
