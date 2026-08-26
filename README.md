@@ -10,6 +10,7 @@
   [![CI](https://github.com/kbssrikar7/healthcare-qa-chatbot/actions/workflows/ci.yml/badge.svg)](https://github.com/kbssrikar7/healthcare-qa-chatbot/actions/workflows/ci.yml)
   [![Live App](https://img.shields.io/badge/Live%20App-mediquery--healthcare.vercel.app-blue)](https://mediquery-healthcare.vercel.app)
   [![API](https://img.shields.io/badge/API-HF%20Spaces-yellow)](https://kbsss-healthcare-qa-api.hf.space/docs)
+  [![Android](https://img.shields.io/badge/Android-Download%20APK-3DDC84?logo=android&logoColor=white)](https://github.com/kbssrikar7/healthcare-qa-chatbot/releases/tag/mobile-v0.1.0)
 </div>
 
 ---
@@ -79,6 +80,7 @@ Browser
 │   ├── utils/            Logging, caching, metrics helpers
 │   └── xai/              Confidence scorer, passage highlighter, attribution
 ├── frontend-react/       Next.js application
+├── android/              On-device Android app (Kotlin/Compose, LiteRT-LM)
 ├── evaluation/           Evaluation scripts and benchmark notebooks
 ├── tests/                pytest test suite
 ├── config/               App settings and constants
@@ -181,6 +183,25 @@ curl -X POST https://kbsss-healthcare-qa-api.hf.space/ask \
 | HF Space | https://huggingface.co/spaces/kbsss/healthcare-qa-api |
 
 The backend runs on a CPU-only Docker container on Hugging Face Spaces with 16 GB RAM. The knowledge base (505,584 documents) is served from Qdrant Cloud in `europe-west3`. The frontend proxies all `/api/*` calls to the backend, so there are no CORS issues.
+
+---
+
+## Mobile (Android)
+
+A separate, fully **on-device** port of the same idea: no server, no internet permission, everything — retrieval, generation, and explainability — runs locally on the phone.
+
+**[Download the APK](https://github.com/kbssrikar7/healthcare-qa-chatbot/releases/tag/mobile-v0.1.0)** — standalone install, no `adb` or setup required. Requires Android 8.0+ on an arm64-v8a device.
+
+| Layer | Technology |
+|---|---|
+| Generation | Gemma 3 1B via [LiteRT-LM](https://github.com/google-ai-edge/litert-lm) (GPU-accelerated, CPU fallback) |
+| Retrieval | Hand-rolled hybrid BM25 + dense (`all-MiniLM-L6-v2` via ONNX Runtime Mobile) with RRF fusion, over a curated on-device KB subset |
+| Explainability | Ported multi-signal confidence scorer, Platt-calibrated against a real 97-question on-device evaluation run |
+| UI | Jetpack Compose, Material 3 |
+
+The base model differs from the server deployment (TinyLlama/BioMistral) because it needs to run entirely on-device — Gemma 3 1B is one of the few small models with first-class support in Google's on-device toolchain. The model and knowledge base subset are bundled inside the APK and set themselves up on first launch. See [`android/`](android/) for source and `project_paperwork/scratch/mobile_port_notes.md` for the full build/design log.
+
+Same disclaimer as the web app: educational use only, not a substitute for professional medical advice.
 
 ---
 
