@@ -765,6 +765,31 @@ Desktop column is the paper's reported warm-path mean (`paper.tex`, TinyLlama, C
   cleanup pass (Docker build cache showed 2.09GB fully reclaimable, `.npm`
   cache was 6.9GB) before the next large build on this machine.
 
+- **2026-08-27 — Real cross-device bug found and fixed: no GPU→CPU fallback.**
+  Tested the release APK on a second, independent physical device (Samsung Galaxy S21,
+  Exynos, Android 15/API 35) — a different phone with a different GPU vendor/driver stack
+  than the dev device (Galaxy S9+, Mali, Android 10). The app failed to load at all:
+  `Failed to create engine: INTERNAL: ERROR: ...llm_litert_compiled_model_executor.cc:1928`.
+  Full logcat trace showed the actual cause: this device has no working OpenCL
+  (`OpenCL not supported on this platform. Using OpenGL instead.` /
+  `dlopen failed: library "libvndksupport.so" not found`), and LiteRT-LM's OpenGL GPU
+  delegate path also failed —
+  `Failed to create litert::ml_drift::DelegateKernelLiteRt: UNIMPLEMENTED:
+  CreateSharedMemoryManager is not implemented.` `Backend.GPU()` was hardcoded with no
+  fallback, so engine creation just threw and the app showed an unrecoverable "Failed to
+  load" error — exactly the risk flagged (but not yet tested) when this was first asked
+  about ("does the APK install on any Android phone").
+  **Fix:** `MainActivity.loadModel()` now tries `Backend.GPU()` first and, if engine
+  creation throws, catches it and retries with `Backend.CPU()`, updating `modelStatus` to
+  "GPU unavailable, falling back to CPU..." in between. New `createEngine()` helper shared
+  by both attempts.
+  **Verified on the same S21 that failed before the fix:** rebuilt, reinstalled, watched
+  logcat confirm the GPU attempt failed and the CPU attempt succeeded
+  (`backend: GPU` → failure → `backend: CPU` → `CPU accelerator registered`), then sent a
+  real query — answered correctly with sources and confidence score within ~20 seconds of
+  tapping Send (CPU-only inference on this device's chip is notably fast, faster than the
+  dev device's GPU-fallback-to-CPU-sampler path even).
+
 ---
 
 ## Open Items / Pre-Publication Flags

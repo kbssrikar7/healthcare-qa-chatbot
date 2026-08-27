@@ -226,14 +226,17 @@ class MainActivity : ComponentActivity() {
                     modelStatus.value = "Loading language model..."
                 }
 
-                val engineConfig = EngineConfig(
-                    modelPath = modelFile.absolutePath,
-                    backend = Backend.GPU(),
-                    maxNumTokens = 2048,
-                    cacheDir = getExternalFilesDir(null)?.absolutePath,
-                )
-                val newEngine = Engine(engineConfig)
-                newEngine.initialize()
+                val newEngine = try {
+                    createEngine(modelFile, Backend.GPU())
+                } catch (e: Exception) {
+                    // Not every device has a working GPU compute delegate (e.g. no OpenCL
+                    // and an unimplemented OpenGL delegate path) — LiteRT-LM doesn't fall
+                    // back to CPU on its own, so this app does. Verified needed on a real
+                    // device: Galaxy S21 (Exynos, Android 15) fails GPU engine creation
+                    // outright where the dev device (Galaxy S9+) succeeds.
+                    withContext(Dispatchers.Main) { modelStatus.value = "GPU unavailable, falling back to CPU..." }
+                    createEngine(modelFile, Backend.CPU())
+                }
                 engine = newEngine
 
                 withContext(Dispatchers.Main) {
@@ -245,6 +248,18 @@ class MainActivity : ComponentActivity() {
                 withContext(Dispatchers.Main) { modelStatus.value = "Failed to load: ${e.message}" }
             }
         }
+    }
+
+    private fun createEngine(modelFile: File, backend: Backend): Engine {
+        val engineConfig = EngineConfig(
+            modelPath = modelFile.absolutePath,
+            backend = backend,
+            maxNumTokens = 2048,
+            cacheDir = getExternalFilesDir(null)?.absolutePath,
+        )
+        val newEngine = Engine(engineConfig)
+        newEngine.initialize()
+        return newEngine
     }
 
     private fun buildRagPrompt(question: String, retrieved: List<HybridRetriever.Result>): String {
